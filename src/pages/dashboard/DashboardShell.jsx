@@ -71,7 +71,7 @@ export default function DashboardShell({ view, setView, goLanding }) {
       {/* Mobile drawer */}
       <div className={`mob-drawer${drawerOpen?" open":""}`}>
         <div style={{padding:"0 18px 20px"}}><DrawerLogo/></div>
-        <nav style={{flex:1,display:"flex",flexDirection:"column",gap:2}}>
+        <nav style={{flex:1,display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
           {NAV_ITEMS.map(({key,label,icon,badge})=>(
             <div key={key} className={`mob-nav-item${view===key?" active":""}`} onClick={()=>navigate(key)}>
               <span style={{fontSize:14,flexShrink:0}}>{icon}</span>
@@ -82,7 +82,7 @@ export default function DashboardShell({ view, setView, goLanding }) {
         </nav>
         <div style={{padding:"12px 8px 0",borderTop:`1px solid ${C.border}`}}>
           <div onClick={()=>{goLanding();setDrawerOpen(false);}} className="mob-nav-item">
-            <span>↖</span> Back to Landing
+            <span>←</span> Back to Landing
           </div>
         </div>
       </div>

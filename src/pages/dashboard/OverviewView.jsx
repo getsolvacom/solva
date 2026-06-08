@@ -50,8 +50,8 @@ function GlobalStyles() {
       @media(max-width:767px){
         .ov-topbar{flex-direction:column!important;align-items:flex-start!important;height:auto!important;padding:12px 14px!important;gap:10px!important;}
         .ov-content{padding:12px 12px!important;gap:12px!important;}
-        .kpi-row{display:flex!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch;gap:10px!important;padding-bottom:4px!important;}
-        .kpi-row .kpi-card{min-width:152px!important;flex-shrink:0!important;}
+        .kpi-row{display:flex!important;overflow-x:auto!important;overflow-y:visible!important;-webkit-overflow-scrolling:touch;gap:10px!important;padding-bottom:6px!important;width:100%!important;}
+        .kpi-row .kpi-card{min-width:200px!important;flex-shrink:0!important;}
         .chart-activity-grid{grid-template-columns:1fr!important;}
         .chart-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;margin-bottom:14px!important;}
         .actions-grid{grid-template-columns:repeat(2,1fr)!important;}
