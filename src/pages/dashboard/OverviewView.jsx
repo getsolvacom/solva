@@ -48,7 +48,11 @@ function GlobalStyles() {
       .action-card{transition:all .18s ease!important;border-color:#3D0050!important;}
       .action-card:hover{border-color:#E55266!important;background:rgba(229,82,102,.07)!important;transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(0,0,0,.45)!important;}
       @media(max-width:767px){
-        .ov-topbar{flex-direction:column!important;align-items:flex-start!important;height:auto!important;padding:12px 16px!important;gap:10px!important;}
+        .ov-topbar{flex-direction:column!important;align-items:flex-start!important;height:auto!important;padding:12px 14px!important;gap:10px!important;}
+        .ov-content{padding:12px 12px!important;gap:12px!important;}
+        .kpi-row{display:flex!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch;gap:10px!important;padding-bottom:4px!important;}
+        .kpi-row .kpi-card{min-width:152px!important;flex-shrink:0!important;}
+        .chart-activity-grid{grid-template-columns:1fr!important;}
         .chart-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;margin-bottom:14px!important;}
         .actions-grid{grid-template-columns:repeat(2,1fr)!important;}
       }
@@ -56,7 +60,7 @@ function GlobalStyles() {
   );
 }
 
-export default function OverviewView() {
+export default function OverviewView({ setView }) {
   const [activeChart, setActiveChart] = useState("revenue");
 
   const kpis = [
@@ -86,10 +90,10 @@ export default function OverviewView() {
       </div>
 
       {/* Scrollable content */}
-      <div style={{flex:1,overflowY:"auto",padding:"22px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
+      <div className="ov-content" style={{flex:1,overflowY:"auto",padding:"22px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
 
         {/* KPI Cards */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+        <div className="kpi-row" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
           {kpis.map((k,i)=>(
             <div key={i} className="kpi-card fu" style={{padding:"18px 20px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`,animationDelay:`${i*.06}s`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
@@ -106,7 +110,7 @@ export default function OverviewView() {
         </div>
 
         {/* Chart + Activity */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 310px",gap:16}}>
+        <div className="chart-activity-grid" style={{display:"grid",gridTemplateColumns:"1fr 310px",gap:16}}>
 
           {/* Area Chart */}
           <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22}}>
@@ -167,12 +171,12 @@ export default function OverviewView() {
           <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:16}}>Quick Actions</h3>
           <div className="actions-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
             {[
-              {label:"Configure AI Tone", icon:"⚙", color:C.coral  },
-              {label:"View Full Reports", icon:"↗", color:C.blue   },
-              {label:"Test Automation",   icon:"▶", color:C.magenta},
-              {label:"Add Team Member",   icon:"+", color:C.amber  },
+              {label:"Configure AI Tone", icon:"⚙", color:C.coral,   view:"settings" },
+              {label:"View Full Reports", icon:"↗", color:C.blue,    view:"analytics"},
+              {label:"Test Automation",   icon:"▶", color:C.magenta, view:"tickets"  },
+              {label:"Add Team Member",   icon:"+", color:C.amber,   view:"settings" },
             ].map((a,i)=>(
-              <button key={i} className="action-card"
+              <button key={i} className="action-card" onClick={()=>setView(a.view)}
                 style={{padding:"14px 10px",borderRadius:10,border:`1px solid ${C.borderHi}`,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:8,background:"transparent"}}>
                 <div style={{width:36,height:36,borderRadius:10,background:`${a.color}12`,display:"flex",alignItems:"center",justifyContent:"center",color:a.color,fontSize:17}}>{a.icon}</div>
                 <span style={{fontSize:11.5,fontWeight:500,color:C.sub}}>{a.label}</span>
