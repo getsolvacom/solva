@@ -45,6 +45,13 @@ function GlobalStyles() {
       .card-hover:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.5);}
       .blink{animation:blink 2.4s ease infinite;}
       .filter-tab{cursor:pointer;transition:all .15s ease;font-family:'Outfit',sans-serif;}
+      .action-card{transition:all .18s ease!important;border-color:#3D0050!important;}
+      .action-card:hover{border-color:#E55266!important;background:rgba(229,82,102,.07)!important;transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(0,0,0,.45)!important;}
+      @media(max-width:767px){
+        .ov-topbar{flex-direction:column!important;align-items:flex-start!important;height:auto!important;padding:12px 16px!important;gap:10px!important;}
+        .chart-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;margin-bottom:14px!important;}
+        .actions-grid{grid-template-columns:repeat(2,1fr)!important;}
+      }
     `}</style>
   );
 }
@@ -64,7 +71,7 @@ export default function OverviewView() {
       <GlobalStyles/>
 
       {/* Top bar */}
-      <div style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
+      <div className="ov-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
         <div>
           <h1 style={{fontFamily:"'Outfit',sans-serif",fontSize:17,fontWeight:700,color:C.text}}>Overview</h1>
           <p style={{fontSize:11.5,color:C.muted}}>May 19 – May 26, 2026</p>
@@ -103,7 +110,7 @@ export default function OverviewView() {
 
           {/* Area Chart */}
           <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+            <div className="chart-header" style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
               <div>
                 <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Weekly Performance</h3>
                 <p style={{fontSize:11.5,color:C.muted}}>Tickets resolved & revenue recovered</p>
@@ -158,15 +165,15 @@ export default function OverviewView() {
         {/* Quick Actions */}
         <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:20}}>
           <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:16}}>Quick Actions</h3>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+          <div className="actions-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
             {[
               {label:"Configure AI Tone", icon:"⚙", color:C.coral  },
               {label:"View Full Reports", icon:"↗", color:C.blue   },
               {label:"Test Automation",   icon:"▶", color:C.magenta},
               {label:"Add Team Member",   icon:"+", color:C.amber  },
             ].map((a,i)=>(
-              <button key={i} className="btn-ghost card-hover"
-                style={{padding:"14px 10px",borderRadius:10,border:`1px solid ${C.border}`,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+              <button key={i} className="action-card"
+                style={{padding:"14px 10px",borderRadius:10,border:`1px solid ${C.borderHi}`,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:8,background:"transparent"}}>
                 <div style={{width:36,height:36,borderRadius:10,background:`${a.color}12`,display:"flex",alignItems:"center",justifyContent:"center",color:a.color,fontSize:17}}>{a.icon}</div>
                 <span style={{fontSize:11.5,fontWeight:500,color:C.sub}}>{a.label}</span>
               </button>
