@@ -107,8 +107,45 @@ function CardShell({ children, maxWidth=480 }) {
   );
 }
 
+// ── LOGIN ──
+function LoginForm({ onSignup, goDash }) {
+  const [email,    setEmail]    = useState("");
+  const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+
+  return (
+    <CardShell>
+      <h1 className="fu" style={{fontFamily:"'Outfit',sans-serif",fontSize:24,fontWeight:800,letterSpacing:"-.02em",marginBottom:8}}>Welcome back</h1>
+      <p className="fu" style={{fontSize:13.5,color:C.sub,lineHeight:1.7,marginBottom:28}}>Sign in to your account</p>
+
+      <div className="fu fu1">
+        <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Email Address</label>
+        <div style={{display:"flex",alignItems:"center",borderRadius:10,border:`1px solid ${C.border}`,background:C.card,overflow:"hidden",marginBottom:16}}>
+          <span style={{padding:"0 14px",color:C.muted,fontSize:16}}>✉</span>
+          <input type="email" placeholder="you@yourstore.com" value={email} onChange={e=>setEmail(e.target.value)} style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
+        </div>
+
+        <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Password</label>
+        <div style={{display:"flex",alignItems:"center",borderRadius:10,border:`1px solid ${C.border}`,background:C.card,overflow:"hidden",marginBottom:8}}>
+          <span style={{padding:"0 14px",color:C.muted,fontSize:16}}>🔒</span>
+          <input type={showPass?"text":"password"} placeholder="Your password" value={password} onChange={e=>setPassword(e.target.value)} style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
+          <span onClick={()=>setShowPass(v=>!v)} style={{padding:"0 14px",color:C.muted,fontSize:13,cursor:"pointer",userSelect:"none",whiteSpace:"nowrap",transition:"color .15s"}}>{showPass?"Hide":"Show"}</span>
+        </div>
+        <p style={{textAlign:"right",marginBottom:26}}>
+          <span style={{fontSize:12.5,color:C.coral,cursor:"pointer"}}>Forgot password?</span>
+        </p>
+      </div>
+
+      <div className="fu fu2">
+        <button className="btn-primary" onClick={goDash} style={{width:"100%",padding:"14px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15,marginBottom:16}}>Sign In →</button>
+        <p style={{textAlign:"center",fontSize:13,color:C.muted}}>Don't have an account? <span onClick={onSignup} style={{color:C.coral,cursor:"pointer"}}>Get started free</span></p>
+      </div>
+    </CardShell>
+  );
+}
+
 // ── STEP 1 ──
-function Step1({ onNext }) {
+function Step1({ onNext, onLogin }) {
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [agreed,   setAgreed]   = useState(false);
@@ -156,7 +193,7 @@ function Step1({ onNext }) {
 
       <div className="fu fu4">
         <button className="btn-primary" onClick={onNext} style={{width:"100%",padding:"14px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15,marginBottom:16}}>Create My Account →</button>
-        <p style={{textAlign:"center",fontSize:13,color:C.muted}}>Already have an account? <span style={{color:C.coral,cursor:"pointer"}}>Sign in</span></p>
+        <p style={{textAlign:"center",fontSize:13,color:C.muted}}>Already have an account? <span onClick={onLogin} style={{color:C.coral,cursor:"pointer"}}>Sign in</span></p>
       </div>
     </CardShell>
   );
@@ -328,8 +365,9 @@ function Step4({ goDash }) {
 }
 
 // ── MAIN EXPORT ──
-export default function OnboardingPage({ goBack, goDash }) {
+export default function OnboardingPage({ goBack, goDash, initialMode="signup" }) {
   const [step, setStep] = useState(1);
+  const [mode, setMode] = useState(initialMode);
 
   return (
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,display:"flex",flexDirection:"column",alignItems:"center",padding:"28px 24px 48px",position:"relative",overflow:"hidden"}}>
@@ -344,20 +382,23 @@ export default function OnboardingPage({ goBack, goDash }) {
         <SolvaLogo/>
       </div>
 
-      {/* Step bar */}
-      <div style={{position:"relative",zIndex:1}}>
-        <StepBar current={step}/>
-      </div>
+      {/* Step bar — hidden in login mode */}
+      {mode === "signup" && (
+        <div style={{position:"relative",zIndex:1}}>
+          <StepBar current={step}/>
+        </div>
+      )}
 
-      {/* Steps */}
+      {/* Login / Steps */}
       <div style={{width:"100%",maxWidth:520,position:"relative",zIndex:1}}>
-        {step===1 && <Step1 onNext={()=>setStep(2)}/>}
-        {step===2 && <Step2 onNext={()=>setStep(3)} onBack={()=>setStep(1)}/>}
-        {step===3 && <Step3 onNext={()=>setStep(4)} onBack={()=>setStep(2)}/>}
-        {step===4 && <Step4 goDash={goDash}/>}
+        {mode === "login"  && <LoginForm onSignup={()=>setMode("signup")} goDash={goDash}/>}
+        {mode === "signup" && step===1 && <Step1 onNext={()=>setStep(2)} onLogin={()=>setMode("login")}/>}
+        {mode === "signup" && step===2 && <Step2 onNext={()=>setStep(3)} onBack={()=>setStep(1)}/>}
+        {mode === "signup" && step===3 && <Step3 onNext={()=>setStep(4)} onBack={()=>setStep(2)}/>}
+        {mode === "signup" && step===4 && <Step4 goDash={goDash}/>}
       </div>
 
-      {step < 4 && (
+      {(mode === "login" || step < 4) && (
         <button onClick={goBack} className="btn-ghost" style={{marginTop:22,background:"none",border:"none",color:C.muted,fontSize:13.5,cursor:"pointer"}}>
           ← Back to home
         </button>
