@@ -18,6 +18,7 @@ function GlobalStyles() {
       @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
       @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
       @keyframes orbPulse{0%,100%{transform:scale(1);opacity:.40;}50%{transform:scale(1.08);opacity:.62;}}
+      @keyframes menuSlide{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
       .fu{animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both;}
       .fu1{animation-delay:.08s;}.fu2{animation-delay:.16s;}.fu3{animation-delay:.24s;}.fu4{animation-delay:.32s;}
       .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;}
@@ -31,6 +32,19 @@ function GlobalStyles() {
       .grad-border{position:relative;}
       .grad-border::before{content:'';position:absolute;inset:-1px;border-radius:17px;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);z-index:-1;}
       .orb{border-radius:50%;filter:blur(90px);animation:orbPulse 7s ease-in-out infinite;position:absolute;pointer-events:none;}
+      .nav-links-desktop{display:flex;gap:32px;}
+      .nav-actions-desktop{display:flex;gap:10px;align-items:center;}
+      .nav-hamburger{display:none;}
+      .nav-dropdown{display:none;}
+      @media(max-width:767px){
+        .nav-links-desktop{display:none;}
+        .nav-actions-desktop{display:none;}
+        .nav-hamburger{display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;border:1px solid #200026;border-radius:8px;width:38px;height:38px;font-size:18px;color:#F5EAF2;transition:border-color .15s,color .15s;}
+        .nav-hamburger:hover{border-color:#E55266;color:#E55266;}
+        .nav-dropdown{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:rgba(6,0,8,.97);border-bottom:1px solid #200026;backdrop-filter:blur(20px);animation:menuSlide .22s cubic-bezier(.16,1,.3,1) both;z-index:99;padding:8px 16px 16px;}
+        .features-grid{grid-template-columns:1fr!important;gap:14px!important;}
+        .pricing-grid{grid-template-columns:1fr!important;gap:24px!important;}
+      }
     `}</style>
   );
 }
@@ -55,6 +69,9 @@ function SolvaLogo({ size=16 }) {
 }
 
 export default function LandingPage({ goOnboard, goDash }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden"}}>
       <GlobalStyles/>
@@ -68,15 +85,46 @@ export default function LandingPage({ goOnboard, goDash }) {
       {/* NAV */}
       <nav style={{position:"sticky",top:0,zIndex:100,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:"rgba(6,0,8,.88)",borderBottom:`1px solid ${C.border}`,backdropFilter:"blur(20px)"}}>
         <SolvaLogo/>
-        <div style={{display:"flex",gap:32}}>
+
+        {/* Desktop links */}
+        <div className="nav-links-desktop">
           {["Features","How It Works","Pricing","Docs"].map(l=>(
             <span key={l} className="nav-link" style={{fontSize:14,color:C.sub,fontWeight:500}}>{l}</span>
           ))}
         </div>
-        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+
+        {/* Desktop actions */}
+        <div className="nav-actions-desktop">
           <button className="btn-ghost" onClick={goDash} style={{padding:"8px 18px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13.5}}>Sign In</button>
           <button className="btn-primary" onClick={goOnboard} style={{padding:"9px 22px",borderRadius:8,color:"#fff",fontWeight:700,fontSize:13.5}}>Get Started →</button>
         </div>
+
+        {/* Mobile hamburger */}
+        <button className="nav-hamburger" onClick={()=>setMenuOpen(o=>!o)} aria-label={menuOpen?"Close menu":"Open menu"}>
+          {menuOpen ? "✕" : "☰"}
+        </button>
+
+        {/* Mobile dropdown */}
+        {menuOpen && (
+          <div className="nav-dropdown">
+            {["Features","How It Works","Pricing","Docs"].map(l=>(
+              <span key={l} className="nav-link" onClick={closeMenu}
+                style={{fontSize:15,color:C.sub,fontWeight:500,padding:"13px 8px",borderBottom:`1px solid ${C.border}`}}>
+                {l}
+              </span>
+            ))}
+            <div style={{display:"flex",flexDirection:"column",gap:10,paddingTop:14}}>
+              <button className="btn-ghost" onClick={()=>{closeMenu();goDash();}}
+                style={{padding:"12px",borderRadius:9,border:`1px solid ${C.border}`,color:C.sub,fontSize:14,width:"100%"}}>
+                Sign In
+              </button>
+              <button className="btn-primary" onClick={()=>{closeMenu();goOnboard();}}
+                style={{padding:"12px",borderRadius:9,color:"#fff",fontWeight:700,fontSize:14,width:"100%"}}>
+                Get Started →
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* HERO */}
@@ -114,7 +162,7 @@ export default function LandingPage({ goOnboard, goDash }) {
           <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:10,textTransform:"uppercase"}}>Core Systems</p>
           <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,4vw,44px)",fontWeight:800,letterSpacing:"-.02em"}}>Three automations. Zero manual work.</h2>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
+        <div className="features-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
           {[
             {icon:"🤖",title:"AI Support Agent",  color:C.teal,  stat:"87% auto-resolution",desc:"Handles order inquiries, shipping questions, and FAQs automatically. Only escalates what truly needs a human."},
             {icon:"↩", title:"Return Deflection",  color:C.amber, stat:"28% deflection rate", desc:"Before a return is processed, our AI offers smart alternatives — exchanges, discounts, troubleshooting."},
@@ -158,7 +206,7 @@ export default function LandingPage({ goOnboard, goDash }) {
           <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:10,textTransform:"uppercase"}}>Pricing</p>
           <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(24px,4vw,42px)",fontWeight:800,letterSpacing:"-.02em"}}>Simple, Transparent Pricing</h2>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
+        <div className="pricing-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
           {PLANS.map((plan,i)=>(
             <div key={i} className={`card-hover${plan.popular?" grad-border":""}`}
               style={{padding:28,borderRadius:16,position:"relative",background:plan.popular?C.surface:C.card,border:plan.popular?"none":`1px solid ${C.border}`}}>

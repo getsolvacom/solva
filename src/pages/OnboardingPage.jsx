@@ -39,6 +39,12 @@ function GlobalStyles() {
       .toggle-thumb{border-radius:50%;background:#fff;transition:transform .22s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.3);}
       .orb{border-radius:50%;filter:blur(80px);animation:orbPulse 6s ease-in-out infinite;position:absolute;pointer-events:none;}
       input,select,textarea{font-family:'Outfit',sans-serif;outline:none;resize:none;}
+      .stepbar{max-width:600px;margin:0 auto;width:100%;}
+      @media(max-width:767px){
+        .stepbar-circle{width:26px!important;height:26px!important;font-size:11px!important;}
+        .stepbar-label{font-size:8.5px!important;white-space:normal!important;text-align:center;max-width:48px;}
+        .stepbar-connector{width:14px!important;margin:-14px 5px 0!important;}
+      }
     `}</style>
   );
 }
@@ -65,18 +71,18 @@ function SolvaLogo({ size=15 }) {
 function StepBar({ current }) {
   const steps = ["Create Account","Connect Store","Configure","Go Live"];
   return (
-    <div style={{display:"flex",alignItems:"center",marginBottom:46}}>
+    <div className="stepbar" style={{display:"flex",alignItems:"center",marginBottom:46}}>
       {steps.map((s,i) => {
         const done = i+1 < current, active = i+1 === current;
         return (
           <div key={i} style={{display:"flex",alignItems:"center"}}>
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7}}>
-              <div style={{width:34,height:34,borderRadius:"50%",background:done||active?"linear-gradient(135deg,#E55266,#992A67,#4E0269)":C.dim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12.5,fontWeight:700,color:done||active?"#fff":C.muted,boxShadow:active?"0 0 22px rgba(229,82,102,.30)":"none"}}>
+              <div className="stepbar-circle" style={{width:34,height:34,borderRadius:"50%",background:done||active?"linear-gradient(135deg,#E55266,#992A67,#4E0269)":C.dim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12.5,fontWeight:700,color:done||active?"#fff":C.muted,boxShadow:active?"0 0 22px rgba(229,82,102,.30)":"none"}}>
                 {done?"✓":i+1}
               </div>
-              <span style={{fontSize:11,fontWeight:active?600:400,color:active?C.coral:done?C.sub:C.muted,whiteSpace:"nowrap"}}>{s}</span>
+              <span className="stepbar-label" style={{fontSize:11,fontWeight:active?600:400,color:active?C.coral:done?C.sub:C.muted,whiteSpace:"nowrap"}}>{s}</span>
             </div>
-            {i<steps.length-1&&<div style={{width:64,height:1,margin:"-16px 8px 0",background:done?"linear-gradient(135deg,#E55266,#992A67,#4E0269)":C.dim,transition:"background .3s"}}/>}
+            {i<steps.length-1&&<div className="stepbar-connector" style={{width:64,height:1,margin:"-16px 8px 0",background:done?"linear-gradient(135deg,#E55266,#992A67,#4E0269)":C.dim,transition:"background .3s"}}/>}
           </div>
         );
       })}
