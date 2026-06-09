@@ -90,6 +90,7 @@ function GlobalStyles() {
 
       /* ── Mobile layout ── */
       .tv-back-btn{display:none;}
+      .tv-suggestions-toggle{display:none;}
       @media(max-width:767px){
         .tv-workspace{flex-direction:column!important;}
         .tv-list{width:100%!important;flex:1!important;border-right:none!important;}
@@ -102,7 +103,9 @@ function GlobalStyles() {
         .tv-ai-bar{padding:9px 14px!important;}
         .tv-messages{padding-bottom:195px!important;padding-left:12px!important;padding-right:12px!important;}
         .tv-reply-box{position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:50!important;padding:10px 14px 14px!important;}
-        .tv-suggestions{gap:5px!important;}
+        .tv-suggestions-toggle{display:flex!important;align-items:center;justify-content:space-between;width:100%;}
+        .tv-suggestions-chips-hidden{display:none!important;}
+        .tv-suggestions-chips{margin-top:7px!important;}
         .msg-bubble-inner{max-width:86%!important;}
       }
     `}</style>
@@ -166,8 +169,9 @@ export default function TicketsView() {
   const [ticketClosed,    setTicketClosed]    = useState({});
   const [toast,           setToast]           = useState(null);
   const [extraMessages,   setExtraMessages]   = useState({});
-  const [showAttachHint,  setShowAttachHint]  = useState(false);
-  const [mobilePanel,     setMobilePanel]     = useState("list");
+  const [showAttachHint,   setShowAttachHint]  = useState(false);
+  const [mobilePanel,      setMobilePanel]     = useState("list");
+  const [suggestionsOpen,  setSuggestionsOpen] = useState(false);
 
   const getStatus = (id, def) => statusOverrides[id] || def;
 
@@ -343,7 +347,7 @@ export default function TicketsView() {
               <button
                 className="tv-back-btn btn-ghost"
                 onClick={() => setMobilePanel("list")}
-                style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"4px 0"}}
+                style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}
               >
                 ← Back to Tickets
               </button>
@@ -398,11 +402,26 @@ export default function TicketsView() {
 
             {/* Reply box */}
             <div className="tv-reply-box" style={{padding:"14px 24px",flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface}}>
-              <div className="tv-suggestions" style={{display:"flex",gap:7,marginBottom:10,flexWrap:"wrap"}}>
-                <span style={{fontSize:11,color:C.muted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",display:"flex",alignItems:"center",flexShrink:0}}>AI Suggestions:</span>
-                {["I've checked your order and…","A replacement has been arranged…","Your refund is being processed…"].map((s,i)=>(
-                  <button key={i} onClick={()=>setReply(s)} className="btn-ghost" style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12}}>{s}</button>
-                ))}
+              <div style={{marginBottom:10}}>
+                {/* Toggle chip — visible on mobile only via .tv-suggestions-toggle */}
+                <button
+                  className="tv-suggestions-toggle btn-ghost"
+                  onClick={()=>setSuggestionsOpen(o=>!o)}
+                  style={{padding:"5px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,fontWeight:600}}
+                >
+                  <span>AI Suggestions</span>
+                  <span style={{marginLeft:6}}>{suggestionsOpen?"▲":"▼"}</span>
+                </button>
+                {/* Chips — always shown on desktop, toggled on mobile */}
+                <div
+                  className={`tv-suggestions-chips${!suggestionsOpen?" tv-suggestions-chips-hidden":""}`}
+                  style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}
+                >
+                  <span style={{fontSize:11,color:C.muted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",display:"flex",alignItems:"center",flexShrink:0}}>AI Suggestions:</span>
+                  {["I've checked your order and…","A replacement has been arranged…","Your refund is being processed…"].map((s,i)=>(
+                    <button key={i} onClick={()=>setReply(s)} className="btn-ghost" style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12}}>{s}</button>
+                  ))}
+                </div>
               </div>
               <div style={{display:"flex",gap:10,alignItems:"flex-end",padding:"12px 16px",borderRadius:12,background:C.card,border:`1px solid ${C.border}`}}>
                 <textarea

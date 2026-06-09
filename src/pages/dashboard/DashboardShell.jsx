@@ -60,6 +60,11 @@ export default function DashboardShell({ view, setView, goLanding }) {
           .dash-root{height:auto!important;min-height:100dvh;overflow-y:visible!important;overflow-x:hidden!important;}
           .dash-main-col{overflow:visible!important;height:auto!important;}
         }
+        @media(max-width:767px) and (orientation:landscape){
+          .dash-root{height:100dvh!important;overflow:hidden!important;}
+          .mob-header{height:40px!important;padding:0 12px!important;}
+          .dash-main-col{overflow-y:auto!important;height:calc(100dvh - 40px)!important;}
+        }
       `}</style>
 
       {/* Desktop sidebar */}

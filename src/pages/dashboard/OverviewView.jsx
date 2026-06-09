@@ -57,6 +57,14 @@ function GlobalStyles() {
         .chart-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;margin-bottom:14px!important;}
         .actions-grid{grid-template-columns:repeat(2,1fr)!important;}
       }
+      @media(max-width:767px) and (orientation:landscape){
+        .ov-view{overflow-y:auto!important;height:100%!important;}
+        .ov-topbar{padding:6px 12px!important;gap:6px!important;}
+        .ov-topbar h1{font-size:14px!important;}
+        .ov-topbar p{font-size:10.5px!important;}
+        .ov-content{padding:8px 10px!important;gap:8px!important;overflow-y:auto!important;}
+        .kpi-row .kpi-card{padding:10px 12px!important;}
+      }
     `}</style>
   );
 }
