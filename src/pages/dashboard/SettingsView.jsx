@@ -1,5 +1,39 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { C } from "../../tokens";
+
+// ── Comprehensive dropdown options ──
+const INDUSTRY_OPTIONS = [
+  "Arts & Crafts","Automotive","Baby & Kids","Beauty & Skincare",
+  "Books & Stationery","Electronics & Tech","Fashion & Apparel",
+  "Food & Beverage","Garden & Outdoors","Health & Wellness",
+  "Home & Living","Jewellery & Accessories","Music & Instruments",
+  "Office Supplies","Pet Supplies","Photography & Video",
+  "Sports & Outdoors","Toys & Games","Travel & Luggage","Other",
+];
+
+const TIMEZONE_OPTIONS = [
+  "UTC-12 Dateline","UTC-11 Samoa","UTC-10 Hawaii","UTC-9 Alaska",
+  "UTC-8 Los Angeles","UTC-7 Denver","UTC-6 Chicago","UTC-5 New York",
+  "UTC-4 Halifax","UTC-3 São Paulo","UTC-2 Mid-Atlantic","UTC-1 Azores",
+  "UTC+0 London","UTC+1 Lagos / Paris","UTC+2 Johannesburg",
+  "UTC+3 Nairobi / Moscow","UTC+4 Dubai","UTC+5 Karachi",
+  "UTC+5:30 Mumbai","UTC+6 Dhaka","UTC+7 Bangkok",
+  "UTC+8 Singapore / Beijing","UTC+9 Tokyo","UTC+10 Sydney",
+  "UTC+11 Solomon Islands","UTC+12 Auckland",
+];
+
+const CURRENCY_OPTIONS = [
+  "AED — UAE Dirham","AUD — Australian Dollar","BRL — Brazilian Real",
+  "CAD — Canadian Dollar","CHF — Swiss Franc","CNY — Chinese Yuan",
+  "CZK — Czech Koruna","DKK — Danish Krone","EUR — Euro",
+  "GBP — British Pound","GHS — Ghanaian Cedi","HKD — Hong Kong Dollar",
+  "HUF — Hungarian Forint","IDR — Indonesian Rupiah","INR — Indian Rupee",
+  "JPY — Japanese Yen","KES — Kenyan Shilling","MXN — Mexican Peso",
+  "MYR — Malaysian Ringgit","NGN — Nigerian Naira","NOK — Norwegian Krone",
+  "NZD — New Zealand Dollar","PHP — Philippine Peso","PLN — Polish Zloty",
+  "SAR — Saudi Riyal","SEK — Swedish Krona","SGD — Singapore Dollar",
+  "THB — Thai Baht","USD — US Dollar","ZAR — South African Rand",
+];
 
 const PLANS = [
   { name:"Starter", price:"$299",   popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -40,7 +74,26 @@ function GlobalStyles() {
       .blink{animation:blink 2.4s ease infinite;}
       .section-card{border-radius:14px;background:#110014;border:1px solid #200026;padding:24px;margin-bottom:16px;}
       .tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:100px;font-size:10.5px;font-weight:600;white-space:nowrap;}
+      .ss-option{padding:9px 14px;font-size:13.5px;cursor:pointer;transition:background .1s;}
+      .ss-option:hover{background:rgba(255,255,255,.05)!important;}
       input,select,textarea{font-family:'Outfit',sans-serif;outline:none;resize:none;}
+
+      /* ── Mobile ── */
+      .sv-back-btn{display:none;}
+      @media(max-width:767px){
+        .sv-root{overflow-x:hidden!important;height:auto!important;flex:none!important;}
+        .sv-topbar{height:auto!important;padding:10px 14px!important;}
+        .sv-layout{flex-direction:column!important;overflow:visible!important;}
+        .sv-nav{width:100%!important;border-right:none!important;border-bottom:1px solid #200026;overflow:visible!important;height:auto!important;padding:12px 10px!important;}
+        .sv-nav-hidden{display:none!important;}
+        .sv-content{padding:16px 14px!important;overflow-x:hidden!important;}
+        .sv-content-hidden{display:none!important;}
+        .sv-back-btn{display:flex!important;align-items:center;margin-bottom:16px;}
+        .sv-two-col{grid-template-columns:1fr!important;}
+        .sv-three-col{grid-template-columns:1fr!important;}
+        .section-card{padding:16px!important;}
+        .sv-invite-grid{grid-template-columns:1fr!important;}
+      }
     `}</style>
   );
 }
@@ -82,6 +135,61 @@ function SelectInput({ value, onChange, options }) {
   );
 }
 
+function SearchableSelect({ value, onChange, options }) {
+  const [open,  setOpen]  = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handle(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  const filtered = options.filter(o => o.toLowerCase().includes(query.toLowerCase()));
+
+  return (
+    <div ref={ref} style={{position:"relative"}}>
+      <div
+        onClick={() => { setOpen(p => !p); setQuery(""); }}
+        style={{padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${open?C.coral:C.border}`,color:C.text,fontSize:14,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",userSelect:"none"}}
+      >
+        <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{value}</span>
+        <span style={{color:C.muted,fontSize:11,flexShrink:0,marginLeft:8}}>{open?"▲":"▼"}</span>
+      </div>
+      {open && (
+        <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,background:C.surface,border:`1px solid ${C.borderHi}`,borderRadius:10,zIndex:200,boxShadow:"0 8px 28px rgba(0,0,0,.55)",overflow:"hidden"}}>
+          <div style={{padding:"8px 8px 6px",borderBottom:`1px solid ${C.border}`}}>
+            <input
+              autoFocus
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search…"
+              style={{width:"100%",padding:"7px 10px",borderRadius:7,background:C.card,border:`1px solid ${C.border}`,color:C.text,fontSize:13}}
+            />
+          </div>
+          <div style={{maxHeight:196,overflowY:"auto"}}>
+            {filtered.length === 0
+              ? <div style={{padding:"12px 14px",fontSize:13,color:C.muted}}>No options found</div>
+              : filtered.map(o => (
+                <div
+                  key={o}
+                  className="ss-option"
+                  onClick={() => { onChange({ target:{value:o} }); setOpen(false); setQuery(""); }}
+                  style={{color:o===value?C.coral:C.sub,background:o===value?"rgba(229,82,102,.08)":"transparent",fontWeight:o===value?600:400}}
+                >
+                  {o}
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SaveBar({ onSave, saved }) {
   return (
     <div style={{display:"flex",alignItems:"center",gap:12,padding:"16px 0 4px"}}>
@@ -109,38 +217,45 @@ function SectionTitle({ children, sub }) {
 }
 
 // ── SECTIONS ──
-function GeneralSection() {
-  const [name,     setName]     = useState("Placeholder Store");
+function GeneralSection({ storeName, onSaveStoreName }) {
+  const [name,     setName]     = useState(storeName);
   const [email,    setEmail]    = useState("owner@placeholder.com");
   const [timezone, setTimezone] = useState("UTC+0 London");
   const [currency, setCurrency] = useState("USD — US Dollar");
   const [industry, setIndustry] = useState("Fashion & Apparel");
   const [saved,    setSaved]    = useState(false);
-  const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
+
+  const save = () => {
+    onSaveStoreName(name);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
 
   return (
     <div>
       <SectionTitle sub="Basic information about your store and account.">General Settings</SectionTitle>
       <div className="section-card fu">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:18}}>Store Information</p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
+        <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
           <div><FieldLabel>Store Name</FieldLabel><TextInput value={name} onChange={e=>setName(e.target.value)}/></div>
           <div><FieldLabel>Account Email</FieldLabel><TextInput value={email} onChange={e=>setEmail(e.target.value)}/></div>
         </div>
         <div>
           <FieldLabel>Store URL</FieldLabel>
-          <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1px solid ${C.border}`}}>
-            <input value="yourstore" readOnly style={{flex:1,padding:"11px 14px",background:C.dim,border:"none",color:C.muted,fontSize:14,cursor:"not-allowed"}}/>
-            <div style={{padding:"11px 14px",background:C.surface,color:C.muted,fontSize:14,borderLeft:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>.myshopify.com</div>
+          <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1px solid ${C.border}`,opacity:.65,cursor:"not-allowed"}}>
+            <div style={{padding:"11px 12px",background:C.dim,color:C.muted,fontSize:15,display:"flex",alignItems:"center",flexShrink:0,borderRight:`1px solid ${C.border}`}}>🔒</div>
+            <input value="yourstore" readOnly style={{flex:1,padding:"11px 12px",background:C.dim,border:"none",color:C.muted,fontSize:14,cursor:"not-allowed"}}/>
+            <div style={{padding:"11px 14px",background:C.surface,color:C.muted,fontSize:14,borderLeft:`1px solid ${C.border}`,whiteSpace:"nowrap",display:"flex",alignItems:"center"}}>.myshopify.com</div>
           </div>
+          <p style={{fontSize:12,color:C.muted,marginTop:6}}>Store URL is locked. Contact support to transfer stores.</p>
         </div>
       </div>
       <div className="section-card fu fu1">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:18}}>Regional Settings</p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:18}}>
-          <div><FieldLabel>Industry</FieldLabel><SelectInput value={industry} onChange={e=>setIndustry(e.target.value)} options={["Fashion & Apparel","Electronics","Home & Living","Beauty & Skincare","Sports & Outdoors","Food & Beverage","Other"]}/></div>
-          <div><FieldLabel>Timezone</FieldLabel><SelectInput value={timezone} onChange={e=>setTimezone(e.target.value)} options={["UTC+0 London","UTC-5 New York","UTC-8 Los Angeles","UTC+1 Lagos","UTC+3 Nairobi","UTC+8 Singapore"]}/></div>
-          <div><FieldLabel>Currency</FieldLabel><SelectInput value={currency} onChange={e=>setCurrency(e.target.value)} options={["USD — US Dollar","GBP — British Pound","EUR — Euro","NGN — Nigerian Naira"]}/></div>
+        <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:18}}>
+          <div><FieldLabel>Industry</FieldLabel><SearchableSelect value={industry} onChange={e=>setIndustry(e.target.value)} options={INDUSTRY_OPTIONS}/></div>
+          <div><FieldLabel>Timezone</FieldLabel><SearchableSelect value={timezone} onChange={e=>setTimezone(e.target.value)} options={TIMEZONE_OPTIONS}/></div>
+          <div><FieldLabel>Currency</FieldLabel><SearchableSelect value={currency} onChange={e=>setCurrency(e.target.value)} options={CURRENCY_OPTIONS}/></div>
         </div>
       </div>
       <SaveBar onSave={save} saved={saved}/>
@@ -149,18 +264,24 @@ function GeneralSection() {
 }
 
 function AIConfigSection() {
-  const [tone,   setTone]   = useState("friendly");
-  const [lang,   setLang]   = useState("English");
-  const [escEmail,setEscEmail]=useState("support@yourstore.com");
-  const [sig,    setSig]    = useState("Warm regards,\nThe Support Team");
-  const [conds,  setConds]  = useState({angry:true,refund:true,legal:false,repeat:true});
-  const [saved,  setSaved]  = useState(false);
+  const [tone,           setTone]           = useState("friendly");
+  const [lang,           setLang]           = useState("English");
+  const [autoReplyLimit, setAutoReplyLimit] = useState("5");
+  const [escEmail,       setEscEmail]       = useState("support@yourstore.com");
+  const [sig,            setSig]            = useState("Warm regards,\nThe Support Team");
+  const [conds,          setConds]          = useState({angry:true,refund:true,legal:false,repeat:true});
+  const [saved,          setSaved]          = useState(false);
   const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
 
   const tones = [
-    {key:"professional",emoji:"💼",label:"Professional",desc:"Formal, precise. Best for B2B or high-ticket."},
-    {key:"friendly",    emoji:"😊",label:"Friendly",    desc:"Warm and helpful. Works for most brands."},
-    {key:"casual",      emoji:"👋",label:"Casual",      desc:"Relaxed. Great for lifestyle brands."},
+    {key:"professional", emoji:"💼", label:"Professional", desc:"Formal, precise. Best for B2B or high-ticket."},
+    {key:"friendly",     emoji:"😊", label:"Friendly",     desc:"Warm and helpful. Works for most brands."},
+    {key:"casual",       emoji:"👋", label:"Casual",       desc:"Relaxed. Great for lifestyle brands."},
+  ];
+
+  const LANGUAGES = [
+    "English","Spanish","French","German","Portuguese",
+    "Italian","Chinese","Japanese","Dutch","Swahili",
   ];
 
   return (
@@ -168,32 +289,51 @@ function AIConfigSection() {
       <SectionTitle sub="Control how Solva AI communicates with your customers.">AI Configuration</SectionTitle>
       <div className="section-card fu">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Brand Tone</p>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+        <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
           {tones.map(t=>(
             <div key={t.key} className="tone-card" onClick={()=>setTone(t.key)}
-              style={{padding:"16px 14px",background:tone===t.key?"rgba(229,82,102,.08)":C.surface,border:`1px solid ${tone===t.key?C.coral:C.border}`}}>
+              style={{
+                padding:"16px 14px",
+                background: tone===t.key?"rgba(229,82,102,.08)":C.surface,
+                border:`1px solid ${tone===t.key?C.coral:C.border}`,
+                boxShadow: tone===t.key?`0 0 0 2px rgba(229,82,102,.22),0 0 22px rgba(229,82,102,.14)`:"none",
+                transition:"all .18s ease",
+              }}>
               <div style={{fontSize:24,marginBottom:10}}>{t.emoji}</div>
               <div style={{fontSize:13.5,fontWeight:700,color:tone===t.key?C.coral:C.text,marginBottom:5}}>{t.label}</div>
-              <div style={{fontSize:12,color:C.muted,lineHeight:1.55}}>{t.desc}</div>
-              {tone===t.key&&<div style={{marginTop:10,display:"flex",alignItems:"center",gap:5}}><span style={{width:6,height:6,borderRadius:"50%",background:C.coral,display:"inline-block"}}/><span style={{fontSize:11,color:C.coral,fontWeight:700}}>Active</span></div>}
+              <div style={{fontSize:12,color:C.muted,lineHeight:1.55,marginBottom:10}}>{t.desc}</div>
+              <div style={{display:"flex",alignItems:"center",gap:5,opacity:tone===t.key?1:0,transition:"opacity .18s"}}>
+                <span style={{width:7,height:7,borderRadius:"50%",background:C.teal,display:"inline-block",flexShrink:0}}/>
+                <span style={{fontSize:11,color:C.teal,fontWeight:700}}>Active</span>
+              </div>
             </div>
           ))}
         </div>
       </div>
       <div className="section-card fu fu1">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Response Settings</p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
-          <div><FieldLabel hint="Language used in all AI-generated replies.">Response Language</FieldLabel><SelectInput value={lang} onChange={e=>setLang(e.target.value)} options={["English","French","Spanish","German","Portuguese","Arabic","Yoruba"]}/></div>
-          <div><FieldLabel hint="Max consecutive AI replies before escalating.">Auto-Reply Limit</FieldLabel><SelectInput value="5" onChange={()=>{}} options={["3","5","7","10","Unlimited"]}/></div>
+        <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
+          <div>
+            <FieldLabel hint="Language used in all AI-generated replies.">Response Language</FieldLabel>
+            <SelectInput value={lang} onChange={e=>setLang(e.target.value)} options={LANGUAGES}/>
+          </div>
+          <div>
+            <FieldLabel hint="Max consecutive AI replies before escalating.">Auto-Reply Limit</FieldLabel>
+            <SelectInput value={autoReplyLimit} onChange={e=>setAutoReplyLimit(e.target.value)} options={["3","5","7","10","Unlimited"]}/>
+          </div>
         </div>
-        <div><FieldLabel hint="Appended to every AI-generated email.">Email Signature</FieldLabel>
+        <div>
+          <FieldLabel hint="Appended to every AI-generated email.">Email Signature</FieldLabel>
           <textarea value={sig} onChange={e=>setSig(e.target.value)} rows={3}
             style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,lineHeight:1.65}}/>
         </div>
       </div>
       <div className="section-card fu fu2">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Escalation Rules</p>
-        <div style={{marginBottom:18}}><FieldLabel hint="Complex tickets forwarded here.">Escalation Email</FieldLabel><TextInput value={escEmail} onChange={e=>setEscEmail(e.target.value)} placeholder="support@yourstore.com"/></div>
+        <div style={{marginBottom:18}}>
+          <FieldLabel hint="Complex tickets forwarded here.">Escalation Email</FieldLabel>
+          <TextInput value={escEmail} onChange={e=>setEscEmail(e.target.value)} placeholder="support@yourstore.com"/>
+        </div>
         <p style={{fontSize:12,fontWeight:700,color:C.sub,marginBottom:12}}>Escalate automatically when:</p>
         {[
           {key:"angry",  label:"Customer uses angry or threatening language"},
@@ -228,7 +368,7 @@ function AutomationsSection() {
       icon:"🤖", label:"AI Support Agent",  desc:"Auto-resolve tickets, order inquiries, and FAQs",   color:C.teal,  on:support, toggle:()=>setSupport(v=>!v),
       extra: support && (
         <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
             <div><FieldLabel hint="How many tickets AI can handle per day.">Daily Ticket Limit</FieldLabel><SelectInput value="Unlimited" onChange={()=>{}} options={["100","500","1,000","Unlimited"]}/></div>
             <div><FieldLabel hint="Delay before AI sends its reply.">Response Delay</FieldLabel><SelectInput value="Instant" onChange={()=>{}} options={["Instant","30 seconds","2 minutes","5 minutes"]}/></div>
           </div>
@@ -236,10 +376,10 @@ function AutomationsSection() {
       ),
     },
     {
-      icon:"↩", label:"Return Deflection",  desc:"Offer smart alternatives before processing refunds", color:C.amber, on:returns, toggle:()=>setReturns(v=>!v),
+      icon:"↩️", label:"Return Deflection",  desc:"Offer smart alternatives before processing refunds", color:C.amber, on:returns, toggle:()=>setReturns(v=>!v),
       extra: returns && (
         <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
             <div><FieldLabel hint="Max % discount AI can offer.">Max Deflection Discount</FieldLabel><SelectInput value="10%" onChange={()=>{}} options={["5%","10%","15%","20%","25%"]}/></div>
             <div><FieldLabel hint="How long to wait before processing.">Response Window</FieldLabel><SelectInput value="24 hours" onChange={()=>{}} options={["6 hours","12 hours","24 hours","48 hours"]}/></div>
           </div>
@@ -250,7 +390,7 @@ function AutomationsSection() {
       icon:"🛒", label:"Cart Recovery",      desc:"3-touch AI sequence to recover abandoned carts",     color:C.blue,  on:cart,    toggle:()=>setCart(v=>!v),
       extra: cart && (
         <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}}>
+          <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}}>
             <div><FieldLabel>Email 1 Delay</FieldLabel><SelectInput value="1 hour"   onChange={()=>{}} options={["30 minutes","1 hour","3 hours","6 hours"]}/></div>
             <div><FieldLabel>Email 2 Delay</FieldLabel><SelectInput value="6 hours"  onChange={()=>{}} options={["3 hours","6 hours","12 hours","24 hours"]}/></div>
             <div><FieldLabel>Email 3 Delay</FieldLabel><SelectInput value="24 hours" onChange={()=>{}} options={["12 hours","24 hours","48 hours"]}/></div>
@@ -305,7 +445,7 @@ function NotificationsSection() {
         {notifs.map((n,i)=>(
           <div key={n.key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 0",borderBottom:i<notifs.length-1?`1px solid ${C.dim}`:"none"}}>
             <div style={{flex:1,paddingRight:20}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3,flexWrap:"wrap"}}>
                 <span style={{fontSize:14,fontWeight:600,color:C.text}}>{n.label}</span>
                 {n.rec&&<span className="tag" style={{color:C.coral,background:"rgba(229,82,102,.10)"}}>Recommended</span>}
               </div>
@@ -351,7 +491,7 @@ function TeamSection() {
               </div>
               <span style={{fontSize:12,color:C.muted}}>{m.email}</span>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
               <span className="tag" style={{color:m.role==="Admin"?C.coral:m.role==="Manager"?C.blue:C.sub,background:m.role==="Admin"?"rgba(229,82,102,.10)":m.role==="Manager"?"rgba(91,173,255,.10)":C.dim}}>{m.role}</span>
               {!m.you&&<button className="btn-danger" onClick={()=>setMembers(ms=>ms.filter(x=>x.email!==m.email))} style={{padding:"4px 10px",borderRadius:7,border:`1px solid ${C.border}`,color:C.muted,fontSize:12}}>Remove</button>}
             </div>
@@ -360,7 +500,7 @@ function TeamSection() {
       </div>
       <div className="section-card fu fu1">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Invite New Member</p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 160px auto",gap:12,alignItems:"end"}}>
+        <div className="sv-invite-grid" style={{display:"grid",gridTemplateColumns:"1fr 160px auto",gap:12,alignItems:"end"}}>
           <div><FieldLabel>Email Address</FieldLabel><TextInput value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)} placeholder="colleague@yourstore.com"/></div>
           <div><FieldLabel>Role</FieldLabel><SelectInput value={inviteRole} onChange={e=>setInviteRole(e.target.value)} options={["Support","Manager","Admin"]}/></div>
           <button className="btn-primary" onClick={invite} style={{padding:"11px 22px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14,whiteSpace:"nowrap"}}>Send Invite →</button>
@@ -382,7 +522,7 @@ function BillingSection() {
       <SectionTitle sub="Manage your plan, usage, and payment details.">Billing & Plan</SectionTitle>
       <div className="section-card fu">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Current Plan</p>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+        <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
           {PLANS.map((p,i)=>(
             <div key={i} className="plan-card" style={{padding:"18px",borderRadius:12,background:p.popular?"rgba(229,82,102,.07)":C.surface,border:`1px solid ${p.popular?C.coral:C.border}`,position:"relative"}}>
               {p.popular&&<div style={{position:"absolute",top:-11,left:"50%",transform:"translateX(-50%)",padding:"3px 12px",borderRadius:100,background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",color:"#fff",fontSize:10,fontWeight:700,whiteSpace:"nowrap"}}>CURRENT PLAN</div>}
@@ -397,7 +537,7 @@ function BillingSection() {
         </div>
       </div>
       <div className="section-card fu fu1">
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18,flexWrap:"wrap",gap:8}}>
           <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase"}}>Monthly Usage</p>
           <span style={{fontSize:12,color:C.muted}}>Resets June 1, 2026</span>
         </div>
@@ -432,8 +572,8 @@ function DangerSection() {
         {title:"Delete Account",           desc:"Permanently deletes your Solva account, all configurations, and all data. This cannot be undone.",     btn:"Delete My Account", level:"danger"},
       ].map((item,i)=>(
         <div key={i} style={{marginBottom:14,padding:22,borderRadius:14,background:item.level==="danger"?"rgba(255,82,114,.05)":C.card,border:`1px solid ${item.level==="danger"?"rgba(255,82,114,.20)":C.border}`}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:20}}>
-            <div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:20,flexWrap:"wrap"}}>
+            <div style={{flex:1,minWidth:160}}>
               <div style={{fontSize:14,fontWeight:700,color:item.level==="danger"?"#FF5272":C.text,marginBottom:6}}>{item.title}</div>
               <div style={{fontSize:13,color:C.muted,lineHeight:1.65}}>{item.desc}</div>
             </div>
@@ -443,7 +583,7 @@ function DangerSection() {
       ))}
       <div className="section-card fu" style={{borderColor:"rgba(255,82,114,.20)",background:"rgba(255,82,114,.04)"}}>
         <p style={{fontSize:12,fontWeight:700,color:"#FF5272",marginBottom:10,letterSpacing:".04em",textTransform:"uppercase"}}>⚠ Type DELETE below to confirm account deletion</p>
-        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
           <TextInput value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Type DELETE to confirm"/>
           <button style={{padding:"11px 20px",borderRadius:10,flexShrink:0,background:confirm==="DELETE"?"#FF5272":"transparent",border:`1px solid ${confirm==="DELETE"?"#FF5272":C.border}`,color:confirm==="DELETE"?"#fff":C.muted,fontWeight:700,fontSize:14,cursor:confirm==="DELETE"?"pointer":"not-allowed",fontFamily:"'Outfit',sans-serif",transition:"all .18s",whiteSpace:"nowrap"}}>
             Confirm Delete
@@ -458,25 +598,32 @@ function DangerSection() {
 const SECTIONS = [
   {key:"general",       label:"General",       icon:"🏪"},
   {key:"ai",            label:"AI Config",     icon:"⚡"},
-  {key:"automations",   label:"Automations",   icon:"⚙"},
+  {key:"automations",   label:"Automations",   icon:"⚙️"},
   {key:"notifications", label:"Notifications", icon:"🔔"},
   {key:"team",          label:"Team",          icon:"👥"},
   {key:"billing",       label:"Billing",       icon:"💳"},
-  {key:"danger",        label:"Danger Zone",   icon:"⚠"},
+  {key:"danger",        label:"Danger Zone",   icon:"⚠️"},
 ];
 
 export default function SettingsView() {
-  const [section, setSection] = useState("general");
+  const [section,     setSection]     = useState("general");
+  const [mobilePanel, setMobilePanel] = useState("menu");
+  const [storeName,   setStoreName]   = useState("Placeholder Store");
+
+  function handleNavClick(key) {
+    setSection(key);
+    setMobilePanel("content");
+  }
 
   return (
-    <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
+    <div className="sv-root" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",overflowX:"hidden",fontFamily:"'Outfit',sans-serif"}}>
       <GlobalStyles/>
 
       {/* Top bar */}
-      <div style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
+      <div className="sv-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
         <div>
           <h1 style={{fontFamily:"'Outfit',sans-serif",fontSize:17,fontWeight:700,color:C.text}}>Settings</h1>
-          <p style={{fontSize:11.5,color:C.muted}}>Manage your store, AI, and account</p>
+          <p style={{fontSize:11.5,color:C.muted}}>{storeName} · Manage your store, AI, and account</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{display:"flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:8,background:"rgba(229,82,102,.09)",border:"1px solid rgba(229,82,102,.22)"}}>
@@ -488,13 +635,20 @@ export default function SettingsView() {
       </div>
 
       {/* Content */}
-      <div style={{flex:1,display:"flex",overflow:"hidden"}}>
+      <div className="sv-layout" style={{flex:1,display:"flex",overflow:"hidden"}}>
 
         {/* Settings nav */}
-        <div style={{width:200,flexShrink:0,borderRight:`1px solid ${C.border}`,background:C.surface,padding:"16px 10px",overflowY:"auto"}}>
-          <p style={{fontSize:10.5,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",padding:"0 10px",marginBottom:10}}>Settings</p>
+        <div
+          className={`sv-nav${mobilePanel==="content"?" sv-nav-hidden":""}`}
+          style={{width:200,flexShrink:0,borderRight:`1px solid ${C.border}`,background:C.surface,padding:"16px 10px",overflowY:"auto"}}
+        >
+          {/* Store name in nav header */}
+          <div style={{padding:"4px 10px 14px",marginBottom:8,borderBottom:`1px solid ${C.border}`}}>
+            <div style={{fontSize:13,fontWeight:700,color:C.text,marginBottom:2}}>🏪 {storeName}</div>
+            <div style={{fontSize:11,color:C.muted}}>Manage your settings</div>
+          </div>
           {SECTIONS.map(s=>(
-            <div key={s.key} className="setting-nav-item" onClick={()=>setSection(s.key)}
+            <div key={s.key} className="setting-nav-item" onClick={()=>handleNavClick(s.key)}
               style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",marginBottom:2,background:section===s.key?"rgba(229,82,102,.09)":"transparent",color:section===s.key?C.coral:s.key==="danger"?"#FF5272":C.sub,fontSize:13.5,fontWeight:section===s.key?600:400}}>
               <span style={{fontSize:15}}>{s.icon}</span>{s.label}
             </div>
@@ -502,8 +656,20 @@ export default function SettingsView() {
         </div>
 
         {/* Section content */}
-        <div style={{flex:1,overflowY:"auto",padding:"24px 28px",background:C.bg}}>
-          {section==="general"       && <GeneralSection/>}
+        <div
+          className={`sv-content${mobilePanel==="menu"?" sv-content-hidden":""}`}
+          style={{flex:1,overflowY:"auto",padding:"24px 28px",background:C.bg}}
+        >
+          {/* Back button — mobile only */}
+          <button
+            className="sv-back-btn btn-ghost"
+            onClick={()=>setMobilePanel("menu")}
+            style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8,marginBottom:16}}
+          >
+            ← Back to Settings Menu
+          </button>
+
+          {section==="general"       && <GeneralSection storeName={storeName} onSaveStoreName={setStoreName}/>}
           {section==="ai"            && <AIConfigSection/>}
           {section==="automations"   && <AutomationsSection/>}
           {section==="notifications" && <NotificationsSection/>}
