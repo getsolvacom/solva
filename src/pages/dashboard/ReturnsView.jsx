@@ -93,6 +93,8 @@ function GlobalStyles() {
       @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:.15;}}
       @keyframes saveShine{0%{background-position:-200% center;}100%{background-position:200% center;}}
+      @keyframes toastSlideIn{from{opacity:0;transform:translateX(70px);}to{opacity:1;transform:translateX(0);}}
+      @keyframes toastFadeOut{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(70px);}}
       .fu{animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both;}
       .sr{animation:slideRight .5s cubic-bezier(.16,1,.3,1) both;}
       .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;}
@@ -107,22 +109,49 @@ function GlobalStyles() {
       .blink{animation:blink 2.4s ease infinite;}
       .saved-shine{background:linear-gradient(90deg,#3ECFB2,#5BADFF,#3ECFB2);background-size:200% auto;animation:saveShine 3s linear infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
       .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:600;white-space:nowrap;}
-      input{font-family:'Outfit',sans-serif;outline:none;}
+      .toast-in{animation:toastSlideIn .35s cubic-bezier(.16,1,.3,1) both;}
+      .toast-out{animation:toastFadeOut .3s ease forwards;}
+      input,textarea{font-family:'Outfit',sans-serif;outline:none;}
+
+      /* ── Mobile layout ── */
+      .rv-back-btn{display:none;}
+      @media(max-width:767px){
+        .rv-root{overflow-x:hidden!important;height:auto!important;flex:none!important;}
+        .rv-topbar{height:auto!important;padding:10px 14px!important;}
+        .rv-kpi-strip{grid-template-columns:1fr 1fr!important;}
+        .rv-kpi-card{border-right:1px solid #200026!important;border-bottom:1px solid #200026!important;}
+        .rv-kpi-card:nth-child(2n){border-right:none!important;}
+        .rv-kpi-card:nth-child(3),.rv-kpi-card:nth-child(4){border-bottom:none!important;}
+        .rv-workspace{flex-direction:column!important;overflow:visible!important;}
+        .rv-list{width:100%!important;flex-shrink:0!important;border-right:none!important;border-bottom:1px solid #200026;}
+        .rv-list-hidden{display:none!important;}
+        .rv-detail{width:100%!important;overflow:visible!important;height:auto!important;}
+        .rv-detail-hidden{display:none!important;}
+        .rv-detail-meta{display:none!important;}
+        .rv-detail-header{padding:11px 14px!important;}
+        .rv-detail-body{overflow:visible!important;flex:none!important;padding:14px!important;}
+        .rv-two-col{grid-template-columns:1fr!important;}
+        .rv-back-btn{display:flex!important;align-items:center;}
+        .rv-reply-box{padding:10px 14px!important;}
+      }
     `}</style>
   );
 }
 
 function Bubble({ msg, idx }) {
   const isCustomer = msg.from === "customer";
+  const isAgent    = msg.from === "agent";
+  const isRight    = !isCustomer;
   return (
-    <div className="msg-bubble" style={{animationDelay:`${idx*.07}s`,display:"flex",justifyContent:isCustomer?"flex-start":"flex-end",margin:"6px 0"}}>
-      <div style={{maxWidth:"72%",display:"flex",flexDirection:"column",alignItems:isCustomer?"flex-start":"flex-end",gap:5}}>
+    <div className="msg-bubble" style={{animationDelay:`${idx*.07}s`,display:"flex",justifyContent:isRight?"flex-end":"flex-start",margin:"6px 0"}}>
+      <div style={{maxWidth:"72%",display:"flex",flexDirection:"column",alignItems:isRight?"flex-end":"flex-start",gap:5}}>
         <div style={{display:"flex",alignItems:"center",gap:6,paddingLeft:2}}>
-          {!isCustomer&&<span className="tag" style={{color:C.coral,background:"rgba(229,82,102,.10)",fontSize:10}}>⚡ SOLVA AI</span>}
+          {isAgent    && <span className="tag" style={{color:C.amber,background:"rgba(240,160,75,.10)",fontSize:10}}>👤 AGENT</span>}
+          {msg.from==="ai" && <span className="tag" style={{color:C.coral,background:"rgba(229,82,102,.10)",fontSize:10}}>⚡ SOLVA AI</span>}
           <span style={{fontSize:10.5,color:C.muted}}>{msg.time}</span>
-          {isCustomer&&<span style={{fontSize:10.5,color:C.sub,fontWeight:500}}>Customer</span>}
+          {isCustomer && <span style={{fontSize:10.5,color:C.sub,fontWeight:500}}>Customer</span>}
         </div>
-        <div style={{padding:"11px 15px",borderRadius:14,borderBottomLeftRadius:isCustomer?4:14,borderBottomRightRadius:isCustomer?14:4,background:isCustomer?C.card:"rgba(229,82,102,.10)",border:`1px solid ${isCustomer?C.border:"rgba(229,82,102,.20)"}`,fontSize:13.5,color:C.text,lineHeight:1.65}}>
+        <div style={{padding:"11px 15px",borderRadius:14,borderBottomLeftRadius:isCustomer?4:14,borderBottomRightRadius:isCustomer?14:4,background:isCustomer?C.card:isAgent?"rgba(240,160,75,.10)":"rgba(229,82,102,.10)",border:`1px solid ${isCustomer?C.border:isAgent?"rgba(240,160,75,.20)":"rgba(229,82,102,.20)"}`,fontSize:13.5,color:C.text,lineHeight:1.65}}>
           {msg.text}
         </div>
       </div>
@@ -131,9 +160,16 @@ function Bubble({ msg, idx }) {
 }
 
 export default function ReturnsView() {
-  const [filter,     setFilter]     = useState("All");
-  const [search,     setSearch]     = useState("");
-  const [selectedId, setSelectedId] = useState("RT-0544");
+  const [filter,              setFilter]              = useState("All");
+  const [search,              setSearch]              = useState("");
+  const [selectedId,          setSelectedId]          = useState("RT-0544");
+  const [mobilePanel,         setMobilePanel]         = useState("list");
+  const [statusOverrides,     setStatusOverrides]     = useState({});
+  const [overrideToast,       setOverrideToast]       = useState(false);
+  const [overrideToastFading, setOverrideToastFading] = useState(false);
+  const [chatInput,           setChatInput]           = useState("");
+  const [extraMessages,       setExtraMessages]       = useState({});
+  const [attachHint,          setAttachHint]          = useState(false);
 
   const filtered = RETURNS.filter(r => {
     const mf =
@@ -154,12 +190,46 @@ export default function ReturnsView() {
     Processed: RETURNS.filter(r=>r.status==="processed").length,
   };
 
+  const effectiveStatus = selected && statusOverrides[selected.id] === "manual_override"
+    ? { label:"Manual Override", color:C.amber, bg:"rgba(240,160,75,.10)" }
+    : selected ? STATUS_R[selected.status] : null;
+
+  const allMessages = selected
+    ? [...selected.conversation, ...(extraMessages[selectedId]||[])]
+    : [];
+
+  function handleReturnSelect(id) {
+    setSelectedId(id);
+    setMobilePanel("detail");
+  }
+
+  function handleOverride() {
+    setStatusOverrides(prev => ({...prev, [selectedId]:"manual_override"}));
+    setOverrideToast(true);
+    setOverrideToastFading(false);
+    setTimeout(() => setOverrideToastFading(true), 2700);
+    setTimeout(() => { setOverrideToast(false); setOverrideToastFading(false); }, 3000);
+  }
+
+  function handleSend() {
+    if (!chatInput.trim()) return;
+    const now  = new Date();
+    const time = now.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"});
+    setExtraMessages(prev => ({...prev, [selectedId]:[...(prev[selectedId]||[]), {from:"agent", text:chatInput.trim(), time}]}));
+    setChatInput("");
+  }
+
+  function handleAttach() {
+    setAttachHint(true);
+    setTimeout(() => setAttachHint(false), 2000);
+  }
+
   return (
-    <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
+    <div className="rv-root" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",overflowX:"hidden",fontFamily:"'Outfit',sans-serif"}}>
       <GlobalStyles/>
 
       {/* Top bar */}
-      <div style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
+      <div className="rv-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
         <div>
           <h1 style={{fontFamily:"'Outfit',sans-serif",fontSize:17,fontWeight:700,color:C.text}}>Returns</h1>
           <p style={{fontSize:11.5,color:C.muted}}>${totalSaved.toFixed(2)} margin saved this week · {deflectRate}% deflection rate</p>
@@ -174,15 +244,15 @@ export default function ReturnsView() {
       </div>
 
       {/* KPI strip */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
+      <div className="rv-kpi-strip" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
         {[
-          {label:"Margin Saved",      value:`$${totalSaved.toFixed(2)}`,                           color:C.teal,  icon:"🛡"},
-          {label:"Deflection Rate",   value:`${deflectRate}%`,                                     color:C.coral, icon:"↩"},
-          {label:"Total at Risk",     value:`$${RETURNS.reduce((s,r)=>s+r.orderValue,0).toFixed(2)}`,color:C.amber,icon:"⚠"},
-          {label:"Deflected Returns", value:`${RETURNS.filter(r=>r.status==="deflected").length} / ${RETURNS.length}`,color:C.blue,icon:"✓"},
+          {label:"Margin Saved",      value:`$${totalSaved.toFixed(2)}`,                              color:C.teal,  icon:"💰"},
+          {label:"Deflection Rate",   value:`${deflectRate}%`,                                        color:C.coral, icon:"🛡️"},
+          {label:"Total at Risk",     value:`$${RETURNS.reduce((s,r)=>s+r.orderValue,0).toFixed(2)}`, color:C.amber, icon:"⚠️"},
+          {label:"Deflected Returns", value:"24/47",                                                   color:C.blue,  icon:"✅"},
         ].map((k,i)=>(
-          <div key={i} className="kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
-            <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${k.color}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{k.icon}</div>
+          <div key={i} className="rv-kpi-card kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${k.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{k.icon}</div>
             <div>
               <div style={{fontSize:18,fontWeight:800,color:k.color}}>{k.value}</div>
               <div style={{fontSize:11,color:C.muted,marginTop:2}}>{k.label}</div>
@@ -192,10 +262,13 @@ export default function ReturnsView() {
       </div>
 
       {/* Workspace */}
-      <div style={{flex:1,display:"flex",overflow:"hidden"}}>
+      <div className="rv-workspace" style={{flex:1,display:"flex",overflow:"hidden"}}>
 
-        {/* Returns list */}
-        <div style={{width:290,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}>
+        {/* ── Returns list ── */}
+        <div
+          className={`rv-list${mobilePanel==="detail"?" rv-list-hidden":""}`}
+          style={{width:290,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}
+        >
           <div style={{padding:"12px 12px 8px"}}>
             <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
               <span style={{color:C.muted,fontSize:14}}>🔍</span>
@@ -216,7 +289,7 @@ export default function ReturnsView() {
               const s  = STATUS_R[r.status];
               const rs = REASON_CFG[r.reason];
               return (
-                <div key={r.id} className="return-row" onClick={()=>setSelectedId(r.id)}
+                <div key={r.id} className="return-row" onClick={()=>handleReturnSelect(r.id)}
                   style={{padding:"13px 16px",background:selectedId===r.id?"rgba(229,82,102,.07)":"transparent",borderLeft:`3px solid ${selectedId===r.id?C.coral:"transparent"}`,borderBottom:`1px solid ${C.border}`}}>
                   <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
                     <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${r.avatarColor}20`,border:`1px solid ${r.avatarColor}28`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11.5,fontWeight:700,color:r.avatarColor}}>{r.avatar}</div>
@@ -257,33 +330,56 @@ export default function ReturnsView() {
           </div>
         </div>
 
-        {/* Detail panel */}
+        {/* ── Detail panel ── */}
         {selected && (
-          <div className="sr" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+          <div
+            className={`sr rv-detail${mobilePanel==="list"?" rv-detail-hidden":""}`}
+            style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}
+          >
             {/* Header */}
-            <div style={{padding:"15px 24px",borderBottom:`1px solid ${C.border}`,background:C.surface,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{display:"flex",alignItems:"center",gap:13}}>
+            <div className="rv-detail-header" style={{padding:"15px 24px",borderBottom:`1px solid ${C.border}`,background:C.surface,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+
+              {/* Customer meta — hidden on mobile */}
+              <div className="rv-detail-meta" style={{display:"flex",alignItems:"center",gap:13}}>
                 <div style={{width:40,height:40,borderRadius:12,flexShrink:0,background:`${selected.avatarColor}20`,border:`1px solid ${selected.avatarColor}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:selected.avatarColor}}>{selected.avatar}</div>
                 <div>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3,flexWrap:"wrap"}}>
                     <span style={{fontSize:15,fontWeight:700,color:C.text}}>{selected.name}</span>
                     <span className="tag" style={{color:REASON_CFG[selected.reason].color,background:`${REASON_CFG[selected.reason].color}12`}}>{REASON_CFG[selected.reason].label}</span>
-                    <span className="tag" style={{color:STATUS_R[selected.status].color,background:STATUS_R[selected.status].bg}}>{STATUS_R[selected.status].label}</span>
+                    <span className="tag" style={{color:effectiveStatus.color,background:effectiveStatus.bg}}>{effectiveStatus.label}</span>
                   </div>
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Order {selected.orderRef}</span>
                 </div>
               </div>
+
+              {/* Back button — mobile only */}
+              <button
+                className="rv-back-btn btn-ghost"
+                onClick={()=>setMobilePanel("list")}
+                style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}
+              >
+                ← Back to Returns
+              </button>
+
+              {/* Override button */}
               {selected.status==="pending" && (
-                <button className="btn-primary" style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}>⚡ Override AI</button>
+                <button
+                  className="btn-primary"
+                  disabled={statusOverrides[selectedId]==="manual_override"}
+                  onClick={handleOverride}
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:statusOverrides[selectedId]==="manual_override"?.75:1,cursor:statusOverrides[selectedId]==="manual_override"?"not-allowed":"pointer"}}
+                >
+                  {statusOverrides[selectedId]==="manual_override" ? "✓ Override Active" : "⚡ Override AI"}
+                </button>
               )}
             </div>
 
             {/* Scrollable body */}
-            <div style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
+            <div className="rv-detail-body" style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
 
               {/* Outcome banners */}
               {selected.status==="deflected" && (
-                <div style={{padding:"16px 20px",borderRadius:14,background:"rgba(62,207,178,.07)",border:"1px solid rgba(62,207,178,.20)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{padding:"16px 20px",borderRadius:14,background:"rgba(62,207,178,.07)",border:"1px solid rgba(62,207,178,.20)",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
                     <div style={{width:44,height:44,borderRadius:12,flexShrink:0,background:"rgba(62,207,178,.14)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{selected.offer.icon}</div>
                     <div>
@@ -298,7 +394,7 @@ export default function ReturnsView() {
                 </div>
               )}
               {selected.status==="pending" && (
-                <div style={{padding:"14px 18px",borderRadius:14,background:"rgba(240,160,75,.06)",border:"1px solid rgba(240,160,75,.18)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{padding:"14px 18px",borderRadius:14,background:"rgba(240,160,75,.06)",border:"1px solid rgba(240,160,75,.18)",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
                     <span style={{fontSize:20}}>{selected.offer.icon}</span>
                     <div>
@@ -322,8 +418,8 @@ export default function ReturnsView() {
                 </div>
               )}
 
-              {/* Two-col */}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+              {/* Two-col: Returned item + AI offer */}
+              <div className="rv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
                 {/* Product */}
                 <div style={{padding:18,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
                   <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:14}}>Returned Item</h3>
@@ -348,8 +444,8 @@ export default function ReturnsView() {
                   <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:6}}>{selected.offer.type}</div>
                   <div style={{fontSize:12.5,color:C.sub,lineHeight:1.65,marginBottom:12}}>{selected.offer.detail}</div>
                   <span className="tag" style={{
-                    color:  selected.status==="deflected"?C.teal:selected.status==="pending"?C.amber:"#FF5272",
-                    background:selected.status==="deflected"?"rgba(62,207,178,.10)":selected.status==="pending"?"rgba(240,160,75,.10)":"rgba(255,82,114,.10)",
+                    color:      selected.status==="deflected"?C.teal:selected.status==="pending"?C.amber:"#FF5272",
+                    background: selected.status==="deflected"?"rgba(62,207,178,.10)":selected.status==="pending"?"rgba(240,160,75,.10)":"rgba(255,82,114,.10)",
                   }}>
                     {selected.status==="deflected"?"✓ Customer Accepted":selected.status==="pending"?"⏳ Awaiting Response":"— Not Applicable"}
                   </span>
@@ -359,13 +455,50 @@ export default function ReturnsView() {
               {/* Conversation */}
               <div style={{padding:18,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
                 <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>AI Deflection Conversation</h3>
-                {selected.conversation.map((msg,i)=><Bubble key={i} msg={msg} idx={i}/>)}
+                {allMessages.map((msg,i)=><Bubble key={i} msg={msg} idx={i}/>)}
               </div>
 
+            </div>
+
+            {/* Reply box */}
+            <div className="rv-reply-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.card,padding:"12px 18px"}}>
+              {attachHint && (
+                <div style={{fontSize:12,color:C.muted,marginBottom:8,padding:"6px 10px",borderRadius:7,background:C.dim,display:"flex",alignItems:"center",gap:6}}>
+                  📎 File attachment coming soon
+                </div>
+              )}
+              <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
+                <button onClick={handleAttach} className="btn-ghost" style={{color:C.muted,fontSize:18,padding:"7px 9px",flexShrink:0,borderRadius:8,border:`1px solid ${C.border}`}}>📎</button>
+                <div style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"9px 12px"}}>
+                  <textarea
+                    value={chatInput}
+                    onChange={e=>setChatInput(e.target.value)}
+                    onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();}}}
+                    placeholder="Type a message…"
+                    rows={2}
+                    style={{width:"100%",background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13.5,fontFamily:"'Outfit',sans-serif",resize:"none",lineHeight:1.5}}
+                  />
+                </div>
+                <button onClick={handleSend} className="btn-primary" style={{padding:"10px 16px",borderRadius:9,color:"#fff",fontWeight:600,fontSize:13,flexShrink:0}}>Send</button>
+              </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* ── Override Toast ── */}
+      {overrideToast && (
+        <div
+          className={overrideToastFading?"toast-out":"toast-in"}
+          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.amber,color:"#1A0A00",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:12,fontFamily:"'Outfit',sans-serif",fontWeight:600,fontSize:14,boxShadow:"0 8px 32px rgba(0,0,0,.45)",maxWidth:360}}
+        >
+          <span style={{flex:1}}>⚡ Return switched to manual override</span>
+          <button
+            onClick={()=>{ setOverrideToast(false); setOverrideToastFading(false); }}
+            style={{cursor:"pointer",background:"none",border:"none",color:"#1A0A00",fontSize:17,fontWeight:700,lineHeight:1,padding:0,flexShrink:0,opacity:.65}}
+          >✕</button>
+        </div>
+      )}
     </div>
   );
 }
