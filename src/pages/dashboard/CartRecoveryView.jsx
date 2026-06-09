@@ -120,6 +120,12 @@ function GlobalStyles() {
         .cr-two-col{grid-template-columns:1fr!important;}
         .cr-back-btn{display:flex!important;align-items:center;}
       }
+      @keyframes spin{to{transform:rotate(360deg);}}
+      @keyframes toastSlideIn{from{opacity:0;transform:translateX(70px);}to{opacity:1;transform:translateX(0);}}
+      @keyframes toastFadeOut{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(70px);}}
+      .toast-in{animation:toastSlideIn .35s cubic-bezier(.16,1,.3,1) both;}
+      .toast-out{animation:toastFadeOut .3s ease forwards;}
+      .cr-spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
     `}</style>
   );
 }
@@ -129,8 +135,11 @@ export default function CartRecoveryView() {
   const [search,       setSearch]       = useState("");
   const [selectedId,   setSelectedId]   = useState("CR-0291");
   const [expandedStep, setExpandedStep] = useState(0);
-  const [mobilePanel,  setMobilePanel]  = useState("list");
-  const [modalOpen,    setModalOpen]    = useState(false);
+  const [mobilePanel,     setMobilePanel]     = useState("list");
+  const [modalOpen,       setModalOpen]       = useState(false);
+  const [triggerLoading,  setTriggerLoading]  = useState(false);
+  const [triggerToast,    setTriggerToast]    = useState(false);
+  const [toastFading,     setToastFading]     = useState(false);
 
   const filtered = CARTS.filter(c => {
     const mf =
@@ -153,6 +162,17 @@ export default function CartRecoveryView() {
   function handleCartSelect(id) {
     setSelectedId(id);
     setMobilePanel("detail");
+  }
+
+  function handleTrigger() {
+    setTriggerLoading(true);
+    setTimeout(() => {
+      setTriggerLoading(false);
+      setTriggerToast(true);
+      setToastFading(false);
+      setTimeout(() => setToastFading(true), 2700);
+      setTimeout(() => { setTriggerToast(false); setToastFading(false); }, 3000);
+    }, 1500);
   }
 
   return (
@@ -288,10 +308,15 @@ export default function CartRecoveryView() {
               {/* Action button */}
               <button
                 className="btn-primary"
-                onClick={()=>{ if(selected.status!=="in_sequence") setModalOpen(true); }}
-                style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}
+                disabled={triggerLoading}
+                onClick={()=>{ if(selected.status==="in_sequence") handleTrigger(); else setModalOpen(true); }}
+                style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,minWidth:160,display:"flex",alignItems:"center",justifyContent:"center",gap:7,opacity:triggerLoading?.82:1,cursor:triggerLoading?"not-allowed":"pointer"}}
               >
-                {selected.status==="in_sequence"?"⚡ Trigger Next Step":"📋 View Order"}
+                {selected.status==="in_sequence"
+                  ? triggerLoading
+                    ? <><div className="cr-spinner"/><span>Triggering...</span></>
+                    : "⚡ Trigger Next Step"
+                  : "📋 View Order"}
               </button>
             </div>
 
@@ -481,6 +506,20 @@ export default function CartRecoveryView() {
               Close
             </button>
           </div>
+        </div>
+      )}
+
+      {/* ── Trigger Success Toast ── */}
+      {triggerToast && (
+        <div
+          className={toastFading?"toast-out":"toast-in"}
+          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.teal,color:"#082018",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:12,fontFamily:"'Outfit',sans-serif",fontWeight:600,fontSize:14,boxShadow:"0 8px 32px rgba(0,0,0,.45)",maxWidth:340}}
+        >
+          <span style={{flex:1}}>✓ Next recovery step manually triggered!</span>
+          <button
+            onClick={()=>{ setTriggerToast(false); setToastFading(false); }}
+            style={{cursor:"pointer",background:"none",border:"none",color:"#082018",fontSize:17,fontWeight:700,lineHeight:1,padding:0,flexShrink:0,opacity:.7}}
+          >✕</button>
         </div>
       )}
     </div>
