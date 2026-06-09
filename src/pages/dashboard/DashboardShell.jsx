@@ -41,7 +41,7 @@ export default function DashboardShell({ view, setView, goLanding }) {
   const navigate = (key) => { setView(key); setDrawerOpen(false); };
 
   return (
-    <div style={{display:"flex",height:"100vh",background:C.bg,overflow:"hidden",overflowX:"hidden"}}>
+    <div className="dash-root" style={{display:"flex",height:"100dvh",background:C.bg,overflow:"hidden",overflowX:"hidden"}}>
       <style>{`
         @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
         .mob-header{display:none;height:52px;align-items:center;justify-content:space-between;padding:0 16px;background:${C.surface};border-bottom:1px solid ${C.border};flex-shrink:0;}
@@ -49,7 +49,7 @@ export default function DashboardShell({ view, setView, goLanding }) {
         .mob-ham:hover{border-color:${C.coral};color:${C.coral};}
         .mob-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;opacity:0;pointer-events:none;transition:opacity .28s ease;}
         .mob-overlay.visible{opacity:1;pointer-events:all;}
-        .mob-drawer{position:fixed;top:0;left:0;height:100vh;width:230px;background:${C.surface};border-right:1px solid ${C.border};z-index:300;transform:translateX(-100%);transition:transform .28s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;padding:20px 0;}
+        .mob-drawer{position:fixed;top:0;left:0;height:100dvh;width:230px;background:${C.surface};border-right:1px solid ${C.border};z-index:300;transform:translateX(-100%);transition:transform .28s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;padding:20px 0;}
         .mob-drawer.open{transform:translateX(0);}
         .mob-nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:0 8px;border-radius:9px;cursor:pointer;font-size:13.5px;font-family:'Outfit',sans-serif;font-weight:400;color:${C.sub};transition:all .14s;}
         .mob-nav-item.active{background:rgba(229,82,102,.09);color:${C.coral};font-weight:600;}
@@ -57,6 +57,8 @@ export default function DashboardShell({ view, setView, goLanding }) {
         @media(max-width:767px){
           .dash-sidebar{display:none!important;}
           .mob-header{display:flex!important;}
+          .dash-root{height:auto!important;min-height:100dvh;overflow-y:visible!important;overflow-x:hidden!important;}
+          .dash-main-col{overflow:visible!important;height:auto!important;}
         }
       `}</style>
 
@@ -80,7 +82,7 @@ export default function DashboardShell({ view, setView, goLanding }) {
             </div>
           ))}
         </nav>
-        <div style={{padding:"12px 8px 0",borderTop:`1px solid ${C.border}`}}>
+        <div style={{padding:"12px 8px 32px",borderTop:`1px solid ${C.border}`}}>
           <div onClick={()=>{goLanding();setDrawerOpen(false);}} className="mob-nav-item">
             <span>←</span> Back to Landing
           </div>
@@ -88,7 +90,7 @@ export default function DashboardShell({ view, setView, goLanding }) {
       </div>
 
       {/* Main content column */}
-      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0}}>
+      <div className="dash-main-col" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0}}>
         {/* Mobile header */}
         <div className="mob-header">
           <DrawerLogo/>

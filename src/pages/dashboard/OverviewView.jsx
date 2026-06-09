@@ -48,10 +48,11 @@ function GlobalStyles() {
       .action-card{transition:all .18s ease!important;border-color:#3D0050!important;}
       .action-card:hover{border-color:#E55266!important;background:rgba(229,82,102,.07)!important;transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(0,0,0,.45)!important;}
       @media(max-width:767px){
+        .ov-view{overflow:visible!important;flex:none!important;min-height:0;}
         .ov-topbar{flex-direction:column!important;align-items:flex-start!important;height:auto!important;padding:12px 14px!important;gap:10px!important;}
-        .ov-content{padding:12px 12px!important;gap:12px!important;}
+        .ov-content{overflow:visible!important;flex:none!important;padding:12px 12px!important;gap:12px!important;}
         .kpi-row{display:flex!important;overflow-x:auto!important;overflow-y:visible!important;-webkit-overflow-scrolling:touch;gap:10px!important;padding-bottom:6px!important;width:100%!important;}
-        .kpi-row .kpi-card{min-width:200px!important;flex-shrink:0!important;}
+        .kpi-row .kpi-card{min-width:200px!important;flex-shrink:0!important;animation:none!important;opacity:1!important;}
         .chart-activity-grid{grid-template-columns:1fr!important;}
         .chart-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;margin-bottom:14px!important;}
         .actions-grid{grid-template-columns:repeat(2,1fr)!important;}
@@ -71,7 +72,7 @@ export default function OverviewView({ setView }) {
   ];
 
   return (
-    <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
+    <div className="ov-view" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
       <GlobalStyles/>
 
       {/* Top bar */}
