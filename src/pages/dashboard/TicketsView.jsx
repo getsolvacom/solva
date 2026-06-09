@@ -75,8 +75,10 @@ function GlobalStyles() {
       .sr{animation:slideRight .5s cubic-bezier(.16,1,.3,1) both;}
       .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;}
       .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(229,82,102,.28);}
+      .btn-primary:disabled{opacity:.45;cursor:not-allowed;pointer-events:none;}
       .btn-ghost{cursor:pointer;border:none;outline:none;transition:all .14s;font-family:'Outfit',sans-serif;background:transparent;}
       .btn-ghost:hover{background:rgba(229,82,102,.07)!important;color:#E55266!important;}
+      .btn-ghost:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
       .ticket-row{cursor:pointer;transition:background .14s,border-color .14s;border-left:3px solid transparent;}
       .ticket-row:hover{background:rgba(229,82,102,.05)!important;}
       .blink{animation:blink 2.4s ease infinite;}
@@ -85,6 +87,24 @@ function GlobalStyles() {
       .filter-tab{cursor:pointer;transition:all .15s ease;font-family:'Outfit',sans-serif;white-space:nowrap;}
       .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:600;white-space:nowrap;}
       input,textarea{font-family:'Outfit',sans-serif;outline:none;resize:none;}
+
+      /* ── Mobile layout ── */
+      .tv-back-btn{display:none;}
+      @media(max-width:767px){
+        .tv-workspace{flex-direction:column!important;}
+        .tv-list{width:100%!important;flex:1!important;border-right:none!important;}
+        .tv-list-hidden{display:none!important;}
+        .tv-chat{width:100%!important;flex:1!important;}
+        .tv-chat-hidden{display:none!important;}
+        .tv-chat-header-meta{display:none!important;}
+        .tv-back-btn{display:flex!important;align-items:center;}
+        .tv-chat-header{padding:11px 14px!important;}
+        .tv-ai-bar{padding:9px 14px!important;}
+        .tv-messages{padding-bottom:195px!important;padding-left:12px!important;padding-right:12px!important;}
+        .tv-reply-box{position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:50!important;padding:10px 14px 14px!important;}
+        .tv-suggestions{gap:5px!important;}
+        .msg-bubble-inner{max-width:86%!important;}
+      }
     `}</style>
   );
 }
@@ -92,10 +112,11 @@ function GlobalStyles() {
 function Bubble({ msg, idx }) {
   const isCustomer   = msg.from === "customer";
   const isEscalation = msg.from === "escalation";
+  const isAgent      = msg.from === "agent";
 
   if (isEscalation) return (
     <div className="msg-bubble" style={{animationDelay:`${idx*.07}s`,display:"flex",justifyContent:"center",margin:"8px 0"}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 14px",borderRadius:100,background:"rgba(255,82,114,.10)",border:"1px solid rgba(255,82,114,.20)"}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 14px",borderRadius:100,background:"rgba(255,82,114,.10)",border:"1px solid rgba(255,82,114,.20)",flexWrap:"wrap"}}>
         <span style={{fontSize:12}}>⚠</span>
         <span style={{fontSize:11.5,color:"#FF5272",fontWeight:600}}>{msg.text}</span>
         <span style={{fontSize:11,color:C.muted}}>· {msg.time}</span>
@@ -105,13 +126,29 @@ function Bubble({ msg, idx }) {
 
   return (
     <div className="msg-bubble" style={{animationDelay:`${idx*.07}s`,display:"flex",justifyContent:isCustomer?"flex-start":"flex-end",margin:"6px 0"}}>
-      <div style={{maxWidth:"72%",display:"flex",flexDirection:"column",alignItems:isCustomer?"flex-start":"flex-end",gap:5}}>
+      <div className="msg-bubble-inner" style={{maxWidth:"72%",display:"flex",flexDirection:"column",alignItems:isCustomer?"flex-start":"flex-end",gap:5}}>
         <div style={{display:"flex",alignItems:"center",gap:6,paddingLeft:2}}>
-          {!isCustomer && <span className="tag" style={{color:C.coral,background:"rgba(229,82,102,.10)",fontSize:10}}>⚡ SOLVA AI</span>}
+          {!isCustomer && (
+            <span className="tag" style={{
+              color:      isAgent ? C.sub   : C.coral,
+              background: isAgent ? "rgba(255,255,255,.06)" : "rgba(229,82,102,.10)",
+              fontSize:   10,
+            }}>
+              {isAgent ? "👤 AGENT" : "⚡ SOLVA AI"}
+            </span>
+          )}
           <span style={{fontSize:10.5,color:C.muted}}>{msg.time}</span>
           {isCustomer && <span style={{fontSize:10.5,color:C.sub,fontWeight:500}}>Customer</span>}
         </div>
-        <div style={{padding:"11px 15px",borderRadius:14,borderBottomLeftRadius:isCustomer?4:14,borderBottomRightRadius:isCustomer?14:4,background:isCustomer?C.card:"rgba(229,82,102,.10)",border:`1px solid ${isCustomer?C.border:"rgba(229,82,102,.20)"}`,fontSize:13.5,color:C.text,lineHeight:1.65}}>
+        <div style={{
+          padding:"11px 15px",
+          borderRadius:14,
+          borderBottomLeftRadius:isCustomer?4:14,
+          borderBottomRightRadius:isCustomer?14:4,
+          background: isCustomer ? C.card : isAgent ? "rgba(78,2,105,.22)" : "rgba(229,82,102,.10)",
+          border:`1px solid ${isCustomer ? C.border : isAgent ? "rgba(78,2,105,.38)" : "rgba(229,82,102,.20)"}`,
+          fontSize:13.5,color:C.text,lineHeight:1.65,wordBreak:"break-word",
+        }}>
           {msg.text}
         </div>
       </div>
@@ -120,24 +157,83 @@ function Bubble({ msg, idx }) {
 }
 
 export default function TicketsView() {
-  const [filter,     setFilter]     = useState("All");
-  const [search,     setSearch]     = useState("");
-  const [selectedId, setSelectedId] = useState("TK-1041");
-  const [reply,      setReply]      = useState("");
+  const [filter,          setFilter]          = useState("All");
+  const [search,          setSearch]          = useState("");
+  const [selectedId,      setSelectedId]      = useState("TK-1041");
+  const [reply,           setReply]           = useState("");
+  const [statusOverrides, setStatusOverrides] = useState({});
+  const [ticketEscalated, setTicketEscalated] = useState({});
+  const [ticketClosed,    setTicketClosed]    = useState({});
+  const [toast,           setToast]           = useState(null);
+  const [extraMessages,   setExtraMessages]   = useState({});
+  const [showAttachHint,  setShowAttachHint]  = useState(false);
+  const [mobilePanel,     setMobilePanel]     = useState("list");
+
+  const getStatus = (id, def) => statusOverrides[id] || def;
 
   const filtered = TICKETS.filter(t => {
-    const mf = filter==="All" || t.status===filter.toLowerCase();
+    const mf = filter === "All" || getStatus(t.id, t.status) === filter.toLowerCase();
     const ms = t.name.toLowerCase().includes(search.toLowerCase()) || t.subject.toLowerCase().includes(search.toLowerCase());
     return mf && ms;
   });
 
-  const selected = TICKETS.find(t => t.id === selectedId);
-  const counts   = {
-    All:      TICKETS.length,
-    Pending:  TICKETS.filter(t=>t.status==="pending").length,
-    Resolved: TICKETS.filter(t=>t.status==="resolved").length,
-    Escalated:TICKETS.filter(t=>t.status==="escalated").length,
+  const selected        = TICKETS.find(t => t.id === selectedId);
+  const effectiveStatus = selected ? getStatus(selectedId, selected.status) : null;
+  const effectiveMsgs   = selected ? [...selected.messages, ...(extraMessages[selectedId] || [])] : [];
+
+  const counts = {
+    All:       TICKETS.length,
+    Pending:   TICKETS.filter(t => getStatus(t.id, t.status) === "pending").length,
+    Resolved:  TICKETS.filter(t => getStatus(t.id, t.status) === "resolved").length,
+    Escalated: TICKETS.filter(t => getStatus(t.id, t.status) === "escalated").length,
   };
+
+  function fireToast(message, color, bg) {
+    setToast({ message, color, bg });
+    setTimeout(() => setToast(null), 3000);
+  }
+
+  function handleEscalate() {
+    setStatusOverrides(prev => ({ ...prev, [selectedId]: "escalated" }));
+    setTicketEscalated(prev => ({ ...prev, [selectedId]: true }));
+    fireToast("Ticket escalated to human agent", "#F0A04B", "rgba(240,160,75,.12)");
+  }
+
+  function handleClose() {
+    setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
+    setTicketClosed(prev => ({ ...prev, [selectedId]: true }));
+    fireToast("Ticket closed successfully", "#3ECFB2", "rgba(62,207,178,.12)");
+  }
+
+  function handleSend() {
+    if (!reply.trim()) return;
+    const time = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    setExtraMessages(prev => ({
+      ...prev,
+      [selectedId]: [...(prev[selectedId] || []), { from: "agent", text: reply.trim(), time }],
+    }));
+    setReply("");
+  }
+
+  function handleAttachment() {
+    setShowAttachHint(true);
+    setTimeout(() => setShowAttachHint(false), 2000);
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }
+
+  function handleTicketSelect(id) {
+    setSelectedId(id);
+    setMobilePanel("chat");
+  }
+
+  const escalateDisabled = !!(ticketEscalated[selectedId] || ticketClosed[selectedId]);
+  const closeDisabled    = !!ticketClosed[selectedId];
 
   return (
     <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
@@ -159,10 +255,13 @@ export default function TicketsView() {
       </div>
 
       {/* Workspace */}
-      <div style={{flex:1,display:"flex",overflow:"hidden"}}>
+      <div className="tv-workspace" style={{flex:1,display:"flex",overflow:"hidden"}}>
 
-        {/* Ticket list */}
-        <div style={{width:320,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}>
+        {/* ── Ticket list panel ── */}
+        <div
+          className={`tv-list${mobilePanel === "chat" ? " tv-list-hidden" : ""}`}
+          style={{width:320,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}
+        >
           {/* Search */}
           <div style={{padding:"12px 14px 8px"}}>
             <div style={{display:"flex",alignItems:"center",gap:9,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
@@ -194,9 +293,9 @@ export default function TicketsView() {
           {/* List */}
           <div style={{flex:1,overflowY:"auto"}}>
             {filtered.map(t => {
-              const s = STATUS_T[t.status];
+              const st = STATUS_T[getStatus(t.id, t.status)];
               return (
-                <div key={t.id} className="ticket-row" onClick={()=>setSelectedId(t.id)}
+                <div key={t.id} className="ticket-row" onClick={()=>handleTicketSelect(t.id)}
                   style={{padding:"13px 16px",background:selectedId===t.id?"rgba(229,82,102,.07)":"transparent",borderLeft:`3px solid ${selectedId===t.id?C.coral:"transparent"}`,borderBottom:`1px solid ${C.border}`}}>
                   <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
                     <div style={{width:34,height:34,borderRadius:10,flexShrink:0,background:`${t.avatarColor}22`,border:`1px solid ${t.avatarColor}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11.5,fontWeight:700,color:t.avatarColor}}>{t.avatar}</div>
@@ -208,7 +307,7 @@ export default function TicketsView() {
                       <div style={{fontSize:12.5,fontWeight:t.unread?600:400,color:t.unread?C.text:C.sub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:5}}>{t.subject}</div>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                         <span style={{fontSize:11.5,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:150}}>{t.preview}</span>
-                        <span className="tag" style={{color:s.color,background:s.bg,marginLeft:6}}>{s.label}</span>
+                        <span className="tag" style={{color:st.color,background:st.bg,marginLeft:6}}>{st.label}</span>
                       </div>
                     </div>
                     {t.unread && <div style={{width:7,height:7,borderRadius:"50%",background:C.coral,flexShrink:0,marginTop:4}}/>}
@@ -219,42 +318,75 @@ export default function TicketsView() {
           </div>
         </div>
 
-        {/* Detail panel */}
+        {/* ── Detail / Chat panel ── */}
         {selected && (
-          <div className="sr" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+          <div
+            className={`sr tv-chat${mobilePanel === "list" ? " tv-chat-hidden" : ""}`}
+            style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}
+          >
             {/* Panel header */}
-            <div style={{padding:"15px 24px",borderBottom:`1px solid ${C.border}`,background:C.surface,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{display:"flex",alignItems:"center",gap:13}}>
+            <div className="tv-chat-header" style={{padding:"15px 24px",borderBottom:`1px solid ${C.border}`,background:C.surface,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+
+              {/* Customer meta — hidden on mobile via CSS */}
+              <div className="tv-chat-header-meta" style={{display:"flex",alignItems:"center",gap:13}}>
                 <div style={{width:40,height:40,borderRadius:12,flexShrink:0,background:`${selected.avatarColor}22`,border:`1px solid ${selected.avatarColor}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13.5,fontWeight:700,color:selected.avatarColor}}>{selected.avatar}</div>
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:3}}>
                     <span style={{fontSize:15,fontWeight:700,color:C.text}}>{selected.name}</span>
-                    <span className="tag" style={{color:STATUS_T[selected.status].color,background:STATUS_T[selected.status].bg}}>{STATUS_T[selected.status].label}</span>
+                    <span className="tag" style={{color:STATUS_T[effectiveStatus].color,background:STATUS_T[effectiveStatus].bg}}>{STATUS_T[effectiveStatus].label}</span>
                   </div>
                   <div style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · {selected.type}</div>
                 </div>
               </div>
+
+              {/* Back button — visible on mobile only via CSS */}
+              <button
+                className="tv-back-btn btn-ghost"
+                onClick={() => setMobilePanel("list")}
+                style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"4px 0"}}
+              >
+                ← Back to Tickets
+              </button>
+
+              {/* Action buttons */}
               <div style={{display:"flex",gap:8}}>
-                <button className="btn-ghost" style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13}}>⚠ Escalate</button>
-                <button className="btn-primary" style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}>✓ Close Ticket</button>
+                <button
+                  className="btn-ghost"
+                  onClick={handleEscalate}
+                  disabled={escalateDisabled}
+                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13}}
+                >⚠ Escalate</button>
+                <button
+                  className="btn-primary"
+                  onClick={handleClose}
+                  disabled={closeDisabled}
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}
+                >✓ Close Ticket</button>
               </div>
             </div>
 
+            {/* Toast */}
+            {toast && (
+              <div style={{padding:"9px 24px",flexShrink:0,background:toast.bg,borderBottom:`1px solid ${toast.color}44`,display:"flex",alignItems:"center",gap:8,animation:"fadeUp .3s cubic-bezier(.16,1,.3,1) both"}}>
+                <span style={{fontSize:13,color:toast.color,fontWeight:600}}>✓ {toast.message}</span>
+              </div>
+            )}
+
             {/* AI summary bar */}
-            <div style={{padding:"11px 24px",flexShrink:0,background:"rgba(229,82,102,.05)",borderBottom:"1px solid rgba(229,82,102,.14)",display:"flex",alignItems:"center",gap:10}}>
+            <div className="tv-ai-bar" style={{padding:"11px 24px",flexShrink:0,background:"rgba(229,82,102,.05)",borderBottom:"1px solid rgba(229,82,102,.14)",display:"flex",alignItems:"center",gap:10}}>
               <div style={{width:28,height:28,borderRadius:8,flexShrink:0,background:"rgba(229,82,102,.14)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>⚡</div>
-              <span style={{fontSize:12,fontWeight:700,color:C.coral}}>SOLVA AI · </span>
+              <span style={{fontSize:12,fontWeight:700,color:C.coral,flexShrink:0}}>SOLVA AI · </span>
               <span style={{fontSize:12.5,color:C.sub}}>
-                {selected.status==="resolved"  ? "This ticket was fully resolved by Solva AI without human intervention."
-                :selected.status==="escalated" ? "AI attempted resolution twice. Escalated — requires manual follow-up."
+                {effectiveStatus==="resolved"  ? "This ticket was fully resolved by Solva AI without human intervention."
+                :effectiveStatus==="escalated" ? "AI attempted resolution twice. Escalated — requires manual follow-up."
                 : "AI has responded and is awaiting customer reply."}
               </span>
             </div>
 
             {/* Messages */}
-            <div style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",background:C.bg}}>
-              {selected.messages.map((m,i) => <Bubble key={i} msg={m} idx={i}/>)}
-              {selected.status === "pending" && (
+            <div className="tv-messages" style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",background:C.bg}}>
+              {effectiveMsgs.map((m,i) => <Bubble key={i} msg={m} idx={i}/>)}
+              {effectiveStatus === "pending" && (
                 <div style={{display:"flex",justifyContent:"flex-end",margin:"8px 0"}}>
                   <div style={{padding:"11px 16px",borderRadius:14,borderBottomRightRadius:4,background:"rgba(229,82,102,.09)",border:"1px solid rgba(229,82,102,.18)",display:"flex",gap:5,alignItems:"center"}}>
                     {[0,1,2].map(i=><div key={i} className="typing-dot" style={{animationDelay:`${i*.18}s`}}/>)}
@@ -265,20 +397,30 @@ export default function TicketsView() {
             </div>
 
             {/* Reply box */}
-            <div style={{padding:"14px 24px",flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface}}>
-              <div style={{display:"flex",gap:7,marginBottom:10,flexWrap:"wrap"}}>
-                <span style={{fontSize:11,color:C.muted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",display:"flex",alignItems:"center"}}>AI Suggestions:</span>
+            <div className="tv-reply-box" style={{padding:"14px 24px",flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface}}>
+              <div className="tv-suggestions" style={{display:"flex",gap:7,marginBottom:10,flexWrap:"wrap"}}>
+                <span style={{fontSize:11,color:C.muted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",display:"flex",alignItems:"center",flexShrink:0}}>AI Suggestions:</span>
                 {["I've checked your order and…","A replacement has been arranged…","Your refund is being processed…"].map((s,i)=>(
                   <button key={i} onClick={()=>setReply(s)} className="btn-ghost" style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12}}>{s}</button>
                 ))}
               </div>
               <div style={{display:"flex",gap:10,alignItems:"flex-end",padding:"12px 16px",borderRadius:12,background:C.card,border:`1px solid ${C.border}`}}>
-                <textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder="Type a reply or override Solva's AI response…" rows={2} style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.6}}/>
+                <textarea
+                  value={reply}
+                  onChange={e=>setReply(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type a reply or override Solva's AI response…"
+                  rows={2}
+                  style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.6}}
+                />
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  <button className="btn-ghost" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13}}>📎</button>
-                  <button className="btn-primary" style={{padding:"8px 18px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}>Send →</button>
+                  <button className="btn-ghost" onClick={handleAttachment} style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13}}>📎</button>
+                  <button className="btn-primary" onClick={handleSend} style={{padding:"8px 18px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}>Send →</button>
                 </div>
               </div>
+              {showAttachHint && (
+                <p style={{fontSize:11.5,color:C.muted,marginTop:6,paddingLeft:2,animation:"fadeUp .3s cubic-bezier(.16,1,.3,1) both"}}>📎 File attachment coming soon</p>
+              )}
               <p style={{fontSize:11.5,color:C.muted,marginTop:8}}>⚡ Solva AI will respond automatically unless you send manually.</p>
             </div>
           </div>
