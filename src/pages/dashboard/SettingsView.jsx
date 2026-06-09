@@ -796,18 +796,21 @@ const DANGER_ACTIONS = [
     desc:"Resets all Solva settings to factory defaults. Your store connection and existing data will remain intact, but all AI configurations, automations, and preferences will be permanently cleared.",
     btn:"Reset Settings",
     warn:"This will erase all your custom AI configurations and automation settings permanently.",
+    confirmWord:"RESET",
   },
   {
     title:"Disconnect Shopify Store",
     desc:"Removes Solva's access to your store. All automations stop immediately. Your data is retained for 30 days before being purged.",
     btn:"Disconnect Store",
     warn:"All active automations will stop immediately and your store will be fully disconnected from Solva.",
+    confirmWord:"DISCONNECT",
   },
   {
     title:"Delete Account",
     desc:"Permanently deletes your Solva account, all configurations, and all data. This cannot be undone under any circumstances.",
     btn:"Delete Account",
     warn:"Your account, all stored data, and all configurations will be permanently deleted and cannot be recovered.",
+    confirmWord:"DELETE",
   },
 ];
 
@@ -818,7 +821,7 @@ function DangerSection() {
   function openModal(action) { setModal(action); setDeleteInput(""); }
   function closeModal()       { setModal(null);   setDeleteInput(""); }
 
-  const confirmed = deleteInput === "DELETE";
+  const confirmed = modal && deleteInput === modal.confirmWord;
 
   return (
     <div>
@@ -833,12 +836,12 @@ function DangerSection() {
               <p style={{fontSize:13,color:"#FF9090",lineHeight:1.65}}>{modal.warn}</p>
             </div>
             <p style={{fontSize:13,color:C.muted,lineHeight:1.65,marginBottom:20}}>{modal.desc}</p>
-            <p style={{fontSize:11.5,fontWeight:700,color:C.muted,letterSpacing:".05em",textTransform:"uppercase",marginBottom:8}}>Type DELETE to confirm</p>
+            <p style={{fontSize:11.5,fontWeight:700,color:C.muted,letterSpacing:".05em",textTransform:"uppercase",marginBottom:8}}>Type {modal.confirmWord} to confirm</p>
             <input
               type="text"
               value={deleteInput}
               onChange={e=>setDeleteInput(e.target.value)}
-              placeholder="DELETE"
+              placeholder={`Type "${modal.confirmWord}" to confirm`}
               style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,
                 border:`1px solid ${confirmed?C.red:C.border}`,color:C.text,fontSize:14,
                 fontFamily:"'Outfit',sans-serif",outline:"none",marginBottom:16,transition:"border-color .18s"}}
