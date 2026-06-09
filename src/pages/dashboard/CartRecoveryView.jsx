@@ -99,15 +99,38 @@ function GlobalStyles() {
       .blink{animation:blink 2.4s ease infinite;}
       .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:600;white-space:nowrap;}
       input{font-family:'Outfit',sans-serif;outline:none;}
+
+      /* ── Mobile layout ── */
+      .cr-back-btn{display:none;}
+      @media(max-width:767px){
+        .cr-root{overflow-x:hidden!important;height:auto!important;flex:none!important;}
+        .cr-topbar{height:auto!important;padding:10px 14px!important;}
+        .cr-kpi-strip{grid-template-columns:1fr 1fr!important;}
+        .cr-kpi-card{border-right:1px solid #200026!important;border-bottom:1px solid #200026!important;}
+        .cr-kpi-card:nth-child(2n){border-right:none!important;}
+        .cr-kpi-card:nth-child(3),.cr-kpi-card:nth-child(4){border-bottom:none!important;}
+        .cr-workspace{flex-direction:column!important;overflow:visible!important;}
+        .cr-list{width:100%!important;flex-shrink:0!important;border-right:none!important;border-bottom:1px solid #200026;}
+        .cr-list-hidden{display:none!important;}
+        .cr-detail{width:100%!important;overflow:visible!important;height:auto!important;}
+        .cr-detail-hidden{display:none!important;}
+        .cr-detail-meta{display:none!important;}
+        .cr-detail-header{padding:11px 14px!important;}
+        .cr-detail-body{overflow:visible!important;flex:none!important;padding:14px!important;}
+        .cr-two-col{grid-template-columns:1fr!important;}
+        .cr-back-btn{display:flex!important;align-items:center;}
+      }
     `}</style>
   );
 }
 
 export default function CartRecoveryView() {
-  const [filter,      setFilter]      = useState("All");
-  const [search,      setSearch]      = useState("");
-  const [selectedId,  setSelectedId]  = useState("CR-0291");
-  const [expandedStep,setExpandedStep]= useState(0);
+  const [filter,       setFilter]       = useState("All");
+  const [search,       setSearch]       = useState("");
+  const [selectedId,   setSelectedId]   = useState("CR-0291");
+  const [expandedStep, setExpandedStep] = useState(0);
+  const [mobilePanel,  setMobilePanel]  = useState("list");
+  const [modalOpen,    setModalOpen]    = useState(false);
 
   const filtered = CARTS.filter(c => {
     const mf =
@@ -118,21 +141,26 @@ export default function CartRecoveryView() {
     return mf && (c.name.toLowerCase().includes(search.toLowerCase()) || c.id.toLowerCase().includes(search.toLowerCase()));
   });
 
-  const selected        = CARTS.find(c => c.id === selectedId);
-  const totalRecovered  = CARTS.filter(c=>c.status==="recovered").reduce((s,c)=>s+c.value,0);
-  const counts          = {
-    "All":            CARTS.length,
-    "In Sequence":    CARTS.filter(c=>c.status==="in_sequence").length,
-    "Recovered":      CARTS.filter(c=>c.status==="recovered").length,
-    "Not Recovered":  CARTS.filter(c=>c.status==="failed").length,
+  const selected       = CARTS.find(c => c.id === selectedId);
+  const totalRecovered = CARTS.filter(c=>c.status==="recovered").reduce((s,c)=>s+c.value,0);
+  const counts         = {
+    "All":           CARTS.length,
+    "In Sequence":   CARTS.filter(c=>c.status==="in_sequence").length,
+    "Recovered":     CARTS.filter(c=>c.status==="recovered").length,
+    "Not Recovered": CARTS.filter(c=>c.status==="failed").length,
   };
 
+  function handleCartSelect(id) {
+    setSelectedId(id);
+    setMobilePanel("detail");
+  }
+
   return (
-    <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
+    <div className="cr-root" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",overflowX:"hidden",fontFamily:"'Outfit',sans-serif"}}>
       <GlobalStyles/>
 
       {/* Top bar */}
-      <div style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
+      <div className="cr-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
         <div>
           <h1 style={{fontFamily:"'Outfit',sans-serif",fontSize:17,fontWeight:700,color:C.text}}>Cart Recovery</h1>
           <p style={{fontSize:11.5,color:C.muted}}>${totalRecovered.toFixed(2)} recovered this week · {counts["In Sequence"]} carts in sequence</p>
@@ -147,14 +175,14 @@ export default function CartRecoveryView() {
       </div>
 
       {/* KPI strip */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
+      <div className="cr-kpi-strip" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
         {[
           {label:"Recovered Revenue", value:`$${totalRecovered.toFixed(2)}`, color:C.teal,  icon:"💰"},
           {label:"Recovery Rate",     value:"19.4%",                         color:C.coral, icon:"📈"},
           {label:"Carts in Sequence", value:counts["In Sequence"].toString(),color:C.amber, icon:"⏳"},
           {label:"Avg Cart Value",    value:"$178.20",                       color:C.blue,  icon:"🛒"},
         ].map((k,i)=>(
-          <div key={i} className="kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
+          <div key={i} className="cr-kpi-card kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${k.color}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{k.icon}</div>
             <div>
               <div style={{fontSize:18,fontWeight:800,color:k.color}}>{k.value}</div>
@@ -165,10 +193,13 @@ export default function CartRecoveryView() {
       </div>
 
       {/* Workspace */}
-      <div style={{flex:1,display:"flex",overflow:"hidden"}}>
+      <div className="cr-workspace" style={{flex:1,display:"flex",overflow:"hidden"}}>
 
-        {/* Cart list */}
-        <div style={{width:300,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}>
+        {/* ── Cart list panel ── */}
+        <div
+          className={`cr-list${mobilePanel==="detail"?" cr-list-hidden":""}`}
+          style={{width:300,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}
+        >
           <div style={{padding:"12px 12px 8px"}}>
             <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
               <span style={{color:C.muted,fontSize:14}}>🔍</span>
@@ -188,7 +219,7 @@ export default function CartRecoveryView() {
             {filtered.map(c=>{
               const s = STATUS_C[c.status];
               return (
-                <div key={c.id} className="cart-row" onClick={()=>setSelectedId(c.id)}
+                <div key={c.id} className="cart-row" onClick={()=>handleCartSelect(c.id)}
                   style={{padding:"13px 16px",background:selectedId===c.id?"rgba(229,82,102,.07)":"transparent",borderLeft:`3px solid ${selectedId===c.id?C.coral:"transparent"}`,borderBottom:`1px solid ${C.border}`}}>
                   <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
                     <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${c.avatarColor}22`,border:`1px solid ${c.avatarColor}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:c.avatarColor}}>{c.avatar}</div>
@@ -212,7 +243,7 @@ export default function CartRecoveryView() {
           </div>
 
           {/* Bottom totals */}
-          <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,background:C.card}}>
+          <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,background:C.card,flexShrink:0}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
               <span style={{fontSize:12,color:C.muted}}>Total abandoned value</span>
               <span style={{fontSize:13,fontWeight:700,color:C.text}}>${CARTS.reduce((s,c)=>s+c.value,0).toFixed(2)}</span>
@@ -224,12 +255,17 @@ export default function CartRecoveryView() {
           </div>
         </div>
 
-        {/* Detail panel */}
+        {/* ── Detail panel ── */}
         {selected && (
-          <div className="sr" style={{flex:1,display:"flex",flexDirection:"column",height:"100%",overflow:"hidden"}}>
+          <div
+            className={`sr cr-detail${mobilePanel==="list"?" cr-detail-hidden":""}`}
+            style={{flex:1,display:"flex",flexDirection:"column",height:"100%",overflow:"hidden"}}
+          >
             {/* Header */}
-            <div style={{padding:"15px 24px",borderBottom:`1px solid ${C.border}`,background:C.surface,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{display:"flex",alignItems:"center",gap:13}}>
+            <div className="cr-detail-header" style={{padding:"15px 24px",borderBottom:`1px solid ${C.border}`,background:C.surface,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+
+              {/* Customer meta — hidden on mobile */}
+              <div className="cr-detail-meta" style={{display:"flex",alignItems:"center",gap:13}}>
                 <div style={{width:40,height:40,borderRadius:12,flexShrink:0,background:`${selected.avatarColor}22`,border:`1px solid ${selected.avatarColor}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:selected.avatarColor}}>{selected.avatar}</div>
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
@@ -239,17 +275,32 @@ export default function CartRecoveryView() {
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Abandoned {selected.timeAgo}</span>
                 </div>
               </div>
-              <button className="btn-primary" style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}>
+
+              {/* Back button — mobile only */}
+              <button
+                className="cr-back-btn btn-ghost"
+                onClick={()=>setMobilePanel("list")}
+                style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}
+              >
+                ← Back to Carts
+              </button>
+
+              {/* Action button */}
+              <button
+                className="btn-primary"
+                onClick={()=>{ if(selected.status!=="in_sequence") setModalOpen(true); }}
+                style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}
+              >
                 {selected.status==="in_sequence"?"⚡ Trigger Next Step":"📋 View Order"}
               </button>
             </div>
 
             {/* Scrollable body */}
-            <div style={{flex:1,overflowY:"auto",padding:"22px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
+            <div className="cr-detail-body" style={{flex:1,overflowY:"auto",padding:"22px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
 
               {/* Outcome banner */}
               {selected.status==="recovered" && (
-                <div style={{padding:"14px 18px",borderRadius:14,background:"rgba(62,207,178,.08)",border:"1px solid rgba(62,207,178,.22)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{padding:"14px 18px",borderRadius:14,background:"rgba(62,207,178,.08)",border:"1px solid rgba(62,207,178,.22)",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <span style={{fontSize:22}}>🎉</span>
                     <div>
@@ -273,19 +324,20 @@ export default function CartRecoveryView() {
                 </div>
               )}
 
-              {/* Two-col */}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+              {/* Two-col: Products + Sequence */}
+              <div className="cr-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+
                 {/* Products */}
                 <div style={{padding:18,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
                   <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:14}}>Abandoned Items</h3>
                   {selected.products.map((p,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"9px 0",borderBottom:i<selected.products.length-1?`1px solid ${C.dim}`:"none"}}>
                       <div style={{width:34,height:34,borderRadius:8,flexShrink:0,background:C.dim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{p.emoji}</div>
-                      <div style={{flex:1}}>
+                      <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:2}}>{p.name}</div>
                         <div style={{fontSize:11.5,color:C.muted}}>{p.variant} · Qty: {p.qty}</div>
                       </div>
-                      <span style={{fontSize:14,fontWeight:700,color:C.text}}>${(p.price*p.qty).toFixed(2)}</span>
+                      <span style={{fontSize:14,fontWeight:700,color:C.text,flexShrink:0}}>${(p.price*p.qty).toFixed(2)}</span>
                     </div>
                   ))}
                   <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0 0",borderTop:`1px solid ${C.border}`,marginTop:8}}>
@@ -299,9 +351,9 @@ export default function CartRecoveryView() {
                   <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:14}}>Sequence Progress</h3>
                   <div style={{display:"flex",gap:8,marginBottom:14}}>
                     {[1,2,3].map(n=>{
-                      const sd   = selected.sequence[n-1];
-                      const done = sd.status==="sent"||sd.status==="converted";
-                      const active = n===selected.step&&selected.status==="in_sequence";
+                      const sd    = selected.sequence[n-1];
+                      const done  = sd.status==="sent"||sd.status==="converted";
+                      const active= n===selected.step&&selected.status==="in_sequence";
                       return (
                         <div key={n} style={{flex:1}}>
                           <div style={{height:5,borderRadius:3,background:sd.status==="converted"?C.teal:done?C.blue:active?C.coral:C.dim,marginBottom:6}}/>
@@ -334,13 +386,13 @@ export default function CartRecoveryView() {
                       </div>
                       {i<selected.sequence.length-1&&<div style={{width:2,flex:1,minHeight:20,background:step.status==="sent"||step.status==="converted"?`linear-gradient(${C.blue},${C.dim})`:C.dim,margin:"4px 0"}}/>}
                     </div>
-                    <div style={{flex:1}}>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,flexWrap:"wrap",gap:6}}>
                         <div>
                           <span style={{fontSize:13.5,fontWeight:700,color:C.text}}>{step.label}</span>
                           <span style={{fontSize:11,color:C.muted,marginLeft:8}}>· {step.sentAt}</span>
                         </div>
-                        <div style={{display:"flex",gap:6}}>
+                        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                           {(step.status==="sent"||step.status==="converted")&&(
                             <>
                               <span className="tag" style={{color:C.sub,background:C.dim,fontSize:10}}>👁 {step.opens}</span>
@@ -354,8 +406,8 @@ export default function CartRecoveryView() {
                       </div>
                       <div className="email-preview" onClick={()=>setExpandedStep(expandedStep===i?-1:i)}
                         style={{borderRadius:12,background:C.card,border:`1px solid ${C.border}`,overflow:"hidden"}}>
-                        <div style={{padding:"10px 14px",borderBottom:expandedStep===i?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                          <span style={{fontSize:12.5,fontWeight:600,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:300}}>{step.subject}</span>
+                        <div style={{padding:"10px 14px",borderBottom:expandedStep===i?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+                          <span style={{fontSize:12.5,fontWeight:600,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{step.subject}</span>
                           <span style={{fontSize:12,color:C.muted,flexShrink:0}}>{expandedStep===i?"▲":"▼"}</span>
                         </div>
                         {expandedStep===i&&(
@@ -372,6 +424,65 @@ export default function CartRecoveryView() {
           </div>
         )}
       </div>
+
+      {/* ── View Order Modal ── */}
+      {modalOpen && selected && (
+        <div
+          style={{position:"fixed",inset:0,background:"rgba(0,0,0,.72)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}
+          onClick={()=>setModalOpen(false)}
+        >
+          <div
+            style={{background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:16,padding:24,maxWidth:460,width:"100%",maxHeight:"82vh",overflowY:"auto",position:"relative"}}
+            onClick={e=>e.stopPropagation()}
+          >
+            {/* Customer info */}
+            <div style={{marginBottom:20,paddingBottom:16,borderBottom:`1px solid ${C.border}`}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:4}}>
+                <div style={{width:38,height:38,borderRadius:10,flexShrink:0,background:`${selected.avatarColor}22`,border:`1px solid ${selected.avatarColor}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:selected.avatarColor}}>{selected.avatar}</div>
+                <div>
+                  <h2 style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:2}}>{selected.name}</h2>
+                  <p style={{fontSize:12.5,color:C.muted}}>{selected.email}</p>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:8,marginTop:10}}>
+                <span className="tag" style={{color:C.muted,background:C.dim,fontSize:11}}>{selected.id}</span>
+                <span className="tag" style={{color:STATUS_C[selected.status].color,background:STATUS_C[selected.status].bg}}>{STATUS_C[selected.status].label}</span>
+                <span className="tag" style={{color:C.muted,background:C.dim,fontSize:11}}>Abandoned {selected.timeAgo}</span>
+              </div>
+            </div>
+
+            {/* Items list */}
+            <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:14}}>Abandoned Items</h3>
+            <div style={{marginBottom:16}}>
+              {selected.products.map((p,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 0",borderBottom:i<selected.products.length-1?`1px solid ${C.dim}`:"none"}}>
+                  <div style={{width:36,height:36,borderRadius:9,flexShrink:0,background:C.dim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19}}>{p.emoji}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13.5,fontWeight:600,color:C.text,marginBottom:3}}>{p.name}</div>
+                    <div style={{fontSize:12,color:C.muted}}>{p.variant} · Qty: {p.qty}</div>
+                  </div>
+                  <span style={{fontSize:14,fontWeight:700,color:C.text,flexShrink:0}}>${(p.price*p.qty).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Cart total */}
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 0",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,marginBottom:20}}>
+              <span style={{fontSize:14,fontWeight:600,color:C.sub}}>Cart Total</span>
+              <span style={{fontSize:22,fontWeight:800,color:C.coral}}>${selected.value.toFixed(2)}</span>
+            </div>
+
+            {/* Close button */}
+            <button
+              className="btn-primary"
+              onClick={()=>setModalOpen(false)}
+              style={{width:"100%",padding:"13px",borderRadius:10,color:"#fff",fontWeight:600,fontSize:14}}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
