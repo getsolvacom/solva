@@ -371,7 +371,10 @@ function AutomationsSection() {
   const [delay3,     setDelay3]     = useState("24 hours");
   const [delay3Val,  setDelay3Val]  = useState("");
   const [delay3Unit, setDelay3Unit] = useState("Hours");
-  const [saved,      setSaved]      = useState(false);
+  const [ticketLimit,  setTicketLimit]  = useState("Unlimited");
+  const [respDelay,    setRespDelay]    = useState("Instant");
+  const [respWindow,   setRespWindow]   = useState("24 hours");
+  const [saved,        setSaved]        = useState(false);
   const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
 
   const inputStyle = {flex:1,padding:"11px 12px",borderRadius:10,background:C.card,border:`1px solid ${C.borderHi}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"};
@@ -416,8 +419,8 @@ function AutomationsSection() {
         {support && (
           <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
             <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-              <div><FieldLabel hint="How many tickets AI can handle per day.">Daily Ticket Limit</FieldLabel><SelectInput value="Unlimited" onChange={()=>{}} options={["100","500","1,000","Unlimited"]}/></div>
-              <div><FieldLabel hint="Delay before AI sends its reply.">Response Delay</FieldLabel><SelectInput value="Instant" onChange={()=>{}} options={["Instant","30 seconds","2 minutes","5 minutes"]}/></div>
+              <div><FieldLabel hint="How many tickets AI can handle per day.">Daily Ticket Limit</FieldLabel><SelectInput value={ticketLimit} onChange={e=>setTicketLimit(e.target.value)} options={["100","500","1,000","Unlimited"]}/></div>
+              <div><FieldLabel hint="Delay before AI sends its reply.">Response Delay</FieldLabel><SelectInput value={respDelay} onChange={e=>setRespDelay(e.target.value)} options={["Instant","30 seconds","2 minutes","5 minutes"]}/></div>
             </div>
           </div>
         )}
@@ -448,7 +451,7 @@ function AutomationsSection() {
                   </div>
                 )}
               </div>
-              <div><FieldLabel hint="How long to wait before processing.">Response Window</FieldLabel><SelectInput value="24 hours" onChange={()=>{}} options={["6 hours","12 hours","24 hours","48 hours"]}/></div>
+              <div><FieldLabel hint="How long to wait before processing.">Response Window</FieldLabel><SelectInput value={respWindow} onChange={e=>setRespWindow(e.target.value)} options={["6 hours","12 hours","24 hours","48 hours"]}/></div>
             </div>
           </div>
         )}
