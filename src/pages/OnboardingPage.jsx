@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { C } from "../tokens";
 
 const CONFETTI_PIECES = Array.from({ length: 20 }, (_, i) => ({
@@ -365,7 +366,12 @@ function Step4({ goDash }) {
 }
 
 // ── MAIN EXPORT ──
-export default function OnboardingPage({ goBack, goDash, initialMode="signup" }) {
+export default function OnboardingPage() {
+  const navigate       = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialMode    = searchParams.get("mode") || "signup";
+  const goDash         = () => navigate("/dashboard");
+  const goBack         = () => navigate("/");
   const [step, setStep] = useState(1);
   const [mode, setMode] = useState(initialMode);
 

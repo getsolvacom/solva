@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import AppSidebar       from "./AppSidebar";
 import OverviewView     from "./OverviewView";
@@ -36,9 +37,14 @@ function DrawerLogo() {
   );
 }
 
-export default function DashboardShell({ view, setView, goLanding }) {
+export default function DashboardShell() {
+  const navigate             = useNavigate();
+  const { view: viewParam }  = useParams();
+  const view                 = viewParam || "overview";
+  const setView              = (key) => navigate(`/dashboard/${key}`);
+  const goLanding            = () => navigate("/");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const navigate = (key) => { setView(key); setDrawerOpen(false); };
+  const navTo                = (key) => { navigate(`/dashboard/${key}`); setDrawerOpen(false); };
 
   return (
     <div className="dash-root" style={{display:"flex",height:"100dvh",background:C.bg,overflow:"hidden",overflowX:"hidden"}}>
@@ -69,7 +75,7 @@ export default function DashboardShell({ view, setView, goLanding }) {
 
       {/* Desktop sidebar */}
       <div className="dash-sidebar">
-        <AppSidebar view={view} setView={setView} goLanding={goLanding}/>
+        <AppSidebar />
       </div>
 
       {/* Mobile overlay */}
@@ -80,7 +86,7 @@ export default function DashboardShell({ view, setView, goLanding }) {
         <div style={{padding:"0 18px 20px"}}><DrawerLogo/></div>
         <nav style={{flex:1,display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
           {NAV_ITEMS.map(({key,label,icon,badge})=>(
-            <div key={key} className={`mob-nav-item${view===key?" active":""}`} onClick={()=>navigate(key)}>
+            <div key={key} className={`mob-nav-item${view===key?" active":""}`} onClick={()=>navTo(key)}>
               <span style={{fontSize:14,flexShrink:0}}>{icon}</span>
               {label}
               {badge&&<span style={{marginLeft:"auto",fontSize:10.5,fontWeight:700,background:view===key?C.coral:C.dim,color:view===key?"#fff":C.muted,padding:"1px 7px",borderRadius:100}}>{badge}</span>}

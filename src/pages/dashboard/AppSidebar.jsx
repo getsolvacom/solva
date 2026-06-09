@@ -1,3 +1,4 @@
+import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 
 function SolvaLogo({ size=15 }) {
@@ -19,7 +20,12 @@ function SolvaLogo({ size=15 }) {
   );
 }
 
-export default function AppSidebar({ view, setView, goLanding }) {
+export default function AppSidebar() {
+  const navigate            = useNavigate();
+  const { view: viewParam } = useParams();
+  const view                = viewParam || "overview";
+  const setView             = (key) => navigate(`/dashboard/${key}`);
+  const goLanding           = () => navigate("/");
   const items = [
     {key:"overview",  label:"Overview",      icon:"◈"},
     {key:"tickets",   label:"AI Tickets",    icon:"✉",  badge:"12"},

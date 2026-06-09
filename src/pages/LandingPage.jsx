@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
 
 const PLANS = [
@@ -96,7 +97,8 @@ function SolvaLogo({ size=16 }) {
 
 const NAV_IDS = { "Features":"features", "How It Works":"how-it-works", "Pricing":"pricing" };
 
-export default function LandingPage({ goOnboard, goDash, goLogin }) {
+export default function LandingPage() {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
 
@@ -131,8 +133,8 @@ export default function LandingPage({ goOnboard, goDash, goLogin }) {
 
         {/* Desktop actions */}
         <div className="nav-actions-desktop">
-          <button className="btn-ghost" onClick={goLogin} style={{padding:"8px 18px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13.5}}>Sign In</button>
-          <button className="btn-primary" onClick={goOnboard} style={{padding:"9px 22px",borderRadius:8,color:"#fff",fontWeight:700,fontSize:13.5}}>Get Started →</button>
+          <button className="btn-ghost" onClick={()=>navigate("/onboarding?mode=login")} style={{padding:"8px 18px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13.5}}>Sign In</button>
+          <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"9px 22px",borderRadius:8,color:"#fff",fontWeight:700,fontSize:13.5}}>Get Started →</button>
         </div>
 
         {/* Mobile hamburger */}
@@ -150,11 +152,11 @@ export default function LandingPage({ goOnboard, goDash, goLogin }) {
               </span>
             ))}
             <div style={{display:"flex",flexDirection:"column",gap:10,paddingTop:14}}>
-              <button className="btn-ghost" onClick={()=>{closeMenu();goLogin();}}
+              <button className="btn-ghost" onClick={()=>{closeMenu();navigate("/onboarding?mode=login");}}
                 style={{padding:"12px",borderRadius:9,border:`1px solid ${C.border}`,color:C.sub,fontSize:14,width:"100%"}}>
                 Sign In
               </button>
-              <button className="btn-primary" onClick={()=>{closeMenu();goOnboard();}}
+              <button className="btn-primary" onClick={()=>{closeMenu();navigate("/onboarding");}}
                 style={{padding:"12px",borderRadius:9,color:"#fff",fontWeight:700,fontSize:14,width:"100%"}}>
                 Get Started →
               </button>
@@ -177,8 +179,8 @@ export default function LandingPage({ goOnboard, goDash, goLogin }) {
           Connect your Shopify store in 2 minutes. Solva handles every support ticket, deflects returns, and recovers abandoned carts — automatically, 24/7.
         </p>
         <div className="fu fu3" style={{display:"flex",gap:12,justifyContent:"center",marginBottom:64}}>
-          <button className="btn-primary" onClick={goOnboard} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
-          <button className="btn-ghost" onClick={goDash} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15}}>View Live Demo ↗</button>
+          <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
+          <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15}}>View Live Demo ↗</button>
         </div>
 
         {/* Stats bar */}
@@ -260,7 +262,7 @@ export default function LandingPage({ goOnboard, goDash, goLogin }) {
                   </div>
                 ))}
               </div>
-              <button className="btn-primary" onClick={goOnboard} style={{width:"100%",padding:"11px",borderRadius:9,color:"#fff",fontWeight:600,fontSize:13.5}}>Get Started →</button>
+              <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{width:"100%",padding:"11px",borderRadius:9,color:"#fff",fontWeight:600,fontSize:13.5}}>Get Started →</button>
             </div>
           ))}
         </div>
@@ -273,7 +275,7 @@ export default function LandingPage({ goOnboard, goDash, goLogin }) {
           Ready to solve everything<br/>on autopilot?
         </h2>
         <p className="cta-sub" style={{color:C.sub,fontSize:15.5,marginBottom:32,position:"relative"}}>Join 800+ Shopify stores already solving on autopilot with Solva.</p>
-        <button className="btn-primary" onClick={goOnboard} style={{padding:"16px 36px",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15.5,position:"relative"}}>
+        <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"16px 36px",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15.5,position:"relative"}}>
           Connect Your Store — It's Free →
         </button>
       </div>
