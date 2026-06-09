@@ -356,77 +356,137 @@ function AIConfigSection() {
 }
 
 function AutomationsSection() {
-  const [support,  setSupport]  = useState(true);
-  const [returns,  setReturns]  = useState(true);
-  const [cart,     setCart]     = useState(true);
-  const [cartCode, setCartCode] = useState("COMEBACK10");
-  const [saved,    setSaved]    = useState(false);
+  const [support,    setSupport]    = useState(true);
+  const [returns,    setReturns]    = useState(true);
+  const [cart,       setCart]       = useState(true);
+  const [cartCode,   setCartCode]   = useState("COMEBACK10");
+  const [deflectDisc,setDeflectDisc]= useState("10%");
+  const [customDisc, setCustomDisc] = useState("");
+  const [delay1,     setDelay1]     = useState("1 hour");
+  const [delay1Val,  setDelay1Val]  = useState("");
+  const [delay1Unit, setDelay1Unit] = useState("Hours");
+  const [delay2,     setDelay2]     = useState("6 hours");
+  const [delay2Val,  setDelay2Val]  = useState("");
+  const [delay2Unit, setDelay2Unit] = useState("Hours");
+  const [delay3,     setDelay3]     = useState("24 hours");
+  const [delay3Val,  setDelay3Val]  = useState("");
+  const [delay3Unit, setDelay3Unit] = useState("Hours");
+  const [saved,      setSaved]      = useState(false);
   const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
 
-  const items = [
-    {
-      icon:"🤖", label:"AI Support Agent",  desc:"Auto-resolve tickets, order inquiries, and FAQs",   color:C.teal,  on:support, toggle:()=>setSupport(v=>!v),
-      extra: support && (
-        <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-          <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-            <div><FieldLabel hint="How many tickets AI can handle per day.">Daily Ticket Limit</FieldLabel><SelectInput value="Unlimited" onChange={()=>{}} options={["100","500","1,000","Unlimited"]}/></div>
-            <div><FieldLabel hint="Delay before AI sends its reply.">Response Delay</FieldLabel><SelectInput value="Instant" onChange={()=>{}} options={["Instant","30 seconds","2 minutes","5 minutes"]}/></div>
+  const inputStyle = {flex:1,padding:"11px 12px",borderRadius:10,background:C.card,border:`1px solid ${C.borderHi}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"};
+
+  const delayField = (value, setValue, cVal, setCVal, unit, setUnit, presets, label) => (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      {value==="Custom..." ? (
+        <div style={{display:"flex",gap:7,alignItems:"center"}}>
+          <input type="number" value={cVal} onChange={e=>setCVal(e.target.value)} min={1} placeholder="e.g. 8" style={inputStyle}/>
+          <div style={{borderRadius:10,border:`1px solid ${C.border}`,background:C.surface,overflow:"hidden",flexShrink:0}}>
+            <select value={unit} onChange={e=>setUnit(e.target.value)}
+              style={{padding:"11px 10px",background:"transparent",border:"none",color:C.text,fontSize:13,cursor:"pointer",WebkitAppearance:"none",fontFamily:"'Outfit',sans-serif"}}>
+              {["Minutes","Hours","Days"].map(u=><option key={u} value={u} style={{background:"#110014"}}>{u}</option>)}
+            </select>
           </div>
+          <button onClick={()=>setValue(presets[0])} className="btn-ghost"
+            style={{padding:"0 11px",height:44,borderRadius:10,border:`1px solid ${C.border}`,color:C.muted,fontSize:17,flexShrink:0}}>✕</button>
         </div>
-      ),
-    },
-    {
-      icon:"↩️", label:"Return Deflection",  desc:"Offer smart alternatives before processing refunds", color:C.amber, on:returns, toggle:()=>setReturns(v=>!v),
-      extra: returns && (
-        <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-          <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-            <div><FieldLabel hint="Max % discount AI can offer.">Max Deflection Discount</FieldLabel><SelectInput value="10%" onChange={()=>{}} options={["5%","10%","15%","20%","25%"]}/></div>
-            <div><FieldLabel hint="How long to wait before processing.">Response Window</FieldLabel><SelectInput value="24 hours" onChange={()=>{}} options={["6 hours","12 hours","24 hours","48 hours"]}/></div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      icon:"🛒", label:"Cart Recovery",      desc:"3-touch AI sequence to recover abandoned carts",     color:C.blue,  on:cart,    toggle:()=>setCart(v=>!v),
-      extra: cart && (
-        <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-          <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}}>
-            <div><FieldLabel>Email 1 Delay</FieldLabel><SelectInput value="1 hour"   onChange={()=>{}} options={["30 minutes","1 hour","3 hours","6 hours"]}/></div>
-            <div><FieldLabel>Email 2 Delay</FieldLabel><SelectInput value="6 hours"  onChange={()=>{}} options={["3 hours","6 hours","12 hours","24 hours"]}/></div>
-            <div><FieldLabel>Email 3 Delay</FieldLabel><SelectInput value="24 hours" onChange={()=>{}} options={["12 hours","24 hours","48 hours"]}/></div>
-          </div>
-          <div><FieldLabel hint="Discount code included in Email 2.">Discount Code</FieldLabel><TextInput value={cartCode} onChange={e=>setCartCode(e.target.value)} placeholder="e.g. COMEBACK10"/></div>
-        </div>
-      ),
-    },
-  ];
+      ) : (
+        <SelectInput value={value} onChange={e=>setValue(e.target.value)} options={[...presets,"Custom..."]}/>
+      )}
+    </div>
+  );
 
   return (
     <div>
       <SectionTitle sub="Enable, disable, and configure each AI automation.">Automations</SectionTitle>
-      {items.map((a,i)=>(
-        <div key={i} className="section-card fu" style={{marginBottom:14}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:a.extra?20:0}}>
-            <div style={{display:"flex",alignItems:"center",gap:13}}>
-              <div style={{width:42,height:42,borderRadius:12,background:`${a.color}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{a.icon}</div>
-              <div>
-                <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>{a.label}</div>
-                <div style={{fontSize:12.5,color:C.muted}}>{a.desc}</div>
-              </div>
+
+      {/* AI Support Agent */}
+      <div className="section-card fu" style={{marginBottom:14}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:support?20:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:13}}>
+            <div style={{width:42,height:42,borderRadius:12,background:`${C.teal}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,color:C.teal}}>🤖</div>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>AI Support Agent</div>
+              <div style={{fontSize:12.5,color:C.muted}}>Auto-resolve tickets, order inquiries, and FAQs</div>
             </div>
-            <Toggle on={a.on} onToggle={a.toggle}/>
           </div>
-          {a.extra}
+          <Toggle on={support} onToggle={()=>setSupport(v=>!v)}/>
         </div>
-      ))}
+        {support && (
+          <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
+            <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+              <div><FieldLabel hint="How many tickets AI can handle per day.">Daily Ticket Limit</FieldLabel><SelectInput value="Unlimited" onChange={()=>{}} options={["100","500","1,000","Unlimited"]}/></div>
+              <div><FieldLabel hint="Delay before AI sends its reply.">Response Delay</FieldLabel><SelectInput value="Instant" onChange={()=>{}} options={["Instant","30 seconds","2 minutes","5 minutes"]}/></div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Return Deflection */}
+      <div className="section-card fu fu1" style={{marginBottom:14}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:returns?20:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:13}}>
+            <div style={{width:42,height:42,borderRadius:12,background:`${C.amber}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:C.amber}}>↩️</div>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>Return Deflection</div>
+              <div style={{fontSize:12.5,color:C.muted}}>Offer smart alternatives before processing refunds</div>
+            </div>
+          </div>
+          <Toggle on={returns} onToggle={()=>setReturns(v=>!v)}/>
+        </div>
+        {returns && (
+          <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
+            <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+              <div>
+                <FieldLabel hint="Max % discount AI can offer.">Max Deflection Discount</FieldLabel>
+                <SelectInput value={deflectDisc} onChange={e=>setDeflectDisc(e.target.value)} options={["5%","10%","15%","20%","25%","Custom..."]}/>
+                {deflectDisc==="Custom..." && (
+                  <div style={{marginTop:8,display:"flex",alignItems:"center",gap:8}}>
+                    <input type="number" value={customDisc} onChange={e=>setCustomDisc(e.target.value)} min={1} max={99} placeholder="e.g. 12" style={{...inputStyle,flex:1}}/>
+                    <span style={{fontSize:14,fontWeight:700,color:C.sub,flexShrink:0}}>%</span>
+                  </div>
+                )}
+              </div>
+              <div><FieldLabel hint="How long to wait before processing.">Response Window</FieldLabel><SelectInput value="24 hours" onChange={()=>{}} options={["6 hours","12 hours","24 hours","48 hours"]}/></div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Cart Recovery */}
+      <div className="section-card fu fu2" style={{marginBottom:14}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:cart?20:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:13}}>
+            <div style={{width:42,height:42,borderRadius:12,background:`${C.blue}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,color:C.blue}}>🛒</div>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>Cart Recovery</div>
+              <div style={{fontSize:12.5,color:C.muted}}>3-touch AI sequence to recover abandoned carts</div>
+            </div>
+          </div>
+          <Toggle on={cart} onToggle={()=>setCart(v=>!v)}/>
+        </div>
+        {cart && (
+          <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
+            <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}}>
+              {delayField(delay1,setDelay1,delay1Val,setDelay1Val,delay1Unit,setDelay1Unit,["30 minutes","1 hour","3 hours","6 hours"],"Email 1 Delay")}
+              {delayField(delay2,setDelay2,delay2Val,setDelay2Val,delay2Unit,setDelay2Unit,["3 hours","6 hours","12 hours","24 hours"],"Email 2 Delay")}
+              {delayField(delay3,setDelay3,delay3Val,setDelay3Val,delay3Unit,setDelay3Unit,["12 hours","24 hours","48 hours"],"Email 3 Delay")}
+            </div>
+            <div><FieldLabel hint="Discount code included in Email 2.">Discount Code</FieldLabel><TextInput value={cartCode} onChange={e=>setCartCode(e.target.value)} placeholder="e.g. COMEBACK10"/></div>
+          </div>
+        )}
+      </div>
+
       <SaveBar onSave={save} saved={saved}/>
     </div>
   );
 }
 
 function NotificationsSection() {
-  const [prefs, setPrefs] = useState({weeklyReport:true,escalation:true,cartRecovered:false,returnDeflected:false,newTicket:false,dailySummary:true});
-  const [saved, setSaved] = useState(false);
+  const [prefs,     setPrefs]     = useState({weeklyReport:true,escalation:true,cartRecovered:false,returnDeflected:false,newTicket:false,dailySummary:true});
+  const [aiDigest,  setAiDigest]  = useState(false);
+  const [saved,     setSaved]     = useState(false);
   const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
 
   const notifs = [
@@ -455,32 +515,52 @@ function NotificationsSection() {
           </div>
         ))}
       </div>
+
+      {/* Enterprise premium digest card */}
+      <div style={{padding:1,borderRadius:15,background:`linear-gradient(135deg,${C.coral},${C.magenta},${C.violet})`,marginBottom:16}} className="fu fu1">
+        <div style={{borderRadius:14,background:C.card,padding:22}}>
+          <p style={{fontSize:11,fontWeight:700,color:C.coral,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Enterprise Alerts</p>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:5}}>Weekly AI Analytics Digest</div>
+              <div style={{fontSize:12.5,color:C.muted,lineHeight:1.65}}>Receive an executive summary email every Monday morning with your full AI performance report — ticket trends, revenue recovered, and deflection rates.</div>
+            </div>
+            <Toggle on={aiDigest} onToggle={()=>setAiDigest(v=>!v)} size={38}/>
+          </div>
+        </div>
+      </div>
+
       <SaveBar onSave={save} saved={saved}/>
     </div>
   );
 }
 
 function TeamSection() {
-  const [members,     setMembers]     = useState([
+  const [members,      setMembers]      = useState([
     {name:"You (Owner)",email:"owner@yourstore.com",  role:"Admin",   avatar:"YO",color:C.coral,  you:true },
     {name:"Sarah K.",  email:"sarah.k@yourstore.com", role:"Manager", avatar:"SK",color:C.blue,   you:false},
     {name:"James O.",  email:"james.o@yourstore.com", role:"Support", avatar:"JO",color:C.teal,   you:false},
   ]);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole,  setInviteRole]  = useState("Support");
-  const [saved,       setSaved]       = useState(false);
+  const [pendingInvites, setPendingInvites] = useState([]);
+  const [inviteEmail,  setInviteEmail]  = useState("");
+  const [inviteRole,   setInviteRole]   = useState("Support");
+  const [saved,        setSaved]        = useState(false);
 
   const invite = () => {
     if(!inviteEmail) return;
-    setMembers(m=>[...m,{name:inviteEmail.split("@")[0],email:inviteEmail,role:inviteRole,avatar:inviteEmail[0].toUpperCase(),color:C.magenta,you:false}]);
+    setPendingInvites(p=>[...p,{email:inviteEmail,role:inviteRole}]);
     setInviteEmail(""); setSaved(true); setTimeout(()=>setSaved(false),2500);
   };
+
+  const revoke = (idx) => setPendingInvites(p=>p.filter((_,i)=>i!==idx));
 
   return (
     <div>
       <SectionTitle sub="Manage who has access to your Solva dashboard.">Team Members</SectionTitle>
+
+      {/* Active Members */}
       <div className="section-card fu">
-        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Current Members ({members.length})</p>
+        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Active Members ({members.length})</p>
         {members.map((m,i)=>(
           <div key={i} className="member-row" style={{display:"flex",alignItems:"center",gap:13,padding:"11px 10px",borderRadius:10,borderBottom:i<members.length-1?`1px solid ${C.dim}`:"none"}}>
             <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${m.color}20`,border:`1px solid ${m.color}28`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:m.color}}>{m.avatar}</div>
@@ -498,7 +578,29 @@ function TeamSection() {
           </div>
         ))}
       </div>
-      <div className="section-card fu fu1">
+
+      {/* Pending Invitations */}
+      {pendingInvites.length>0 && (
+        <div className="section-card fu fu1">
+          <p style={{fontSize:11,fontWeight:700,color:C.amber,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Pending Invitations ({pendingInvites.length})</p>
+          {pendingInvites.map((p,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:13,padding:"11px 10px",borderRadius:10,borderBottom:i<pendingInvites.length-1?`1px solid ${C.dim}`:"none"}}>
+              <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:"rgba(240,160,75,.14)",border:"1px solid rgba(240,160,75,.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>✉️</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13.5,fontWeight:600,color:C.sub,marginBottom:4}}>{p.email}</div>
+                <span className="tag" style={{color:C.amber,background:"rgba(240,160,75,.10)"}}>Pending</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+                <span className="tag" style={{color:p.role==="Admin"?C.coral:p.role==="Manager"?C.blue:C.sub,background:p.role==="Admin"?"rgba(229,82,102,.10)":p.role==="Manager"?"rgba(91,173,255,.10)":C.dim}}>{p.role}</span>
+                <button onClick={()=>revoke(i)} style={{padding:"4px 12px",borderRadius:7,border:`1px solid rgba(229,82,102,.35)`,background:"rgba(229,82,102,.08)",color:C.coral,fontSize:12,fontWeight:600,cursor:"pointer"}}>Revoke</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Invite Form */}
+      <div className="section-card fu fu2">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Invite New Member</p>
         <div className="sv-invite-grid" style={{display:"grid",gridTemplateColumns:"1fr 160px auto",gap:12,alignItems:"end"}}>
           <div><FieldLabel>Email Address</FieldLabel><TextInput value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)} placeholder="colleague@yourstore.com"/></div>
