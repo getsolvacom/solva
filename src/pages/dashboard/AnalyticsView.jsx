@@ -31,25 +31,25 @@ const ANALYTICS_DATA = {
 const KPI_DATA = {
   "7D": [
     {label:"Revenue Recovered", value:"$12,430", change:"+24%", color:C.teal,    icon:"💰"},
-    {label:"Tickets Resolved",  value:"408",      change:"+18%", color:C.coral,   icon:"✉"},
-    {label:"Returns Deflected", value:"76",        change:"+12%", color:C.amber,   icon:"🛡"},
-    {label:"Hours Saved",       value:"47.5h",     change:"+31%", color:C.blue,    icon:"⏱"},
+    {label:"Tickets Resolved",  value:"408",      change:"+18%", color:C.coral,   icon:"📧"},
+    {label:"Returns Deflected", value:"76",        change:"+12%", color:C.amber,   icon:"🛡️"},
+    {label:"Hours Saved",       value:"47.5h",     change:"+31%", color:C.blue,    icon:"⏱️"},
     {label:"Avg Response",      value:"<45s",      change:"-18%", color:C.magenta, icon:"⚡"},
     {label:"Satisfaction",      value:"98.3%",     change:"+2%",  color:C.violet,  icon:"⭐"},
   ],
   "30D":[
     {label:"Revenue Recovered", value:"$36,820", change:"+31%", color:C.teal,    icon:"💰"},
-    {label:"Tickets Resolved",  value:"1,247",   change:"+22%", color:C.coral,   icon:"✉"},
-    {label:"Returns Deflected", value:"217",      change:"+15%", color:C.amber,   icon:"🛡"},
-    {label:"Hours Saved",       value:"184h",     change:"+28%", color:C.blue,    icon:"⏱"},
+    {label:"Tickets Resolved",  value:"1,247",   change:"+22%", color:C.coral,   icon:"📧"},
+    {label:"Returns Deflected", value:"217",      change:"+15%", color:C.amber,   icon:"🛡️"},
+    {label:"Hours Saved",       value:"184h",     change:"+28%", color:C.blue,    icon:"⏱️"},
     {label:"Avg Response",      value:"<52s",     change:"-12%", color:C.magenta, icon:"⚡"},
     {label:"Satisfaction",      value:"97.8%",    change:"+1%",  color:C.violet,  icon:"⭐"},
   ],
   "90D":[
     {label:"Revenue Recovered", value:"$113,320", change:"+41%", color:C.teal,    icon:"💰"},
-    {label:"Tickets Resolved",  value:"3,367",    change:"+38%", color:C.coral,   icon:"✉"},
-    {label:"Returns Deflected", value:"577",       change:"+29%", color:C.amber,   icon:"🛡"},
-    {label:"Hours Saved",       value:"512h",      change:"+44%", color:C.blue,    icon:"⏱"},
+    {label:"Tickets Resolved",  value:"3,367",    change:"+38%", color:C.coral,   icon:"📧"},
+    {label:"Returns Deflected", value:"577",       change:"+29%", color:C.amber,   icon:"🛡️"},
+    {label:"Hours Saved",       value:"512h",      change:"+44%", color:C.blue,    icon:"⏱️"},
     {label:"Avg Response",      value:"<48s",      change:"-22%", color:C.magenta, icon:"⚡"},
     {label:"Satisfaction",      value:"98.1%",     change:"+3%",  color:C.violet,  icon:"⭐"},
   ],
@@ -69,9 +69,9 @@ const DOW_DATA = [
 ];
 
 const AUTOMATIONS = [
-  {name:"AI Support Agent", icon:"🤖",color:C.teal,  triggers:"1,247",rate:"87%",  rateVal:87,  impact:"+$14,200 cost saved", trend:"+18%"},
-  {name:"Cart Recovery",    icon:"🛒",color:C.blue,  triggers:"312",  rate:"19.5%",rateVal:19.5,impact:"+$8,420 recovered",   trend:"+24%"},
-  {name:"Return Deflection",icon:"↩", color:C.amber, triggers:"247",  rate:"28%",  rateVal:28,  impact:"+$2,840 saved",       trend:"+12%"},
+  {name:"AI Support Agent", icon:"🤖", color:C.teal,  triggers:"1,247",rate:"87%",  rateVal:87,  impact:"+$14,200 cost saved", trend:"+18%"},
+  {name:"Cart Recovery",    icon:"🛒", color:C.blue,  triggers:"312",  rate:"19.5%",rateVal:19.5,impact:"+$8,420 recovered",   trend:"+24%"},
+  {name:"Return Deflection",icon:"↩️", color:C.amber, triggers:"247",  rate:"28%",  rateVal:28,  impact:"+$2,840 saved",       trend:"+12%"},
 ];
 
 const METRIC_CFG = {
@@ -104,6 +104,18 @@ function GlobalStyles() {
       .blink{animation:blink 2.4s ease infinite;}
       .range-tab,.metric-tab{cursor:pointer;transition:all .15s ease;font-family:'Outfit',sans-serif;}
       .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:600;white-space:nowrap;}
+
+      /* ── Mobile layout ── */
+      @media(max-width:767px){
+        .av-root{overflow-x:hidden!important;height:auto!important;flex:none!important;}
+        .av-topbar{height:auto!important;padding:10px 14px!important;flex-wrap:wrap!important;gap:8px!important;}
+        .av-body{padding:12px 14px!important;gap:12px!important;overflow-x:hidden!important;}
+        .av-kpi-grid{grid-template-columns:1fr 1fr!important;gap:9px!important;}
+        .av-main-grid{grid-template-columns:1fr!important;}
+        .av-lower-grid{grid-template-columns:1fr!important;}
+        .av-insights-grid{grid-template-columns:1fr!important;}
+        .av-chart-wrap{overflow-x:hidden!important;max-width:100%!important;}
+      }
     `}</style>
   );
 }
@@ -123,25 +135,28 @@ function ChartTip({ active, payload, label, prefix="" }) {
 }
 
 export default function AnalyticsView() {
-  const [range,      setRange]      = useState("7D");
-  const [metric,     setMetric]     = useState("revenue");
-  const [donutHover, setDonutHover] = useState(null);
+  const [range,         setRange]         = useState("7D");
+  const [metric,        setMetric]        = useState("revenue");
+  const [donutHover,    setDonutHover]    = useState(null);
+  const [activePeakDay, setActivePeakDay] = useState(null);
 
-  const chartData = ANALYTICS_DATA[range];
-  const kpis      = KPI_DATA[range];
-  const mc        = METRIC_CFG[metric];
+  const chartData      = ANALYTICS_DATA[range];
+  const kpis           = KPI_DATA[range];
+  const mc             = METRIC_CFG[metric];
+  const defaultPeakDay = DOW_DATA.reduce((max,d) => d.tickets > max.tickets ? d : max, DOW_DATA[0]);
+  const peakDay        = activePeakDay || defaultPeakDay;
 
   return (
-    <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
+    <div className="av-root" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",overflowX:"hidden",fontFamily:"'Outfit',sans-serif"}}>
       <GlobalStyles/>
 
       {/* Top bar */}
-      <div style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
+      <div className="av-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
         <div>
           <h1 style={{fontFamily:"'Outfit',sans-serif",fontSize:17,fontWeight:700,color:C.text}}>Analytics</h1>
           <p style={{fontSize:11.5,color:C.muted}}>Full performance breakdown · Solva AI</p>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",justifyContent:"flex-end"}}>
           {/* Range selector */}
           <div style={{display:"flex",gap:3,padding:"3px",borderRadius:9,background:C.card,border:`1px solid ${C.border}`}}>
             {["7D","30D","90D"].map(r=>(
@@ -160,15 +175,15 @@ export default function AnalyticsView() {
       </div>
 
       {/* Scrollable body */}
-      <div style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",gap:18,background:C.bg}}>
+      <div className="av-body" style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",gap:18,background:C.bg}}>
 
         {/* KPI Cards */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:12}}>
+        <div className="av-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:12}}>
           {kpis.map((k,i)=>(
             <div key={i} className={`kpi-card fu fu${Math.min(i+1,6)}`}
               style={{padding:"16px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-                <div style={{width:32,height:32,borderRadius:9,background:`${k.color}14`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{k.icon}</div>
+                <div style={{width:32,height:32,borderRadius:9,background:`${k.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:k.color}}>{k.icon}</div>
                 <span style={{fontSize:11,padding:"2px 7px",borderRadius:100,background:"rgba(62,207,178,.12)",color:C.teal,fontWeight:700}}>{k.change}</span>
               </div>
               <div style={{fontSize:20,fontWeight:800,color:k.color,marginBottom:3}}>{k.value}</div>
@@ -178,16 +193,16 @@ export default function AnalyticsView() {
         </div>
 
         {/* Area chart + Donut */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 280px",gap:16}}>
+        <div className="av-main-grid" style={{display:"grid",gridTemplateColumns:"1fr 280px",gap:16}}>
 
           {/* Area chart */}
-          <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <div className="av-chart-wrap" style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:10}}>
               <div>
                 <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>{mc.label}</h3>
                 <p style={{fontSize:11.5,color:C.muted}}>{range==="7D"?"Last 7 days":range==="30D"?"Last 30 days":"Last 90 days"}</p>
               </div>
-              <div style={{display:"flex",gap:6}}>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                 {Object.entries(METRIC_CFG).map(([key,cfg])=>(
                   <button key={key} className="metric-tab" onClick={()=>setMetric(key)}
                     style={{padding:"5px 13px",borderRadius:8,border:`1px solid ${metric===key?`${cfg.color}40`:C.border}`,background:metric===key?`${cfg.color}18`:"transparent",color:metric===key?cfg.color:C.muted,fontSize:12,fontWeight:metric===key?700:400}}>
@@ -207,7 +222,7 @@ export default function AnalyticsView() {
                 <CartesianGrid strokeDasharray="3 3" stroke={C.dim}/>
                 <XAxis dataKey="label" tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
                 <YAxis tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
-                <Tooltip content={<ChartTip prefix={mc.prefix}/>}/>
+                <Tooltip content={<ChartTip prefix={mc.prefix}/>} cursor={{ fill:"rgba(255,255,255,0.04)" }}/>
                 <Area type="monotone" dataKey={metric} stroke={mc.color} strokeWidth={2.5} fill="url(#anGrad)" dot={false} activeDot={{r:5,fill:mc.color,strokeWidth:0}}/>
               </AreaChart>
             </ResponsiveContainer>
@@ -251,14 +266,19 @@ export default function AnalyticsView() {
         </div>
 
         {/* Bar chart + Performance table */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div className="av-lower-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
 
           {/* Bar chart */}
-          <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22}}>
+          <div className="av-chart-wrap" style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22}}>
             <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Busiest Days</h3>
             <p style={{fontSize:11.5,color:C.muted,marginBottom:18}}>Tickets resolved by day of week</p>
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={DOW_DATA} margin={{top:0,right:4,bottom:0,left:-24}} barSize={28}>
+              <BarChart
+                data={DOW_DATA}
+                margin={{top:0,right:4,bottom:0,left:-24}}
+                barSize={28}
+                onMouseLeave={()=>setActivePeakDay(null)}
+              >
                 <defs>
                   <linearGradient id="barG" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%"   stopColor="#E55266" stopOpacity={1}/>
@@ -268,13 +288,22 @@ export default function AnalyticsView() {
                 <CartesianGrid strokeDasharray="3 3" stroke={C.dim} vertical={false}/>
                 <XAxis dataKey="day" tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
                 <YAxis tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
-                <Tooltip contentStyle={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,color:C.text}}/>
-                <Bar dataKey="tickets" fill="url(#barG)" radius={[6,6,0,0]}/>
+                <Tooltip
+                  contentStyle={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,color:C.text}}
+                  cursor={{ fill:"rgba(255,255,255,0.04)" }}
+                />
+                <Bar
+                  dataKey="tickets"
+                  fill="url(#barG)"
+                  radius={[6,6,0,0]}
+                  onMouseEnter={(entry) => setActivePeakDay({day:entry.day, tickets:entry.tickets})}
+                  onClick={(entry) => setActivePeakDay({day:entry.day, tickets:entry.tickets})}
+                />
               </BarChart>
             </ResponsiveContainer>
             <div style={{marginTop:14,padding:"9px 14px",borderRadius:9,background:"rgba(229,82,102,.07)",border:"1px solid rgba(229,82,102,.16)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:12.5,color:C.sub}}>📈 Peak day — <span style={{color:C.coral,fontWeight:700}}>Friday</span></span>
-              <span style={{fontSize:12.5,fontWeight:700,color:C.coral}}>91 tickets</span>
+              <span style={{fontSize:12.5,color:C.sub}}>📈 Peak day — <span style={{color:C.coral,fontWeight:700}}>{peakDay.day}</span></span>
+              <span style={{fontSize:12.5,fontWeight:700,color:C.coral}}>{peakDay.tickets} tickets</span>
             </div>
           </div>
 
@@ -291,7 +320,7 @@ export default function AnalyticsView() {
               <div key={i} className="perf-row" style={{padding:"12px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none",borderRadius:6}}>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 72px 64px",alignItems:"center",marginBottom:8}}>
                   <div style={{display:"flex",alignItems:"center",gap:9}}>
-                    <div style={{width:30,height:30,borderRadius:8,flexShrink:0,background:`${a.color}14`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>{a.icon}</div>
+                    <div style={{width:30,height:30,borderRadius:8,flexShrink:0,background:`${a.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,color:a.color}}>{a.icon}</div>
                     <div>
                       <div style={{fontSize:13,fontWeight:600,color:C.text}}>{a.name}</div>
                       <div style={{fontSize:11,color:C.teal,fontWeight:600,marginTop:2}}>{a.impact}</div>
@@ -316,14 +345,14 @@ export default function AnalyticsView() {
         </div>
 
         {/* Insight strip */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,paddingBottom:8}}>
+        <div className="av-insights-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,paddingBottom:8}}>
           {[
-            {icon:"🏆",color:C.coral, label:"Best performing automation", value:"AI Support Agent",          sub:"87% auto-resolution rate this period"},
-            {icon:"📈",color:C.teal,  label:"Fastest growing metric",     value:"Hours Saved",               sub:"+31% vs last period · 47.5h this week"},
-            {icon:"💡",color:C.amber, label:"AI recommendation",           value:"Increase cart recovery window",sub:"Friday carts convert 2× faster — extend to 48h"},
+            {icon:"🏆",color:C.coral, label:"Best performing automation", value:"AI Support Agent",             sub:"87% auto-resolution rate this period"},
+            {icon:"📈",color:C.teal,  label:"Fastest growing metric",     value:"Hours Saved",                  sub:"+31% vs last period · 47.5h this week"},
+            {icon:"💡",color:C.amber, label:"AI recommendation",           value:"Increase cart recovery window", sub:"Friday carts convert 2× faster — extend to 48h"},
           ].map((ins,i)=>(
             <div key={i} style={{padding:"16px 18px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`,display:"flex",gap:13,alignItems:"flex-start"}}>
-              <div style={{width:38,height:38,borderRadius:10,flexShrink:0,background:`${ins.color}14`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19}}>{ins.icon}</div>
+              <div style={{width:38,height:38,borderRadius:10,flexShrink:0,background:`${ins.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,color:ins.color}}>{ins.icon}</div>
               <div>
                 <div style={{fontSize:10.5,color:C.muted,fontWeight:600,textTransform:"uppercase",letterSpacing:".06em",marginBottom:5}}>{ins.label}</div>
                 <div style={{fontSize:14,fontWeight:700,color:ins.color,marginBottom:4}}>{ins.value}</div>
