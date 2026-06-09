@@ -52,6 +52,10 @@ function GlobalStyles() {
       @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:.15;}}
       @keyframes savedPop{0%{opacity:0;transform:scale(.9);}60%{transform:scale(1.04);}100%{opacity:1;transform:scale(1);}}
+      @keyframes toastSlideIn{from{opacity:0;transform:translateX(70px);}to{opacity:1;transform:translateX(0);}}
+      @keyframes toastFadeOut{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(70px);}}
+      .sv-toast-in{animation:toastSlideIn .35s cubic-bezier(.16,1,.3,1) both;}
+      .sv-toast-out{animation:toastFadeOut .3s ease forwards;}
       .fu{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) both;}
       .fu1{animation-delay:.05s;}.fu2{animation-delay:.10s;}.fu3{animation-delay:.15s;}.fu4{animation-delay:.20s;}
       .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;}
@@ -616,32 +620,152 @@ function TeamSection() {
   );
 }
 
+const CURRENT_PLAN = "Growth";
+const INVOICES = [
+  {date:"Jun 1, 2026", id:"INV-2026-006", amount:"$599.00"},
+  {date:"May 1, 2026", id:"INV-2026-005", amount:"$599.00"},
+  {date:"Apr 1, 2026", id:"INV-2026-004", amount:"$599.00"},
+  {date:"Mar 1, 2026", id:"INV-2026-003", amount:"$599.00"},
+];
+
 function BillingSection() {
+  const [planModal,      setPlanModal]      = useState(null);
+  const [planToast,      setPlanToast]      = useState(false);
+  const [planToastFade,  setPlanToastFade]  = useState(false);
+  const [dlToast,        setDlToast]        = useState(false);
+  const [dlToastFade,    setDlToastFade]    = useState(false);
+
   const usage = [
-    {label:"Tickets Resolved", used:1247,limit:5000,color:C.coral},
-    {label:"Cart Recoveries",  used:61,  limit:500, color:C.blue },
-    {label:"Returns Deflected",used:69,  limit:200, color:C.amber},
+    {label:"Tickets Resolved", used:1247, limit:5000, color:C.coral},
+    {label:"Cart Recoveries",  used:61,   limit:500,  color:C.blue },
+    {label:"Returns Deflected",used:69,   limit:200,  color:C.amber},
   ];
+
+  const curIdx = PLANS.findIndex(p=>p.name===CURRENT_PLAN);
+
+  function handlePlanClick(p, i) {
+    if (p.name === CURRENT_PLAN) return;
+    setPlanModal({ name:p.name, direction: i > curIdx ? "upgrade" : "downgrade" });
+  }
+
+  function handleConfirm() {
+    setPlanModal(null);
+    setPlanToast(true); setPlanToastFade(false);
+    setTimeout(()=>setPlanToastFade(true), 2700);
+    setTimeout(()=>{ setPlanToast(false); setPlanToastFade(false); }, 3000);
+  }
+
+  function handleDownload() {
+    setDlToast(true); setDlToastFade(false);
+    setTimeout(()=>setDlToastFade(true), 2700);
+    setTimeout(()=>{ setDlToast(false); setDlToastFade(false); }, 3000);
+  }
+
   return (
     <div>
       <SectionTitle sub="Manage your plan, usage, and payment details.">Billing & Plan</SectionTitle>
+
+      {/* Plan change modal */}
+      {planModal && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.74)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+          <div className="fu" style={{background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:16,padding:28,maxWidth:420,width:"100%"}}>
+            <h3 style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:10}}>Confirm Plan Change</h3>
+            <p style={{fontSize:14,color:C.sub,lineHeight:1.7,marginBottom:24}}>
+              Are you sure you want to change your plan to{" "}
+              <strong style={{color:C.coral}}>{planModal.name}</strong>?
+              {planModal.direction==="downgrade" && " Some features may become unavailable immediately."}
+            </p>
+            <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
+              <button className="btn-ghost" onClick={()=>setPlanModal(null)}
+                style={{padding:"10px 20px",borderRadius:10,border:`1px solid ${C.border}`,color:C.sub,fontSize:13,fontWeight:600}}>Cancel</button>
+              <button className="btn-primary" onClick={handleConfirm}
+                style={{padding:"10px 22px",borderRadius:10,color:"#fff",fontSize:13,fontWeight:700}}>Confirm</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toasts */}
+      {planToast && (
+        <div className={planToastFade?"sv-toast-out":"sv-toast-in"}
+          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.teal,color:"#082018",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:10,fontWeight:700,fontSize:13,fontFamily:"'Outfit',sans-serif",boxShadow:"0 6px 32px rgba(0,0,0,.4)"}}>
+          ✓ Plan change requested successfully!
+        </div>
+      )}
+      {dlToast && (
+        <div className={dlToastFade?"sv-toast-out":"sv-toast-in"}
+          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.blue,color:"#fff",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:10,fontWeight:700,fontSize:13,fontFamily:"'Outfit',sans-serif",boxShadow:"0 6px 32px rgba(0,0,0,.4)"}}>
+          ⬇ Downloading invoice...
+        </div>
+      )}
+
+      {/* Plan cards */}
       <div className="section-card fu">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Current Plan</p>
         <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
-          {PLANS.map((p,i)=>(
-            <div key={i} className="plan-card" style={{padding:"18px",borderRadius:12,background:p.popular?"rgba(229,82,102,.07)":C.surface,border:`1px solid ${p.popular?C.coral:C.border}`,position:"relative"}}>
-              {p.popular&&<div style={{position:"absolute",top:-11,left:"50%",transform:"translateX(-50%)",padding:"3px 12px",borderRadius:100,background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",color:"#fff",fontSize:10,fontWeight:700,whiteSpace:"nowrap"}}>CURRENT PLAN</div>}
-              <div style={{fontSize:13,color:C.sub,fontWeight:600,marginBottom:6}}>{p.name}</div>
-              <div style={{fontSize:26,fontWeight:800,color:p.popular?C.coral:C.text,marginBottom:14}}>{p.price}<span style={{fontSize:12,color:C.muted,fontWeight:400}}>/mo</span></div>
-              {p.features.map((f,j)=><div key={j} style={{display:"flex",gap:7,marginBottom:7}}><span style={{color:C.coral,fontSize:12,marginTop:1,flexShrink:0}}>✓</span><span style={{fontSize:12.5,color:C.sub}}>{f}</span></div>)}
-              <button style={{marginTop:14,width:"100%",padding:"9px",borderRadius:9,cursor:"pointer",background:p.popular?"transparent":"linear-gradient(135deg,#E55266,#992A67,#4E0269)",border:p.popular?`1px solid ${C.border}`:"none",color:p.popular?C.muted:"#fff",fontWeight:600,fontSize:13,fontFamily:"'Outfit',sans-serif",opacity:p.popular?.6:1}}>
-                {p.popular?"Current Plan":"Upgrade →"}
+          {PLANS.map((p,i)=>{
+            const isCurrent  = p.name === CURRENT_PLAN;
+            const isUpgrade  = i > curIdx;
+            return (
+              <div key={i} className="plan-card" style={{
+                padding:"18px",borderRadius:12,position:"relative",
+                background:isCurrent?"rgba(229,82,102,.07)":C.surface,
+                border:`1px solid ${isCurrent?C.coral:C.border}`,
+                boxShadow:isCurrent?"0 0 0 2px rgba(229,82,102,.18),0 0 28px rgba(229,82,102,.10)":"none",
+              }}>
+                {isCurrent && <div style={{position:"absolute",top:-11,left:"50%",transform:"translateX(-50%)",padding:"3px 12px",borderRadius:100,background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",color:"#fff",fontSize:10,fontWeight:700,whiteSpace:"nowrap"}}>CURRENT PLAN</div>}
+                <div style={{fontSize:13,color:C.sub,fontWeight:600,marginBottom:6}}>{p.name}</div>
+                <div style={{fontSize:26,fontWeight:800,color:isCurrent?C.coral:C.text,marginBottom:14}}>{p.price}<span style={{fontSize:12,color:C.muted,fontWeight:400}}>/mo</span></div>
+                {p.features.map((f,j)=><div key={j} style={{display:"flex",gap:7,marginBottom:7}}><span style={{color:C.coral,fontSize:12,marginTop:1,flexShrink:0}}>✓</span><span style={{fontSize:12.5,color:C.sub}}>{f}</span></div>)}
+                <button
+                  disabled={isCurrent}
+                  onClick={()=>handlePlanClick(p,i)}
+                  className={isUpgrade&&!isCurrent?"btn-primary":""}
+                  style={{
+                    marginTop:14,width:"100%",padding:"9px",borderRadius:9,
+                    cursor:isCurrent?"default":"pointer",
+                    background:isUpgrade&&!isCurrent?"linear-gradient(135deg,#E55266,#992A67,#4E0269)":"transparent",
+                    border:isCurrent?`1px solid ${C.borderHi}`:!isUpgrade?`1px solid ${C.border}`:"none",
+                    color:isCurrent?C.coral:!isUpgrade?C.muted:"#fff",
+                    fontWeight:600,fontSize:13,fontFamily:"'Outfit',sans-serif",
+                  }}>
+                  {isCurrent?"● Current Plan":isUpgrade?"Upgrade →":"Downgrade"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Invoice History */}
+      <div className="section-card fu fu1">
+        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Invoice History</p>
+        <div style={{borderRadius:10,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1.6fr 1fr 90px 110px",padding:"9px 16px",background:C.surface,borderBottom:`1px solid ${C.border}`}}>
+            {["Date","Invoice ID","Amount","Status",""].map((h,i)=>(
+              <span key={i} style={{fontSize:10.5,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase"}}>{h}</span>
+            ))}
+          </div>
+          {INVOICES.map((inv,i)=>(
+            <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1.6fr 1fr 90px 110px",padding:"12px 16px",alignItems:"center",background:C.card,borderBottom:i<INVOICES.length-1?`1px solid ${C.border}`:"none"}}>
+              <span style={{fontSize:13,color:C.sub}}>{inv.date}</span>
+              <span style={{fontSize:12.5,color:C.text,fontWeight:600,fontFamily:"monospace,Outfit,sans-serif"}}>{inv.id}</span>
+              <span style={{fontSize:13,fontWeight:700,color:C.text}}>{inv.amount}</span>
+              <span style={{display:"flex",alignItems:"center",gap:5}}>
+                <span style={{width:6,height:6,borderRadius:"50%",background:C.teal,flexShrink:0}}/>
+                <span style={{fontSize:12.5,color:C.teal,fontWeight:600}}>Paid</span>
+              </span>
+              <button className="btn-ghost" onClick={handleDownload}
+                style={{padding:"5px 11px",borderRadius:7,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,fontWeight:600,width:"fit-content"}}>
+                ⬇ PDF
               </button>
             </div>
           ))}
         </div>
       </div>
-      <div className="section-card fu fu1">
+
+      {/* Monthly Usage */}
+      <div className="section-card fu fu2">
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18,flexWrap:"wrap",gap:8}}>
           <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase"}}>Monthly Usage</p>
           <span style={{fontSize:12,color:C.muted}}>Resets June 1, 2026</span>
@@ -666,35 +790,97 @@ function BillingSection() {
   );
 }
 
+const DANGER_ACTIONS = [
+  {
+    title:"Reset Settings",
+    desc:"Resets all Solva settings to factory defaults. Your store connection and existing data will remain intact, but all AI configurations, automations, and preferences will be permanently cleared.",
+    btn:"Reset Settings",
+    warn:"This will erase all your custom AI configurations and automation settings permanently.",
+  },
+  {
+    title:"Disconnect Shopify Store",
+    desc:"Removes Solva's access to your store. All automations stop immediately. Your data is retained for 30 days before being purged.",
+    btn:"Disconnect Store",
+    warn:"All active automations will stop immediately and your store will be fully disconnected from Solva.",
+  },
+  {
+    title:"Delete Account",
+    desc:"Permanently deletes your Solva account, all configurations, and all data. This cannot be undone under any circumstances.",
+    btn:"Delete Account",
+    warn:"Your account, all stored data, and all configurations will be permanently deleted and cannot be recovered.",
+  },
+];
+
 function DangerSection() {
-  const [confirm, setConfirm] = useState("");
+  const [modal,       setModal]       = useState(null);
+  const [deleteInput, setDeleteInput] = useState("");
+
+  function openModal(action) { setModal(action); setDeleteInput(""); }
+  function closeModal()       { setModal(null);   setDeleteInput(""); }
+
+  const confirmed = deleteInput === "DELETE";
+
   return (
     <div>
       <SectionTitle sub="Irreversible actions. Proceed with extreme caution.">Danger Zone</SectionTitle>
-      {[
-        {title:"Disconnect Shopify Store", desc:"Removes Solva's access to your store. All automations stop immediately. Data retained for 30 days.",  btn:"Disconnect Store",  level:"warn"  },
-        {title:"Pause All Automations",    desc:"Temporarily stops all AI automations without disconnecting your store. Resume any time.",                btn:"Pause Automations", level:"warn"  },
-        {title:"Delete Account",           desc:"Permanently deletes your Solva account, all configurations, and all data. This cannot be undone.",     btn:"Delete My Account", level:"danger"},
-      ].map((item,i)=>(
-        <div key={i} style={{marginBottom:14,padding:22,borderRadius:14,background:item.level==="danger"?"rgba(255,82,114,.05)":C.card,border:`1px solid ${item.level==="danger"?"rgba(255,82,114,.20)":C.border}`}}>
+
+      {/* Destructive action modal */}
+      {modal && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.80)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+          <div className="fu" style={{background:C.card,border:`1px solid ${C.red}`,borderRadius:16,padding:28,maxWidth:440,width:"100%"}}>
+            <h3 style={{fontSize:17,fontWeight:700,color:C.red,marginBottom:10}}>⚠️ Dangerous Action</h3>
+            <div style={{padding:"12px 14px",borderRadius:10,background:"rgba(255,82,114,.06)",border:"1px solid rgba(255,82,114,.20)",marginBottom:16}}>
+              <p style={{fontSize:13,color:"#FF9090",lineHeight:1.65}}>{modal.warn}</p>
+            </div>
+            <p style={{fontSize:13,color:C.muted,lineHeight:1.65,marginBottom:20}}>{modal.desc}</p>
+            <p style={{fontSize:11.5,fontWeight:700,color:C.muted,letterSpacing:".05em",textTransform:"uppercase",marginBottom:8}}>Type DELETE to confirm</p>
+            <input
+              type="text"
+              value={deleteInput}
+              onChange={e=>setDeleteInput(e.target.value)}
+              placeholder="DELETE"
+              style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,
+                border:`1px solid ${confirmed?C.red:C.border}`,color:C.text,fontSize:14,
+                fontFamily:"'Outfit',sans-serif",outline:"none",marginBottom:16,transition:"border-color .18s"}}
+            />
+            <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
+              <button className="btn-ghost" onClick={closeModal}
+                style={{padding:"10px 20px",borderRadius:10,border:`1px solid ${C.border}`,color:C.sub,fontSize:13,fontWeight:600}}>Cancel</button>
+              <button
+                disabled={!confirmed}
+                onClick={closeModal}
+                style={{padding:"10px 22px",borderRadius:10,fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13,transition:"all .18s",
+                  background:confirmed?"#FF5272":"transparent",
+                  border:`1px solid ${confirmed?"#FF5272":C.border}`,
+                  color:confirmed?"#fff":C.muted,
+                  cursor:confirmed?"pointer":"not-allowed",
+                }}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {DANGER_ACTIONS.map((item,i)=>(
+        <div key={i} style={{marginBottom:14,padding:22,borderRadius:14,
+          background:i===2?"rgba(255,82,114,.05)":C.card,
+          border:`1px solid ${i===2?"rgba(255,82,114,.22)":C.border}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:20,flexWrap:"wrap"}}>
             <div style={{flex:1,minWidth:160}}>
-              <div style={{fontSize:14,fontWeight:700,color:item.level==="danger"?"#FF5272":C.text,marginBottom:6}}>{item.title}</div>
+              <div style={{fontSize:14,fontWeight:700,color:i===2?C.red:C.text,marginBottom:6}}>{item.title}</div>
               <div style={{fontSize:13,color:C.muted,lineHeight:1.65}}>{item.desc}</div>
             </div>
-            <button className="btn-danger" style={{padding:"9px 18px",borderRadius:9,flexShrink:0,border:`1px solid ${item.level==="danger"?"#FF5272":C.border}`,color:item.level==="danger"?"#FF5272":C.sub,fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>{item.btn}</button>
+            <button className="btn-danger" onClick={()=>openModal(item)}
+              style={{padding:"9px 18px",borderRadius:9,flexShrink:0,
+                border:`1px solid ${i===2?"#FF5272":C.border}`,
+                color:i===2?"#FF5272":C.sub,
+                fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
+              {item.btn}
+            </button>
           </div>
         </div>
       ))}
-      <div className="section-card fu" style={{borderColor:"rgba(255,82,114,.20)",background:"rgba(255,82,114,.04)"}}>
-        <p style={{fontSize:12,fontWeight:700,color:"#FF5272",marginBottom:10,letterSpacing:".04em",textTransform:"uppercase"}}>⚠ Type DELETE below to confirm account deletion</p>
-        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-          <TextInput value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Type DELETE to confirm"/>
-          <button style={{padding:"11px 20px",borderRadius:10,flexShrink:0,background:confirm==="DELETE"?"#FF5272":"transparent",border:`1px solid ${confirm==="DELETE"?"#FF5272":C.border}`,color:confirm==="DELETE"?"#fff":C.muted,fontWeight:700,fontSize:14,cursor:confirm==="DELETE"?"pointer":"not-allowed",fontFamily:"'Outfit',sans-serif",transition:"all .18s",whiteSpace:"nowrap"}}>
-            Confirm Delete
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
