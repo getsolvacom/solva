@@ -98,17 +98,16 @@ function GlobalStyles() {
         .section-card{padding:16px!important;}
         .sv-invite-grid{grid-template-columns:1fr!important;}
       }
-      @media(max-width:767px) and (orientation:landscape){
-        .sv-layout{flex-direction:row!important;overflow:hidden!important;height:calc(100dvh - 44px)!important;}
-        .sv-nav{width:35%!important;height:100%!important;overflow-y:auto!important;border-right:1px solid #200026!important;border-bottom:none!important;}
-        .sv-nav-hidden{display:block!important;}
-        .sv-content{width:65%!important;height:100%!important;overflow-y:auto!important;}
-        .sv-content-hidden{display:block!important;}
-        .sv-back-btn{display:none!important;}
-        .sv-two-col{grid-template-columns:1fr 1fr!important;}
-        .sv-three-col{grid-template-columns:1fr 1fr 1fr!important;}
-        .modal-inner{max-height:80vh!important;overflow-y:auto!important;}
-      }
+      .ls-mob .sv-root{flex:1!important;height:100dvh!important;overflow:hidden!important;}
+      .ls-mob .sv-layout{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
+      .ls-mob .sv-nav{width:35%!important;height:100%!important;overflow-y:auto!important;border-right:1px solid #200026!important;border-bottom:none!important;}
+      .ls-mob .sv-nav-hidden{display:block!important;}
+      .ls-mob .sv-content{width:65%!important;height:100%!important;overflow-y:auto!important;}
+      .ls-mob .sv-content-hidden{display:block!important;}
+      .ls-mob .sv-back-btn{display:none!important;}
+      .ls-mob .sv-two-col{grid-template-columns:1fr 1fr!important;}
+      .ls-mob .sv-three-col{grid-template-columns:1fr 1fr 1fr!important;}
+      .ls-mob .modal-inner{max-height:80vh!important;overflow-y:auto!important;}
     `}</style>
   );
 }
@@ -910,7 +909,7 @@ const SECTIONS = [
   {key:"danger",        label:"Danger Zone",   icon:"⚠️"},
 ];
 
-export default function SettingsView() {
+export default function SettingsView({ isLandscape, isMobile }) {
   const [section,     setSection]     = useState("general");
   const [mobilePanel, setMobilePanel] = useState("menu");
   const [storeName,   setStoreName]   = useState("Placeholder Store");

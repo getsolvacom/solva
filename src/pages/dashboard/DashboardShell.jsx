@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import AppSidebar       from "./AppSidebar";
@@ -18,10 +18,33 @@ const NAV_ITEMS = [
   {key:"settings",  label:"Settings",      icon:"⚙"},
 ];
 
-function DrawerLogo() {
+function useOrientation() {
+  const [state, setState] = useState(() => ({
+    isLandscape: window.innerWidth > window.innerHeight,
+    isMobile: window.innerWidth <= 767,
+  }));
+  useEffect(() => {
+    function update() {
+      setState({
+        isLandscape: window.innerWidth > window.innerHeight,
+        isMobile: window.innerWidth <= 767,
+      });
+    }
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, []);
+  return state;
+}
+
+function DrawerLogo({ small }) {
+  const sz = small ? 20 : 24;
   return (
-    <div style={{display:"flex",alignItems:"center",gap:8,fontFamily:"'Outfit',sans-serif",fontWeight:800,fontSize:15,userSelect:"none"}}>
-      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+    <div style={{display:"flex",alignItems:"center",gap:8,fontFamily:"'Outfit',sans-serif",fontWeight:800,fontSize:small?13:15,userSelect:"none"}}>
+      <svg width={sz} height={sz} viewBox="0 0 28 28" fill="none">
         <defs>
           <linearGradient id="lgDash" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
             <stop offset="0%"   stopColor="#E55266"/>
@@ -46,12 +69,15 @@ export default function DashboardShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navTo                = (key) => { navigate(`/dashboard/${key}`); setDrawerOpen(false); };
 
+  const { isLandscape, isMobile } = useOrientation();
+  const headerHeight = isMobile ? (isLandscape ? 44 : 60) : 0;
+
   return (
-    <div className="dash-root" style={{display:"flex",height:"100dvh",background:C.bg,overflow:"hidden",overflowX:"hidden"}}>
+    <div className={`dash-root${isMobile && isLandscape ? " ls-mob" : ""}`} style={{display:"flex",height:"100dvh",background:C.bg,overflow:"hidden",overflowX:"hidden"}}>
       <style>{`
         @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
-        .mob-header{display:none;height:52px;align-items:center;justify-content:space-between;padding:0 16px;background:${C.surface};border-bottom:1px solid ${C.border};flex-shrink:0;}
-        .mob-ham{cursor:pointer;background:transparent;border:1px solid ${C.border};border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:17px;color:${C.text};font-family:'Outfit',sans-serif;transition:border-color .14s,color .14s;}
+        .mob-header{display:none;align-items:center;justify-content:space-between;padding:0 16px;background:${C.surface};border-bottom:1px solid ${C.border};flex-shrink:0;}
+        .mob-ham{cursor:pointer;background:transparent;border:1px solid ${C.border};border-radius:8px;display:flex;align-items:center;justify-content:center;color:${C.text};font-family:'Outfit',sans-serif;transition:border-color .14s,color .14s;}
         .mob-ham:hover{border-color:${C.coral};color:${C.coral};}
         .mob-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;opacity:0;pointer-events:none;transition:opacity .28s ease;}
         .mob-overlay.visible{opacity:1;pointer-events:all;}
@@ -63,15 +89,13 @@ export default function DashboardShell() {
         @media(max-width:767px){
           .dash-sidebar{display:none!important;}
           .dash-root{height:auto!important;min-height:100dvh!important;overflow:visible!important;overflow-x:hidden!important;}
-          .dash-main-col{overflow:visible!important;height:auto!important;padding-top:60px!important;}
-          .mob-header{display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:60px!important;z-index:9999!important;background:rgba(6,0,8,.92)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-bottom:1px solid ${C.borderHi}!important;}
+          .dash-main-col{overflow:visible!important;height:auto!important;padding-top:var(--mob-h,60px)!important;}
+          .mob-header{display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--mob-h,60px)!important;z-index:9999!important;background:rgba(6,0,8,.92)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-bottom:1px solid ${C.borderHi}!important;}
         }
-        @media(max-width:767px) and (orientation:landscape){
-          .mob-header{height:44px!important;padding:0 12px!important;}
-          .dash-main-col{padding-top:44px!important;}
-          .mob-drawer{width:200px!important;}
-          .mob-nav-item{padding:7px 10px!important;font-size:12.5px!important;}
-        }
+        .ls-mob .mob-drawer{width:200px!important;}
+        .ls-mob .mob-nav-item{padding:7px 10px!important;font-size:12.5px!important;}
+        .ls-mob.dash-root{height:100dvh!important;overflow:hidden!important;}
+        .ls-mob .dash-main-col{overflow:hidden!important;height:100dvh!important;}
       `}</style>
 
       {/* Desktop sidebar */}
@@ -102,19 +126,23 @@ export default function DashboardShell() {
       </div>
 
       {/* Main content column */}
-      <div className="dash-main-col" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0}}>
+      <div className="dash-main-col" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0,"--mob-h":`${headerHeight}px`}}>
         {/* Mobile header */}
-        <div className="mob-header">
-          <DrawerLogo/>
-          <button className="mob-ham" onClick={()=>setDrawerOpen(true)}>☰</button>
+        <div className="mob-header" style={{padding:isMobile&&isLandscape?"0 12px":undefined}}>
+          <DrawerLogo small={isMobile&&isLandscape}/>
+          <button
+            className="mob-ham"
+            onClick={()=>setDrawerOpen(true)}
+            style={isMobile&&isLandscape?{width:32,height:32,fontSize:15}:{width:36,height:36,fontSize:17}}
+          >☰</button>
         </div>
 
-        {view === "overview"  && <OverviewView setView={setView}/>}
-        {view === "tickets"   && <TicketsView/>}
-        {view === "cart"      && <CartRecoveryView/>}
-        {view === "returns"   && <ReturnsView/>}
-        {view === "analytics" && <AnalyticsView/>}
-        {view === "settings"  && <SettingsView/>}
+        {view === "overview"  && <OverviewView setView={setView} isLandscape={isLandscape} isMobile={isMobile}/>}
+        {view === "tickets"   && <TicketsView isLandscape={isLandscape} isMobile={isMobile}/>}
+        {view === "cart"      && <CartRecoveryView isLandscape={isLandscape} isMobile={isMobile}/>}
+        {view === "returns"   && <ReturnsView isLandscape={isLandscape} isMobile={isMobile}/>}
+        {view === "analytics" && <AnalyticsView isLandscape={isLandscape} isMobile={isMobile}/>}
+        {view === "settings"  && <SettingsView isLandscape={isLandscape} isMobile={isMobile}/>}
       </div>
     </div>
   );

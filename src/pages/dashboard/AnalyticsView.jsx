@@ -116,6 +116,9 @@ function GlobalStyles() {
         .av-insights-grid{grid-template-columns:1fr!important;}
         .av-chart-wrap{overflow-x:hidden!important;max-width:100%!important;}
       }
+      .ls-mob .av-root{height:100dvh!important;overflow:hidden!important;flex:1!important;}
+      .ls-mob .av-body{overflow-y:auto!important;flex:1!important;min-height:0!important;padding:8px 12px!important;gap:10px!important;}
+      .ls-mob .av-lower-grid{grid-template-columns:1fr 1fr!important;}
     `}</style>
   );
 }
@@ -134,7 +137,7 @@ function ChartTip({ active, payload, label, prefix="" }) {
   );
 }
 
-export default function AnalyticsView() {
+export default function AnalyticsView({ isLandscape, isMobile }) {
   const [range,         setRange]         = useState("7D");
   const [metric,        setMetric]        = useState("revenue");
   const [donutHover,    setDonutHover]    = useState(null);

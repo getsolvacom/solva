@@ -57,20 +57,19 @@ function GlobalStyles() {
         .chart-header{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;margin-bottom:14px!important;}
         .actions-grid{grid-template-columns:repeat(2,1fr)!important;}
       }
-      @media(max-width:767px) and (orientation:landscape){
-        .ov-view{overflow-y:auto!important;height:100%!important;}
-        .ov-topbar{padding:6px 12px!important;gap:6px!important;}
-        .ov-topbar h1{font-size:14px!important;}
-        .ov-topbar p{font-size:10.5px!important;}
-        .ov-content{padding:8px 10px!important;gap:8px!important;overflow-y:auto!important;}
-        .kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;overflow-x:visible!important;padding-bottom:0!important;}
-        .kpi-row .kpi-card{min-width:0!important;flex-shrink:unset!important;padding:10px 12px!important;}
-      }
+      .ls-mob .ov-view{overflow-y:auto!important;flex:1!important;min-height:0!important;}
+      .ls-mob .ov-topbar{padding:6px 12px!important;gap:6px!important;}
+      .ls-mob .ov-topbar h1{font-size:14px!important;}
+      .ls-mob .ov-topbar p{font-size:10.5px!important;}
+      .ls-mob .ov-content{padding:8px 10px!important;gap:8px!important;overflow-y:auto!important;}
+      .ls-mob .kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;overflow-x:visible!important;padding-bottom:0!important;}
+      .ls-mob .kpi-row .kpi-card{min-width:0!important;flex-shrink:unset!important;padding:10px 12px!important;}
+      .ls-mob .chart-activity-grid{grid-template-columns:1fr 1fr!important;}
     `}</style>
   );
 }
 
-export default function OverviewView({ setView }) {
+export default function OverviewView({ setView, isLandscape, isMobile }) {
   const [activeChart, setActiveChart] = useState("revenue");
 
   const kpis = [
