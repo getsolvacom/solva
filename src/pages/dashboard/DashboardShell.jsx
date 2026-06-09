@@ -69,6 +69,8 @@ export default function DashboardShell() {
         @media(max-width:767px) and (orientation:landscape){
           .mob-header{height:44px!important;padding:0 12px!important;}
           .dash-main-col{padding-top:44px!important;}
+          .mob-drawer{width:200px!important;}
+          .mob-nav-item{padding:7px 10px!important;font-size:12.5px!important;}
         }
       `}</style>
 

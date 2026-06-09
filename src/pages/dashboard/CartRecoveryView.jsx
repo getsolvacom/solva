@@ -120,6 +120,19 @@ function GlobalStyles() {
         .cr-two-col{grid-template-columns:1fr!important;}
         .cr-back-btn{display:flex!important;align-items:center;}
       }
+      @media(max-width:767px) and (orientation:landscape){
+        .cr-root{height:100dvh!important;overflow:hidden!important;}
+        .cr-workspace{flex-direction:row!important;overflow:hidden!important;}
+        .cr-list{width:40%!important;flex:none!important;border-right:1px solid #200026!important;border-bottom:none!important;overflow-y:auto!important;height:100%!important;}
+        .cr-list-hidden{display:flex!important;flex-direction:column!important;}
+        .cr-detail{width:60%!important;flex:none!important;overflow:hidden!important;height:100%!important;display:flex!important;flex-direction:column!important;}
+        .cr-detail-hidden{display:flex!important;flex-direction:column!important;}
+        .cr-detail-body{overflow-y:auto!important;flex:1!important;padding:12px 16px!important;}
+        .cr-detail-meta{display:flex!important;}
+        .cr-back-btn{display:none!important;}
+        .cr-two-col{grid-template-columns:1fr 1fr!important;}
+        .modal-inner{max-height:80vh!important;overflow-y:auto!important;}
+      }
       @keyframes spin{to{transform:rotate(360deg);}}
       @keyframes toastSlideIn{from{opacity:0;transform:translateX(70px);}to{opacity:1;transform:translateX(0);}}
       @keyframes toastFadeOut{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(70px);}}

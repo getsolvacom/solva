@@ -98,6 +98,17 @@ function GlobalStyles() {
         .section-card{padding:16px!important;}
         .sv-invite-grid{grid-template-columns:1fr!important;}
       }
+      @media(max-width:767px) and (orientation:landscape){
+        .sv-layout{flex-direction:row!important;overflow:hidden!important;height:calc(100dvh - 44px)!important;}
+        .sv-nav{width:35%!important;height:100%!important;overflow-y:auto!important;border-right:1px solid #200026!important;border-bottom:none!important;}
+        .sv-nav-hidden{display:block!important;}
+        .sv-content{width:65%!important;height:100%!important;overflow-y:auto!important;}
+        .sv-content-hidden{display:block!important;}
+        .sv-back-btn{display:none!important;}
+        .sv-two-col{grid-template-columns:1fr 1fr!important;}
+        .sv-three-col{grid-template-columns:1fr 1fr 1fr!important;}
+        .modal-inner{max-height:80vh!important;overflow-y:auto!important;}
+      }
     `}</style>
   );
 }
@@ -668,7 +679,7 @@ function BillingSection() {
       {/* Plan change modal */}
       {planModal && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.74)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-          <div className="fu" style={{background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:16,padding:28,maxWidth:420,width:"100%"}}>
+          <div className="fu modal-inner" style={{background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:16,padding:28,maxWidth:420,width:"100%"}}>
             <h3 style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:10}}>Confirm Plan Change</h3>
             <p style={{fontSize:14,color:C.sub,lineHeight:1.7,marginBottom:24}}>
               Are you sure you want to change your plan to{" "}
@@ -830,7 +841,7 @@ function DangerSection() {
       {/* Destructive action modal */}
       {modal && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.80)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-          <div className="fu" style={{background:C.card,border:`1px solid ${C.red}`,borderRadius:16,padding:28,maxWidth:440,width:"100%"}}>
+          <div className="fu modal-inner" style={{background:C.card,border:`1px solid ${C.red}`,borderRadius:16,padding:28,maxWidth:440,width:"100%"}}>
             <h3 style={{fontSize:17,fontWeight:700,color:C.red,marginBottom:10}}>⚠️ Dangerous Action</h3>
             <div style={{padding:"12px 14px",borderRadius:10,background:"rgba(255,82,114,.06)",border:"1px solid rgba(255,82,114,.20)",marginBottom:16}}>
               <p style={{fontSize:13,color:"#FF9090",lineHeight:1.65}}>{modal.warn}</p>

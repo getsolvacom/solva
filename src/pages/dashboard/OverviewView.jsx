@@ -63,7 +63,8 @@ function GlobalStyles() {
         .ov-topbar h1{font-size:14px!important;}
         .ov-topbar p{font-size:10.5px!important;}
         .ov-content{padding:8px 10px!important;gap:8px!important;overflow-y:auto!important;}
-        .kpi-row .kpi-card{padding:10px 12px!important;}
+        .kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;overflow-x:visible!important;padding-bottom:0!important;}
+        .kpi-row .kpi-card{min-width:0!important;flex-shrink:unset!important;padding:10px 12px!important;}
       }
     `}</style>
   );
