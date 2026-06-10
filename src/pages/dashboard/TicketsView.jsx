@@ -234,11 +234,17 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [schedMenuOpen,   setSchedMenuOpen]   = useState(false);
   const [schedPickOpen,   setSchedPickOpen]   = useState(false);
   const [activeFormat,    setActiveFormat]    = useState(null);
+  const [customPickOpen, setCustomPickOpen] = useState(false);
+  const [pickDay,   setPickDay]   = useState(new Date().getDate());
+  const [pickMonth, setPickMonth] = useState(new Date().getMonth() + 1);
+  const [pickYear,  setPickYear]  = useState(new Date().getFullYear());
+  const [pickHour,  setPickHour]  = useState(9);
+  const [pickMin,   setPickMin]   = useState(0);
+  const [pickAmpm,  setPickAmpm]  = useState("AM");
 
   const textareaRef   = useRef(null);
   const emojiRef      = useRef(null);
   const schedRef      = useRef(null);
-  const customDateRef = useRef(null);
 
   useEffect(() => {
     if (!emojiOpen) return;
@@ -248,15 +254,15 @@ export default function TicketsView({ isLandscape, isMobile }) {
   }, [emojiOpen]);
 
   useEffect(() => {
-    if (!schedMenuOpen && !schedPickOpen) return;
+    if (!schedMenuOpen && !schedPickOpen && !customPickOpen) return;
     function h(e) {
       if (schedRef.current && !schedRef.current.contains(e.target)) {
-        setSchedMenuOpen(false); setSchedPickOpen(false);
+        setSchedMenuOpen(false); setSchedPickOpen(false); setCustomPickOpen(false);
       }
     }
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
-  }, [schedMenuOpen, schedPickOpen]);
+  }, [schedMenuOpen, schedPickOpen, customPickOpen]);
 
   const getStatus = (id, def) => statusOverrides[id] || def;
 
@@ -351,20 +357,13 @@ export default function TicketsView({ isLandscape, isMobile }) {
     fireToast("Message scheduled ✓", C.teal, "rgba(62,207,178,.12)");
   }
 
-  function handleOpenCustomDate() {
-    setSchedPickOpen(false);
-    setSchedMenuOpen(false);
-    setTimeout(() => customDateRef.current?.click(), 50);
-  }
-
-  function handleCustomDate(e) {
-    const val = e.target.value;
-    if (!val) return;
-    const d = new Date(val);
-    const label = d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+  function handleCustomDateConfirm() {
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const timeStr = `${pickHour}:${String(pickMin).padStart(2,"0")} ${pickAmpm}`;
+    const dateStr = `${months[pickMonth-1]} ${pickDay}, ${pickYear}`;
+    setCustomPickOpen(false);
     setReply("");
-    fireToast(`Message scheduled for ${label} ✓`, C.teal, "rgba(62,207,178,.12)");
-    e.target.value = "";
+    fireToast(`Message scheduled for ${dateStr} at ${timeStr} ✓`, C.teal, "rgba(62,207,178,.12)");
   }
 
   const escalateDisabled = !!(ticketEscalated[selectedId] || ticketClosed[selectedId]);
@@ -374,6 +373,12 @@ export default function TicketsView({ isLandscape, isMobile }) {
     position:"absolute", zIndex:500, right:0, bottom:"calc(100% + 8px)",
     background:C.card, border:`1px solid ${C.borderHi}`,
     borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
+  };
+
+  const selectSt = {
+    flex:1, background:C.surface, border:`1px solid ${C.border}`,
+    borderRadius:8, color:C.text, padding:"7px 8px",
+    fontSize:13, fontFamily:"'Outfit',sans-serif", cursor:"pointer",
   };
 
   return (
@@ -537,14 +542,14 @@ export default function TicketsView({ isLandscape, isMobile }) {
               </div>
             </div>
 
-            {/* Reply box — sticky on mobile so it pins to bottom when body scrolls */}
-            <div className="tv-reply-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface,padding:"12px 24px"}}>
+            {/* Reply box — sticky so send bar always stays in view */}
+            <div className="tv-reply-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface,padding:"12px 24px",paddingBottom:"calc(12px + env(safe-area-inset-bottom))",position:"sticky",bottom:0,minHeight:60}}>
 
               {/* Composer card */}
               <div style={{borderRadius:12,background:C.card,border:`1px solid ${C.border}`}}>
 
                 {/* Format toolbar */}
-                <div style={{display:"flex",alignItems:"center",padding:"4px 6px 0",gap:0}}>
+                <div style={{display:"flex",alignItems:"center",padding:"10px 6px",gap:0}}>
                   <button className="fmt-btn" onClick={()=>handleFormat("bold")} title="Bold"
                     style={{color:activeFormat==="bold"?C.coral:C.sub}}>
                     <Bold size={14} strokeWidth={2}/>
@@ -584,7 +589,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   onKeyDown={handleKeyDown}
                   placeholder="Type a reply or override Solva's AI response…"
                   rows={2}
-                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.6,padding:"8px 14px 10px"}}
+                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.6,padding:"8px 14px 10px",minHeight:44}}
                 />
 
                 {/* Bottom action row */}
@@ -596,10 +601,6 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
                   {/* Split send button */}
                   <div style={{position:"relative"}} ref={schedRef}>
-                    {/* Hidden datetime input for custom schedule */}
-                    <input ref={customDateRef} type="datetime-local" onChange={handleCustomDate}
-                      style={{position:"absolute",opacity:0,width:0,height:0,pointerEvents:"none"}}/>
-
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
                       <button className="btn-primary" onClick={handleSend}
                         style={{minHeight:44,padding:"0 18px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,borderRadius:0,cursor:"pointer"}}>
@@ -628,10 +629,63 @@ export default function TicketsView({ isLandscape, isMobile }) {
                             <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt}
                           </button>
                         ))}
-                        <button className="sched-opt" onClick={handleOpenCustomDate}>
+                        <button className="sched-opt" onClick={()=>{ setCustomPickOpen(true); setSchedPickOpen(false); }}>
                           <Calendar size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>Choose date &amp; time…
                         </button>
                         <div style={{height:6}}/>
+                      </div>
+                    )}
+
+                    {customPickOpen && (
+                      <div style={{
+                        position:"absolute", zIndex:600, right:0, bottom:"calc(100% + 8px)",
+                        background:C.card, border:`1px solid ${C.borderHi}`,
+                        borderRadius:16, padding:20, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
+                        minWidth:280,
+                      }}>
+                        <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase",marginBottom:14}}>Schedule Send</div>
+                        <div style={{display:"flex",gap:8,marginBottom:12}}>
+                          <select value={pickDay} onChange={e=>setPickDay(+e.target.value)} style={selectSt}>
+                            {Array.from({length:31},(_,i)=><option key={i} value={i+1}>{i+1}</option>)}
+                          </select>
+                          <select value={pickMonth} onChange={e=>setPickMonth(+e.target.value)} style={{...selectSt,flex:2}}>
+                            {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((m,i)=>(
+                              <option key={i} value={i+1}>{m}</option>
+                            ))}
+                          </select>
+                          <select value={pickYear} onChange={e=>setPickYear(+e.target.value)} style={{...selectSt,flex:1.5}}>
+                            {[0,1,2].map(o=>{const y=new Date().getFullYear()+o;return<option key={y} value={y}>{y}</option>;})}
+                          </select>
+                        </div>
+                        <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:16}}>
+                          <select value={pickHour} onChange={e=>setPickHour(+e.target.value)} style={selectSt}>
+                            {Array.from({length:12},(_,i)=><option key={i} value={i+1}>{i+1}</option>)}
+                          </select>
+                          <span style={{color:C.muted,fontWeight:700,flexShrink:0}}>:</span>
+                          <select value={pickMin} onChange={e=>setPickMin(+e.target.value)} style={selectSt}>
+                            {Array.from({length:60},(_,i)=><option key={i} value={i}>{String(i).padStart(2,"0")}</option>)}
+                          </select>
+                          <div style={{display:"flex",borderRadius:8,overflow:"hidden",border:`1px solid ${C.border}`,flexShrink:0}}>
+                            {["AM","PM"].map(p=>(
+                              <button key={p} onClick={()=>setPickAmpm(p)}
+                                style={{padding:"7px 10px",fontFamily:"'Outfit',sans-serif",fontSize:12,fontWeight:600,cursor:"pointer",border:"none",
+                                  background:pickAmpm===p?"rgba(229,82,102,.18)":"transparent",
+                                  color:pickAmpm===p?C.coral:C.muted}}>
+                                {p}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <button className="btn-primary" onClick={handleCustomDateConfirm}
+                          style={{width:"100%",padding:"11px 0",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14,marginBottom:10,cursor:"pointer"}}>
+                          Schedule
+                        </button>
+                        <div style={{textAlign:"center"}}>
+                          <button onClick={()=>setCustomPickOpen(false)}
+                            style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:13,fontFamily:"'Outfit',sans-serif",textDecoration:"underline",padding:"4px 8px"}}>
+                            Cancel
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

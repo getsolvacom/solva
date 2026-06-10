@@ -230,11 +230,17 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   const [schedToast,          setSchedToast]          = useState(false);
   const [schedToastFading,    setSchedToastFading]    = useState(false);
   const [schedToastMsg,       setSchedToastMsg]       = useState("Message scheduled ✓");
+  const [customPickOpen, setCustomPickOpen] = useState(false);
+  const [pickDay,   setPickDay]   = useState(new Date().getDate());
+  const [pickMonth, setPickMonth] = useState(new Date().getMonth() + 1);
+  const [pickYear,  setPickYear]  = useState(new Date().getFullYear());
+  const [pickHour,  setPickHour]  = useState(9);
+  const [pickMin,   setPickMin]   = useState(0);
+  const [pickAmpm,  setPickAmpm]  = useState("AM");
 
   const textareaRef   = useRef(null);
   const emojiRef      = useRef(null);
   const schedRef      = useRef(null);
-  const customDateRef = useRef(null);
 
   useEffect(() => {
     if (!emojiOpen) return;
@@ -244,15 +250,15 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   }, [emojiOpen]);
 
   useEffect(() => {
-    if (!schedMenuOpen && !schedPickOpen) return;
+    if (!schedMenuOpen && !schedPickOpen && !customPickOpen) return;
     function h(e) {
       if (schedRef.current && !schedRef.current.contains(e.target)) {
-        setSchedMenuOpen(false); setSchedPickOpen(false);
+        setSchedMenuOpen(false); setSchedPickOpen(false); setCustomPickOpen(false);
       }
     }
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
-  }, [schedMenuOpen, schedPickOpen]);
+  }, [schedMenuOpen, schedPickOpen, customPickOpen]);
 
   const filtered = RETURNS.filter(r => {
     const mf =
@@ -348,26 +354,25 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     fireSchedToast("Message scheduled ✓");
   }
 
-  function handleOpenCustomDate() {
-    setSchedPickOpen(false);
-    setSchedMenuOpen(false);
-    setTimeout(() => customDateRef.current?.click(), 50);
-  }
-
-  function handleCustomDate(e) {
-    const val = e.target.value;
-    if (!val) return;
-    const d = new Date(val);
-    const label = d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+  function handleCustomDateConfirm() {
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const timeStr = `${pickHour}:${String(pickMin).padStart(2,"0")} ${pickAmpm}`;
+    const dateStr = `${months[pickMonth-1]} ${pickDay}, ${pickYear}`;
+    setCustomPickOpen(false);
     setChatInput("");
-    fireSchedToast(`Message scheduled for ${label} ✓`);
-    e.target.value = "";
+    fireSchedToast(`Message scheduled for ${dateStr} at ${timeStr} ✓`);
   }
 
   const popupBase = {
     position:"absolute", zIndex:500, right:0, bottom:"calc(100% + 8px)",
     background:C.card, border:`1px solid ${C.borderHi}`,
     borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
+  };
+
+  const selectSt = {
+    flex:1, background:C.surface, border:`1px solid ${C.border}`,
+    borderRadius:8, color:C.text, padding:"7px 8px",
+    fontSize:13, fontFamily:"'Outfit',sans-serif", cursor:"pointer",
   };
 
   return (
@@ -592,8 +597,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
               </div>
             </div>
 
-            {/* Reply box */}
-            <div className="rv-reply-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.card,padding:"12px 18px"}}>
+            {/* Reply box — sticky so send bar always stays in view */}
+            <div className="rv-reply-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface,padding:"12px 18px",paddingBottom:"calc(12px + env(safe-area-inset-bottom))",position:"sticky",bottom:0,minHeight:60}}>
               {attachHint && (
                 <div style={{fontSize:12,color:C.muted,marginBottom:8,padding:"6px 10px",borderRadius:7,background:C.dim,display:"flex",alignItems:"center",gap:6}}>
                   <Paperclip size={13} strokeWidth={2}/>File attachment coming soon
@@ -604,7 +609,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
               <div style={{borderRadius:12,background:C.surface,border:`1px solid ${C.border}`}}>
 
                 {/* Format toolbar */}
-                <div style={{display:"flex",gap:0,alignItems:"center",padding:"4px 6px 0"}}>
+                <div style={{display:"flex",gap:0,alignItems:"center",padding:"10px 6px"}}>
                   <button className="fmt-btn" onClick={()=>handleFormat("bold")} title="Bold"
                     style={{color:activeFormat==="bold"?C.coral:C.muted}}>
                     <Bold size={14} strokeWidth={2}/>
@@ -644,7 +649,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();}}}
                   placeholder="Type a message…"
                   rows={2}
-                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:13.5,lineHeight:1.5,padding:"8px 14px 10px"}}
+                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:13.5,lineHeight:1.5,padding:"8px 14px 10px",minHeight:44}}
                 />
 
                 {/* Bottom row */}
@@ -656,10 +661,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
 
                   {/* Split send button */}
                   <div style={{position:"relative"}} ref={schedRef}>
-                    {/* Hidden datetime input for custom schedule */}
-                    <input ref={customDateRef} type="datetime-local" onChange={handleCustomDate}
-                      style={{position:"absolute",opacity:0,width:0,height:0,pointerEvents:"none"}}/>
-
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
                       <button className="btn-primary" onClick={handleSend}
                         style={{minHeight:44,padding:"0 18px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,borderRadius:0,cursor:"pointer"}}>
@@ -688,10 +689,63 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                             <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt}
                           </button>
                         ))}
-                        <button className="sched-opt" onClick={handleOpenCustomDate}>
+                        <button className="sched-opt" onClick={()=>{ setCustomPickOpen(true); setSchedPickOpen(false); }}>
                           <Calendar size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>Choose date &amp; time…
                         </button>
                         <div style={{height:6}}/>
+                      </div>
+                    )}
+
+                    {customPickOpen && (
+                      <div style={{
+                        position:"absolute", zIndex:600, right:0, bottom:"calc(100% + 8px)",
+                        background:C.card, border:`1px solid ${C.borderHi}`,
+                        borderRadius:16, padding:20, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
+                        minWidth:280,
+                      }}>
+                        <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase",marginBottom:14}}>Schedule Send</div>
+                        <div style={{display:"flex",gap:8,marginBottom:12}}>
+                          <select value={pickDay} onChange={e=>setPickDay(+e.target.value)} style={selectSt}>
+                            {Array.from({length:31},(_,i)=><option key={i} value={i+1}>{i+1}</option>)}
+                          </select>
+                          <select value={pickMonth} onChange={e=>setPickMonth(+e.target.value)} style={{...selectSt,flex:2}}>
+                            {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((m,i)=>(
+                              <option key={i} value={i+1}>{m}</option>
+                            ))}
+                          </select>
+                          <select value={pickYear} onChange={e=>setPickYear(+e.target.value)} style={{...selectSt,flex:1.5}}>
+                            {[0,1,2].map(o=>{const y=new Date().getFullYear()+o;return<option key={y} value={y}>{y}</option>;})}
+                          </select>
+                        </div>
+                        <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:16}}>
+                          <select value={pickHour} onChange={e=>setPickHour(+e.target.value)} style={selectSt}>
+                            {Array.from({length:12},(_,i)=><option key={i} value={i+1}>{i+1}</option>)}
+                          </select>
+                          <span style={{color:C.muted,fontWeight:700,flexShrink:0}}>:</span>
+                          <select value={pickMin} onChange={e=>setPickMin(+e.target.value)} style={selectSt}>
+                            {Array.from({length:60},(_,i)=><option key={i} value={i}>{String(i).padStart(2,"0")}</option>)}
+                          </select>
+                          <div style={{display:"flex",borderRadius:8,overflow:"hidden",border:`1px solid ${C.border}`,flexShrink:0}}>
+                            {["AM","PM"].map(p=>(
+                              <button key={p} onClick={()=>setPickAmpm(p)}
+                                style={{padding:"7px 10px",fontFamily:"'Outfit',sans-serif",fontSize:12,fontWeight:600,cursor:"pointer",border:"none",
+                                  background:pickAmpm===p?"rgba(229,82,102,.18)":"transparent",
+                                  color:pickAmpm===p?C.coral:C.muted}}>
+                                {p}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <button className="btn-primary" onClick={handleCustomDateConfirm}
+                          style={{width:"100%",padding:"11px 0",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14,marginBottom:10,cursor:"pointer"}}>
+                          Schedule
+                        </button>
+                        <div style={{textAlign:"center"}}>
+                          <button onClick={()=>setCustomPickOpen(false)}
+                            style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:13,fontFamily:"'Outfit',sans-serif",textDecoration:"underline",padding:"4px 8px"}}>
+                            Cancel
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
