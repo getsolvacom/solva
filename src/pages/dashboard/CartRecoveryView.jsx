@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2, Search, XCircle, MousePointer } from "lucide-react";
 
@@ -143,11 +144,13 @@ function GlobalStyles() {
 }
 
 export default function CartRecoveryView({ isLandscape, isMobile }) {
+  const navigate                              = useNavigate();
+  const { cartId }                            = useParams();
+  const selectedId                            = cartId || "CR-0291";
+  const mobilePanel                           = cartId ? "detail" : "list";
   const [filter,       setFilter]       = useState("All");
   const [search,       setSearch]       = useState("");
-  const [selectedId,   setSelectedId]   = useState("CR-0291");
   const [expandedStep, setExpandedStep] = useState(0);
-  const [mobilePanel,     setMobilePanel]     = useState("list");
   const [modalOpen,       setModalOpen]       = useState(false);
   const [triggerLoading,  setTriggerLoading]  = useState(false);
   const [triggerToast,    setTriggerToast]    = useState(false);
@@ -172,8 +175,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   };
 
   function handleCartSelect(id) {
-    setSelectedId(id);
-    setMobilePanel("detail");
+    navigate("/dashboard/cart/" + id);
   }
 
   function handleTrigger() {
@@ -311,7 +313,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
               {/* Back button — mobile only */}
               <button
                 className="cr-back-btn btn-ghost"
-                onClick={()=>setMobilePanel("list")}
+                onClick={()=>navigate("/dashboard/cart")}
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}
               >
                 ← Back to Carts

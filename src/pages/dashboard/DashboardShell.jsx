@@ -61,10 +61,10 @@ function DrawerLogo({ small }) {
   );
 }
 
-export default function DashboardShell() {
+export default function DashboardShell({ fixedView }) {
   const navigate             = useNavigate();
   const { view: viewParam }  = useParams();
-  const view                 = viewParam || "overview";
+  const view                 = fixedView || viewParam || "overview";
   const setView              = (key) => navigate(`/dashboard/${key}`);
   const goLanding            = () => navigate("/");
   const [drawerOpen, setDrawerOpen] = useState(false);

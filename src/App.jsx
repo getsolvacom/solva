@@ -6,11 +6,15 @@ import DashboardShell from "./pages/dashboard/DashboardShell";
 export default function App() {
   return (
     <Routes>
-      <Route path="/"                element={<LandingPage />} />
-      <Route path="/onboarding"      element={<OnboardingPage />} />
-      <Route path="/dashboard"       element={<DashboardShell />} />
-      <Route path="/dashboard/:view" element={<DashboardShell />} />
-      <Route path="*"                element={<Navigate to="/" replace />} />
+      <Route path="/"                            element={<LandingPage />} />
+      <Route path="/onboarding"                  element={<OnboardingPage />} />
+      <Route path="/dashboard"                   element={<DashboardShell />} />
+      <Route path="/dashboard/tickets/:ticketId" element={<DashboardShell fixedView="tickets" />} />
+      <Route path="/dashboard/cart/:cartId"      element={<DashboardShell fixedView="cart" />} />
+      <Route path="/dashboard/returns/:returnId" element={<DashboardShell fixedView="returns" />} />
+      <Route path="/dashboard/settings/:tab"     element={<DashboardShell fixedView="settings" />} />
+      <Route path="/dashboard/:view"             element={<DashboardShell />} />
+      <Route path="*"                            element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

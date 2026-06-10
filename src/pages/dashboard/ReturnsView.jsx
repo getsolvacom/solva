@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import {
   DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip,
@@ -215,10 +216,12 @@ function Bubble({ msg, idx }) {
 }
 
 export default function ReturnsView({ isLandscape, isMobile }) {
+  const navigate                                      = useNavigate();
+  const { returnId }                                  = useParams();
+  const selectedId                                    = returnId || "RT-0544";
+  const mobilePanel                                   = returnId ? "detail" : "list";
   const [filter,              setFilter]              = useState("All");
   const [search,              setSearch]              = useState("");
-  const [selectedId,          setSelectedId]          = useState("RT-0544");
-  const [mobilePanel,         setMobilePanel]         = useState("list");
   const [statusOverrides,     setStatusOverrides]     = useState({});
   const [overrideToast,       setOverrideToast]       = useState(false);
   const [overrideToastFading, setOverrideToastFading] = useState(false);
@@ -290,8 +293,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     : [];
 
   function handleReturnSelect(id) {
-    setSelectedId(id);
-    setMobilePanel("detail");
+    navigate("/dashboard/returns/" + id);
   }
 
   function handleOverride() {
@@ -501,7 +503,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Order {selected.orderRef}</span>
                 </div>
               </div>
-              <button className="rv-back-btn btn-ghost" onClick={()=>setMobilePanel("list")}
+              <button className="rv-back-btn btn-ghost" onClick={()=>navigate("/dashboard/returns")}
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Returns
               </button>

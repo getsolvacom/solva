@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import {
   Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle,
@@ -220,9 +221,12 @@ function Bubble({ msg, idx }) {
 }
 
 export default function TicketsView({ isLandscape, isMobile }) {
+  const navigate                              = useNavigate();
+  const { ticketId }                          = useParams();
+  const selectedId                            = ticketId || "TK-1041";
+  const mobilePanel                           = ticketId ? "chat" : "list";
   const [filter,          setFilter]          = useState("All");
   const [search,          setSearch]          = useState("");
-  const [selectedId,      setSelectedId]      = useState("TK-1041");
   const [reply,           setReply]           = useState("");
   const [statusOverrides, setStatusOverrides] = useState({});
   const [ticketEscalated, setTicketEscalated] = useState({});
@@ -230,7 +234,6 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [toast,           setToast]           = useState(null);
   const [extraMessages,   setExtraMessages]   = useState({});
   const [showAttachHint,  setShowAttachHint]  = useState(false);
-  const [mobilePanel,     setMobilePanel]     = useState("list");
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [emojiOpen,       setEmojiOpen]       = useState(false);
   const [schedMenuOpen,   setSchedMenuOpen]   = useState(false);
@@ -322,8 +325,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
   }
 
   function handleTicketSelect(id) {
-    setSelectedId(id);
-    setMobilePanel("chat");
+    navigate("/dashboard/tickets/" + id);
   }
 
   function handleEmojiInsert(emoji) {
@@ -480,7 +482,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   <div style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · {selected.type}</div>
                 </div>
               </div>
-              <button className="tv-back-btn btn-ghost" onClick={() => setMobilePanel("list")}
+              <button className="tv-back-btn btn-ghost" onClick={() => navigate("/dashboard/tickets")}
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Tickets
               </button>

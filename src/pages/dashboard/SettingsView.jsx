@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap } from "lucide-react";
 
@@ -915,13 +916,14 @@ const SECTIONS = [
 ];
 
 export default function SettingsView({ isLandscape, isMobile }) {
-  const [section,     setSection]     = useState("general");
-  const [mobilePanel, setMobilePanel] = useState("menu");
+  const navigate                          = useNavigate();
+  const { tab }                           = useParams();
+  const section                           = tab || "general";
+  const mobilePanel                       = tab ? "content" : "menu";
   const [storeName,   setStoreName]   = useState("Placeholder Store");
 
   function handleNavClick(key) {
-    setSection(key);
-    setMobilePanel("content");
+    navigate("/dashboard/settings/" + key);
   }
 
   return (
@@ -972,7 +974,7 @@ export default function SettingsView({ isLandscape, isMobile }) {
           {/* Back button — mobile only */}
           <button
             className="sv-back-btn btn-ghost"
-            onClick={()=>setMobilePanel("menu")}
+            onClick={()=>navigate("/dashboard/settings")}
             style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8,marginBottom:16}}
           >
             ← Back to Settings Menu
