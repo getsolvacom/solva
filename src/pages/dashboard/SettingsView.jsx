@@ -86,6 +86,7 @@ function GlobalStyles() {
 
       /* ── Mobile ── */
       .sv-back-btn{display:none;}
+      .sv-pending-badge-mob{display:none;}
       @media(max-width:767px){
         .sv-root{overflow-x:hidden!important;height:auto!important;flex:none!important;}
         .sv-topbar{height:auto!important;padding:10px 14px!important;}
@@ -109,6 +110,8 @@ function GlobalStyles() {
         .sv-pending-row{flex-wrap:wrap!important;gap:8px!important;}
         .sv-pending-left{width:100%!important;flex:none!important;}
         .sv-pending-right{width:100%!important;justify-content:space-between!important;}
+        .sv-pending-badge-dt{display:none!important;}
+        .sv-pending-badge-mob{display:inline-flex!important;align-items:center;}
       }
       .ls-mob .sv-root{flex:1!important;height:100dvh!important;overflow:hidden!important;}
       .ls-mob .sv-layout{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
@@ -614,14 +617,17 @@ function TeamSection() {
           <p style={{fontSize:11,fontWeight:700,color:C.amber,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Pending Invitations ({pendingInvites.length})</p>
           {pendingInvites.map((p,i)=>(
             <div key={i} className="sv-pending-row" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,padding:"11px 10px",borderRadius:10,borderBottom:i<pendingInvites.length-1?`1px solid ${C.dim}`:"none"}}>
-              {/* Left: icon + email */}
+              {/* Left: icon + column(email + Pending badge shown on desktop only) */}
               <div className="sv-pending-left" style={{display:"flex",alignItems:"center",gap:10,minWidth:0,flex:1}}>
                 <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:"rgba(240,160,75,.14)",border:"1px solid rgba(240,160,75,.25)",display:"flex",alignItems:"center",justifyContent:"center",color:C.amber}}><Mail size={16} strokeWidth={2}/></div>
-                <span style={{fontSize:13.5,fontWeight:600,color:C.sub,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,flex:1}}>{p.email}</span>
+                <div style={{display:"flex",flexDirection:"column",gap:5,minWidth:0,flex:1}}>
+                  <span style={{fontSize:13.5,fontWeight:600,color:C.sub,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.email}</span>
+                  <span className="sv-pending-badge-dt tag" style={{color:C.amber,background:"rgba(240,160,75,.10)",width:"fit-content"}}>Pending</span>
+                </div>
               </div>
-              {/* Right: Pending badge + role badge + Revoke */}
+              {/* Right: role badge + Revoke (desktop); Pending + role + Revoke (mobile via badge-mob) */}
               <div className="sv-pending-right" style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                <span className="tag" style={{color:C.amber,background:"rgba(240,160,75,.10)"}}>Pending</span>
+                <span className="sv-pending-badge-mob tag" style={{color:C.amber,background:"rgba(240,160,75,.10)"}}>Pending</span>
                 <span className="tag" style={{color:p.role==="Admin"?C.coral:p.role==="Manager"?C.blue:C.sub,background:p.role==="Admin"?"rgba(229,82,102,.10)":p.role==="Manager"?"rgba(91,173,255,.10)":C.dim}}>{p.role}</span>
                 <button onClick={()=>revoke(i)} style={{padding:"4px 12px",borderRadius:7,border:`1px solid rgba(229,82,102,.35)`,background:"rgba(229,82,102,.08)",color:C.coral,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Revoke</button>
               </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { C } from "../../tokens";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -71,6 +72,7 @@ function GlobalStyles() {
 }
 
 export default function OverviewView({ setView, isLandscape, isMobile }) {
+  const navigate = useNavigate();
   const [activeChart, setActiveChart] = useState("revenue");
 
   const kpis = [
@@ -186,12 +188,12 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
           <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:16}}>Quick Actions</h3>
           <div className="actions-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
             {[
-              {label:"Configure AI Tone", icon:<Bot size={22} strokeWidth={2}/>,      color:C.coral,   view:"settings" },
-              {label:"View Full Reports", icon:<BarChart3 size={22} strokeWidth={2}/>, color:C.blue,    view:"analytics"},
-              {label:"Test Automation",   icon:<Zap size={22} strokeWidth={2}/>,       color:C.magenta, view:"tickets"  },
-              {label:"Add Team Member",   icon:<UserPlus size={22} strokeWidth={2}/>,  color:C.amber,   view:"settings" },
+              {label:"Configure AI Tone", icon:<Bot size={22} strokeWidth={2}/>,      color:C.coral,   path:"/dashboard/settings/ai"  },
+              {label:"View Full Reports", icon:<BarChart3 size={22} strokeWidth={2}/>, color:C.blue,    path:"/dashboard/analytics"    },
+              {label:"Test Automation",   icon:<Zap size={22} strokeWidth={2}/>,       color:C.magenta, path:"/dashboard/tickets"      },
+              {label:"Add Team Member",   icon:<UserPlus size={22} strokeWidth={2}/>,  color:C.amber,   path:"/dashboard/settings/team"},
             ].map((a,i)=>(
-              <button key={i} className="action-card" onClick={()=>setView(a.view)}
+              <button key={i} className="action-card" onClick={()=>navigate(a.path)}
                 style={{padding:"14px 10px",borderRadius:10,border:`1px solid ${C.borderHi}`,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:8,background:"transparent"}}>
                 <div style={{width:36,height:36,borderRadius:10,background:`${a.color}12`,display:"flex",alignItems:"center",justifyContent:"center",color:a.color,fontSize:17}}>{a.icon}</div>
                 <span style={{fontSize:11.5,fontWeight:500,color:C.sub}}>{a.label}</span>
