@@ -104,10 +104,11 @@ function GlobalStyles() {
         .sv-invoice-row:last-child{margin-bottom:0!important;}
         .sv-invoice-date-id{display:flex!important;justify-content:space-between!important;align-items:center!important;}
         .sv-invoice-amount-status{display:flex!important;justify-content:space-between!important;align-items:center!important;}
-        .sv-invoice-dl{width:100%!important;}
+        .sv-invoice-dl{width:100%!important;display:block!important;}
         .sv-invoice-dl button{width:100%!important;justify-content:center!important;}
-        .sv-pending-row{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;}
-        .sv-pending-meta{width:100%!important;justify-content:flex-start!important;}
+        .sv-pending-row{flex-wrap:wrap!important;gap:8px!important;}
+        .sv-pending-left{width:100%!important;flex:none!important;}
+        .sv-pending-right{width:100%!important;justify-content:space-between!important;}
       }
       .ls-mob .sv-root{flex:1!important;height:100dvh!important;overflow:hidden!important;}
       .ls-mob .sv-layout{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
@@ -612,17 +613,17 @@ function TeamSection() {
         <div className="section-card fu fu1">
           <p style={{fontSize:11,fontWeight:700,color:C.amber,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Pending Invitations ({pendingInvites.length})</p>
           {pendingInvites.map((p,i)=>(
-            <div key={i} className="sv-pending-row" style={{display:"flex",alignItems:"center",gap:13,padding:"11px 10px",borderRadius:10,borderBottom:i<pendingInvites.length-1?`1px solid ${C.dim}`:"none",flexWrap:"wrap"}}>
-              {/* Row 1: icon + email */}
-              <div style={{display:"flex",alignItems:"center",gap:10,width:"100%",minWidth:0}}>
+            <div key={i} className="sv-pending-row" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,padding:"11px 10px",borderRadius:10,borderBottom:i<pendingInvites.length-1?`1px solid ${C.dim}`:"none"}}>
+              {/* Left: icon + email */}
+              <div className="sv-pending-left" style={{display:"flex",alignItems:"center",gap:10,minWidth:0,flex:1}}>
                 <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:"rgba(240,160,75,.14)",border:"1px solid rgba(240,160,75,.25)",display:"flex",alignItems:"center",justifyContent:"center",color:C.amber}}><Mail size={16} strokeWidth={2}/></div>
                 <span style={{fontSize:13.5,fontWeight:600,color:C.sub,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,flex:1}}>{p.email}</span>
               </div>
-              {/* Row 2: Pending badge + role badge + Revoke button */}
-              <div className="sv-pending-meta" style={{display:"flex",alignItems:"center",gap:8,marginLeft:46,flexWrap:"wrap"}}>
+              {/* Right: Pending badge + role badge + Revoke */}
+              <div className="sv-pending-right" style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
                 <span className="tag" style={{color:C.amber,background:"rgba(240,160,75,.10)"}}>Pending</span>
                 <span className="tag" style={{color:p.role==="Admin"?C.coral:p.role==="Manager"?C.blue:C.sub,background:p.role==="Admin"?"rgba(229,82,102,.10)":p.role==="Manager"?"rgba(91,173,255,.10)":C.dim}}>{p.role}</span>
-                <button onClick={()=>revoke(i)} style={{marginLeft:"auto",padding:"4px 12px",borderRadius:7,border:`1px solid rgba(229,82,102,.35)`,background:"rgba(229,82,102,.08)",color:C.coral,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Revoke</button>
+                <button onClick={()=>revoke(i)} style={{padding:"4px 12px",borderRadius:7,border:`1px solid rgba(229,82,102,.35)`,background:"rgba(229,82,102,.08)",color:C.coral,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Revoke</button>
               </div>
             </div>
           ))}
@@ -771,18 +772,18 @@ function BillingSection() {
           </div>
           {INVOICES.map((inv,i)=>(
             <div key={i} className="sv-invoice-row" style={{display:"grid",gridTemplateColumns:"1fr 1.6fr 1fr 90px 110px",padding:"12px 16px",alignItems:"center",background:C.card,borderBottom:i<INVOICES.length-1?`1px solid ${C.border}`:"none"}}>
-              <div className="sv-invoice-date-id">
+              <div className="sv-invoice-date-id" style={{display:"contents"}}>
                 <span style={{fontSize:13,color:C.sub}}>{inv.date}</span>
                 <span style={{fontSize:12.5,color:C.text,fontWeight:600,fontFamily:"monospace,Outfit,sans-serif"}}>{inv.id}</span>
               </div>
-              <div className="sv-invoice-amount-status">
+              <div className="sv-invoice-amount-status" style={{display:"contents"}}>
                 <span style={{fontSize:13,fontWeight:700,color:C.text}}>{inv.amount}</span>
-                <span style={{display:"flex",alignItems:"center",gap:5}}>
+                <span style={{display:"flex",alignItems:"center",gap:5,marginLeft:8}}>
                   <span style={{width:6,height:6,borderRadius:"50%",background:C.teal,flexShrink:0}}/>
                   <span style={{fontSize:12.5,color:C.teal,fontWeight:600}}>Paid</span>
                 </span>
               </div>
-              <div className="sv-invoice-dl">
+              <div className="sv-invoice-dl" style={{display:"contents"}}>
                 <button className="btn-ghost" onClick={handleDownload}
                   style={{padding:"5px 11px",borderRadius:7,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,fontWeight:600,width:"fit-content",display:"flex",alignItems:"center"}}>
                   <Download size={14} strokeWidth={2} style={{marginRight:6}}/>PDF
