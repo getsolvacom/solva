@@ -22,13 +22,13 @@ const NAV_ITEMS = [
 function useOrientation() {
   const [state, setState] = useState(() => ({
     isLandscape: window.innerWidth > window.innerHeight,
-    isMobile: Math.min(window.innerWidth, window.innerHeight) <= 767,
+    isMobile: Math.min(window.innerWidth, window.innerHeight) <= 500,
   }));
   useEffect(() => {
     function update() {
       setState({
         isLandscape: window.innerWidth > window.innerHeight,
-        isMobile: Math.min(window.innerWidth, window.innerHeight) <= 767,
+        isMobile: Math.min(window.innerWidth, window.innerHeight) <= 500,
       });
     }
     window.addEventListener("resize", update);

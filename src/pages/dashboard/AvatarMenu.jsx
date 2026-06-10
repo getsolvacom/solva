@@ -29,7 +29,7 @@ export default function AvatarMenu() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState(false);
-  const [pos, setPos] = useState({ top:0, right:0 });
+  const [pos, setPos] = useState({ top:0, right:0, scrollable:false });
   const btnRef = useRef(null);
   const dropRef = useRef(null);
 
@@ -37,7 +37,15 @@ export default function AvatarMenu() {
     const next = !open;
     if (next && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
-      setPos({ top: r.bottom + 8, right: window.innerWidth - r.right });
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const isMob = Math.min(vw, vh) <= 500;
+      const isLand = vw > vh;
+      setPos({
+        top: r.bottom + 8,
+        right: isMob ? 12 : vw - r.right,
+        scrollable: isMob && isLand,
+      });
     }
     if (!next) setLogoutConfirm(false);
     setOpen(next);
@@ -85,12 +93,14 @@ export default function AvatarMenu() {
           ref={dropRef}
           style={{
             position:"fixed", top:pos.top, right:pos.right,
-            width:280, maxWidth:"calc(100vw - 16px)",
+            width:280, maxWidth:"calc(100vw - 24px)",
+            maxHeight: pos.scrollable ? "75vh" : "none",
             background:C.card, border:`1px solid ${C.borderHi}`,
             borderRadius:14, boxShadow:"0 20px 60px rgba(0,0,0,.65)",
             zIndex:10002, fontFamily:"'Outfit',sans-serif",
             animation:"avDrop .18s cubic-bezier(.16,1,.3,1) both",
-            overflow:"hidden",
+            overflowX:"hidden",
+            overflowY: pos.scrollable ? "auto" : "hidden",
           }}
         >
           {/* Section 1 — Identity */}
