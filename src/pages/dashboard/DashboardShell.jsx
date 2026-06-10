@@ -22,13 +22,13 @@ const NAV_ITEMS = [
 function useOrientation() {
   const [state, setState] = useState(() => ({
     isLandscape: window.innerWidth > window.innerHeight,
-    isMobile: window.innerWidth <= 767,
+    isMobile: Math.min(window.innerWidth, window.innerHeight) <= 767,
   }));
   useEffect(() => {
     function update() {
       setState({
         isLandscape: window.innerWidth > window.innerHeight,
-        isMobile: window.innerWidth <= 767,
+        isMobile: Math.min(window.innerWidth, window.innerHeight) <= 767,
       });
     }
     window.addEventListener("resize", update);
@@ -93,10 +93,12 @@ export default function DashboardShell({ fixedView }) {
           .dash-main-col{overflow:visible!important;height:auto!important;padding-top:var(--mob-h,60px)!important;}
           .mob-header{display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--mob-h,60px)!important;z-index:9999!important;background:rgba(6,0,8,.92)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-bottom:1px solid ${C.borderHi}!important;}
         }
+        .ls-mob .dash-sidebar{display:none!important;}
+        .ls-mob .mob-header{display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--mob-h,44px)!important;z-index:9999!important;background:rgba(6,0,8,.92)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-bottom:1px solid ${C.borderHi}!important;}
         .ls-mob .mob-drawer{width:200px!important;}
         .ls-mob .mob-nav-item{padding:7px 10px!important;font-size:12.5px!important;}
         .ls-mob.dash-root{height:100dvh!important;overflow:hidden!important;}
-        .ls-mob .dash-main-col{overflow:hidden!important;height:100dvh!important;}
+        .ls-mob .dash-main-col{overflow:hidden!important;height:100dvh!important;padding-top:var(--mob-h,44px)!important;}
       `}</style>
 
       {/* Desktop sidebar */}
