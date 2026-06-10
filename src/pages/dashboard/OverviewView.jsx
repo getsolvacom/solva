@@ -6,6 +6,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from "recharts";
 import { DollarSign, Inbox, RotateCcw, Clock, TrendingUp, Bot, BarChart3, Zap, UserPlus } from "lucide-react";
+import AvatarMenu from "./AvatarMenu";
 
 const weekData = [
   { day:"Mon", tickets:45,  revenue:1200 },
@@ -97,7 +98,7 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
             <div className="blink" style={{width:6,height:6,borderRadius:"50%",background:C.coral}}/>
             <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".04em"}}>SOLVA LIVE</span>
           </div>
-          <div style={{width:34,height:34,borderRadius:"50%",cursor:"pointer",background:C.grad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:"#fff"}}>E</div>
+          <AvatarMenu />
         </div>
       </div>
 

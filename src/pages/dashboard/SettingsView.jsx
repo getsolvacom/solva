@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap } from "lucide-react";
+import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
 const INDUSTRY_OPTIONS = [
@@ -996,7 +997,7 @@ export default function SettingsView({ isLandscape, isMobile }) {
             <div className="blink" style={{width:6,height:6,borderRadius:"50%",background:C.coral}}/>
             <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".04em"}}>SOLVA LIVE</span>
           </div>
-          <div style={{width:34,height:34,borderRadius:"50%",cursor:"pointer",background:C.grad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:"#fff"}}>E</div>
+          <AvatarMenu />
         </div>
       </div>
 
