@@ -113,16 +113,15 @@ function GlobalStyles() {
         .sv-pending-badge-dt{display:none!important;}
         .sv-pending-badge-mob{display:inline-flex!important;align-items:center;}
       }
-      .ls-mob .sv-root{flex:1!important;height:100dvh!important;overflow:hidden!important;}
+      .ls-mob .sv-root{flex:1!important;height:100%!important;overflow:hidden!important;}
       .ls-mob .sv-layout{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
-      .ls-mob .sv-nav{width:35%!important;height:100%!important;overflow-y:auto!important;border-right:1px solid #200026!important;border-bottom:none!important;}
-      .ls-mob .sv-nav-hidden{display:block!important;}
-      .ls-mob .sv-content{width:65%!important;height:100%!important;overflow-y:auto!important;}
+      .ls-mob .sv-nav{display:none!important;}
+      .ls-mob .sv-nav-hidden{display:none!important;}
+      .ls-mob .sv-content{flex:1!important;width:100%!important;height:100%!important;overflow-y:auto!important;padding-top:0!important;}
       .ls-mob .sv-content-hidden{display:block!important;}
       .ls-mob .sv-back-btn{display:none!important;}
       .ls-mob .sv-two-col{grid-template-columns:1fr 1fr!important;}
       .ls-mob .sv-three-col{grid-template-columns:1fr 1fr 1fr!important;}
-      .ls-mob .modal-inner{max-height:80vh!important;overflow-y:auto!important;}
     `}</style>
   );
 }
@@ -658,12 +657,13 @@ const INVOICES = [
   {date:"Mar 1, 2026", id:"INV-2026-003", amount:"$599.00"},
 ];
 
-function BillingSection() {
+function BillingSection({ isLandscape = false, isMobile = false }) {
   const [planModal,      setPlanModal]      = useState(null);
   const [planToast,      setPlanToast]      = useState(false);
   const [planToastFade,  setPlanToastFade]  = useState(false);
   const [dlToast,        setDlToast]        = useState(false);
   const [dlToastFade,    setDlToastFade]    = useState(false);
+  const lsMob = isLandscape && isMobile;
 
   const usage = [
     {label:"Tickets Resolved", used:1247, limit:5000, color:C.coral},
@@ -697,8 +697,8 @@ function BillingSection() {
 
       {/* Plan change modal */}
       {planModal && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.74)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-          <div className="fu modal-inner" style={{background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:16,padding:28,maxWidth:420,width:"100%"}}>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.74)",zIndex:10001,display:"flex",alignItems:"center",justifyContent:"center",padding:lsMob?8:20}}>
+          <div className="fu modal-inner" style={{background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:16,padding:lsMob?18:28,maxWidth:lsMob?"92vw":420,width:"100%",maxHeight:lsMob?"88vh":undefined,overflowY:lsMob?"auto":undefined}}>
             <h3 style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:10}}>Confirm Plan Change</h3>
             <p style={{fontSize:14,color:C.sub,lineHeight:1.7,marginBottom:24}}>
               Are you sure you want to change your plan to{" "}
@@ -853,9 +853,10 @@ const DANGER_ACTIONS = [
   },
 ];
 
-function DangerSection() {
+function DangerSection({ isLandscape = false, isMobile = false }) {
   const [modal,       setModal]       = useState(null);
   const [deleteInput, setDeleteInput] = useState("");
+  const lsMob = isLandscape && isMobile;
 
   function openModal(action) { setModal(action); setDeleteInput(""); }
   function closeModal()       { setModal(null);   setDeleteInput(""); }
@@ -868,8 +869,8 @@ function DangerSection() {
 
       {/* Destructive action modal */}
       {modal && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.80)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-          <div className="fu modal-inner" style={{background:C.card,border:`1px solid ${C.red}`,borderRadius:16,padding:28,maxWidth:440,width:"100%"}}>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.80)",zIndex:10001,display:"flex",alignItems:"center",justifyContent:"center",padding:lsMob?8:20}}>
+          <div className="fu modal-inner" style={{background:C.card,border:`1px solid ${C.red}`,borderRadius:16,padding:lsMob?18:28,maxWidth:lsMob?"92vw":440,width:"100%",maxHeight:lsMob?"88vh":undefined,overflowY:lsMob?"auto":undefined}}>
             <h3 style={{fontSize:17,fontWeight:700,color:C.red,marginBottom:10,display:"flex",alignItems:"center",gap:8}}><AlertTriangle size={20} strokeWidth={2}/>Dangerous Action</h3>
             <div style={{padding:"12px 14px",borderRadius:10,background:"rgba(255,82,114,.06)",border:"1px solid rgba(255,82,114,.20)",marginBottom:16}}>
               <p style={{fontSize:13,color:"#FF9090",lineHeight:1.65}}>{modal.warn}</p>
@@ -945,14 +946,44 @@ export default function SettingsView({ isLandscape, isMobile }) {
   const section                           = tab || "general";
   const mobilePanel                       = tab ? "content" : "menu";
   const [storeName,   setStoreName]   = useState("Placeholder Store");
+  const [lsNavOpen,   setLsNavOpen]   = useState(false);
+
+  const lsMob = isLandscape && isMobile;
+  const currentSection = SECTIONS.find(s => s.key === section) || SECTIONS[0];
 
   function handleNavClick(key) {
     navigate("/dashboard/settings/" + key);
+    setLsNavOpen(false);
   }
 
   return (
     <div className="sv-root" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",overflowX:"hidden",fontFamily:"'Outfit',sans-serif"}}>
       <GlobalStyles/>
+
+      {/* Landscape settings sub-nav drawer */}
+      {lsMob && lsNavOpen && (
+        <>
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.65)",zIndex:9998}} onClick={()=>setLsNavOpen(false)}/>
+          <div style={{position:"fixed",top:0,left:0,height:"100dvh",width:220,background:C.surface,borderRight:`1px solid ${C.border}`,zIndex:10000,display:"flex",flexDirection:"column",padding:"16px 0",overflowY:"auto"}}>
+            <div style={{padding:"0 14px 12px",marginBottom:6,borderBottom:`1px solid ${C.border}`}}>
+              <div style={{fontSize:12.5,fontWeight:700,color:C.text,marginBottom:1,display:"flex",alignItems:"center",gap:5}}><Store size={13} strokeWidth={2}/>{storeName}</div>
+              <div style={{fontSize:11,color:C.muted}}>Settings</div>
+            </div>
+            <nav style={{flex:1,padding:"0 8px"}}>
+              {SECTIONS.map(s=>(
+                <div key={s.key} onClick={()=>handleNavClick(s.key)}
+                  style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",borderRadius:9,cursor:"pointer",marginBottom:2,
+                    background:section===s.key?"rgba(229,82,102,.09)":"transparent",
+                    color:section===s.key?C.coral:s.key==="danger"?"#FF5272":C.sub,
+                    fontSize:13,fontWeight:section===s.key?600:400}}>
+                  <span style={{fontSize:14,display:"inline-flex",alignItems:"center"}}>{s.icon}</span>
+                  {s.label}
+                </div>
+              ))}
+            </nav>
+          </div>
+        </>
+      )}
 
       {/* Top bar */}
       <div className="sv-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
@@ -995,7 +1026,16 @@ export default function SettingsView({ isLandscape, isMobile }) {
           className={`sv-content${mobilePanel==="menu"?" sv-content-hidden":""}`}
           style={{flex:1,overflowY:"auto",padding:"24px 28px",background:C.bg}}
         >
-          {/* Back button — mobile only */}
+          {/* Landscape breadcrumb / nav trigger */}
+          {lsMob && (
+            <div onClick={()=>setLsNavOpen(true)}
+              style={{position:"sticky",top:0,zIndex:10,display:"flex",alignItems:"center",gap:10,margin:"0 -28px 16px -28px",padding:"9px 28px",background:C.bg,borderBottom:`1px solid ${C.border}`,cursor:"pointer"}}>
+              <span style={{fontSize:13,display:"inline-flex",alignItems:"center",color:C.coral}}>{currentSection.icon}</span>
+              <span style={{fontSize:13.5,fontWeight:600,color:C.text,flex:1}}>{currentSection.label}</span>
+              <span style={{fontSize:11.5,color:C.muted,fontWeight:600}}>≡ Menu</span>
+            </div>
+          )}
+          {/* Back button — portrait mobile only */}
           <button
             className="sv-back-btn btn-ghost"
             onClick={()=>navigate("/dashboard/settings")}
@@ -1009,8 +1049,8 @@ export default function SettingsView({ isLandscape, isMobile }) {
           {section==="automations"   && <AutomationsSection/>}
           {section==="notifications" && <NotificationsSection/>}
           {section==="team"          && <TeamSection/>}
-          {section==="billing"       && <BillingSection/>}
-          {section==="danger"        && <DangerSection/>}
+          {section==="billing"       && <BillingSection isLandscape={isLandscape} isMobile={isMobile}/>}
+          {section==="danger"        && <DangerSection isLandscape={isLandscape} isMobile={isMobile}/>}
         </div>
       </div>
     </div>
