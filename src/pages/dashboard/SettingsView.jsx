@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { C } from "../../tokens";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap } from "lucide-react";
 
 // ── Comprehensive dropdown options ──
 const INDUSTRY_OPTIONS = [
@@ -258,7 +258,7 @@ function GeneralSection({ storeName, onSaveStoreName }) {
         <div>
           <FieldLabel>Store URL</FieldLabel>
           <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1px solid ${C.border}`,opacity:.65,cursor:"not-allowed"}}>
-            <div style={{padding:"11px 12px",background:C.dim,color:C.muted,fontSize:15,display:"flex",alignItems:"center",flexShrink:0,borderRight:`1px solid ${C.border}`}}>🔒</div>
+            <div style={{padding:"11px 12px",background:C.dim,color:C.muted,display:"flex",alignItems:"center",flexShrink:0,borderRight:`1px solid ${C.border}`}}><Lock size={14} strokeWidth={2}/></div>
             <input value="yourstore" readOnly style={{flex:1,padding:"11px 12px",background:C.dim,border:"none",color:C.muted,fontSize:14,cursor:"not-allowed"}}/>
             <div style={{padding:"11px 14px",background:C.surface,color:C.muted,fontSize:14,borderLeft:`1px solid ${C.border}`,whiteSpace:"nowrap",display:"flex",alignItems:"center"}}>.myshopify.com</div>
           </div>
@@ -359,7 +359,7 @@ function AIConfigSection() {
           <div key={c.key} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:`1px solid ${C.dim}`}}>
             <div onClick={()=>setConds(p=>({...p,[c.key]:!p[c.key]}))}
               style={{width:18,height:18,borderRadius:5,flexShrink:0,cursor:"pointer",border:`1.5px solid ${conds[c.key]?C.coral:C.border}`,background:conds[c.key]?C.coral:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
-              {conds[c.key]&&<span style={{color:"#fff",fontSize:11,fontWeight:700}}>✓</span>}
+              {conds[c.key]&&<Check size={14} strokeWidth={2} style={{color:"#fff"}}/>}
             </div>
             <span style={{fontSize:13.5,color:C.sub}}>{c.label}</span>
           </div>
@@ -603,7 +603,7 @@ function TeamSection() {
           <p style={{fontSize:11,fontWeight:700,color:C.amber,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Pending Invitations ({pendingInvites.length})</p>
           {pendingInvites.map((p,i)=>(
             <div key={i} style={{display:"flex",alignItems:"center",gap:13,padding:"11px 10px",borderRadius:10,borderBottom:i<pendingInvites.length-1?`1px solid ${C.dim}`:"none"}}>
-              <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:"rgba(240,160,75,.14)",border:"1px solid rgba(240,160,75,.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>✉️</div>
+              <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:"rgba(240,160,75,.14)",border:"1px solid rgba(240,160,75,.25)",display:"flex",alignItems:"center",justifyContent:"center",color:C.amber}}><Mail size={16} strokeWidth={2}/></div>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13.5,fontWeight:600,color:C.sub,marginBottom:4}}>{p.email}</div>
                 <span className="tag" style={{color:C.amber,background:"rgba(240,160,75,.10)"}}>Pending</span>
@@ -845,7 +845,7 @@ function DangerSection() {
       {modal && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.80)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
           <div className="fu modal-inner" style={{background:C.card,border:`1px solid ${C.red}`,borderRadius:16,padding:28,maxWidth:440,width:"100%"}}>
-            <h3 style={{fontSize:17,fontWeight:700,color:C.red,marginBottom:10}}>⚠️ Dangerous Action</h3>
+            <h3 style={{fontSize:17,fontWeight:700,color:C.red,marginBottom:10,display:"flex",alignItems:"center",gap:8}}><AlertTriangle size={20} strokeWidth={2}/>Dangerous Action</h3>
             <div style={{padding:"12px 14px",borderRadius:10,background:"rgba(255,82,114,.06)",border:"1px solid rgba(255,82,114,.20)",marginBottom:16}}>
               <p style={{fontSize:13,color:"#FF9090",lineHeight:1.65}}>{modal.warn}</p>
             </div>
@@ -906,12 +906,12 @@ function DangerSection() {
 // ── MAIN EXPORT ──
 const SECTIONS = [
   {key:"general",       label:"General",       icon:<Store size={15} strokeWidth={2}/>},
-  {key:"ai",            label:"AI Config",     icon:"⚡"},
-  {key:"automations",   label:"Automations",   icon:"⚙️"},
+  {key:"ai",            label:"AI Config",     icon:<Bot size={16} strokeWidth={2}/>},
+  {key:"automations",   label:"Automations",   icon:<Zap size={16} strokeWidth={2}/>},
   {key:"notifications", label:"Notifications", icon:<Bell size={15} strokeWidth={2}/>},
-  {key:"team",          label:"Team",          icon:"👥"},
-  {key:"billing",       label:"Billing",       icon:"💳"},
-  {key:"danger",        label:"Danger Zone",   icon:"⚠️"},
+  {key:"team",          label:"Team",          icon:<Users size={16} strokeWidth={2}/>},
+  {key:"billing",       label:"Billing",       icon:<CreditCard size={16} strokeWidth={2}/>},
+  {key:"danger",        label:"Danger Zone",   icon:<AlertTriangle size={16} strokeWidth={2}/>},
 ];
 
 export default function SettingsView({ isLandscape, isMobile }) {

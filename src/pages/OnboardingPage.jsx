@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { C } from "../tokens";
+import { Mail, Lock, Package, User, Bell, Briefcase, Smile, Coffee, Bot, RotateCcw, ShoppingCart } from "lucide-react";
 
 const CONFETTI_PIECES = Array.from({ length: 20 }, (_, i) => ({
   id: i,
@@ -122,13 +123,13 @@ function LoginForm({ onSignup, goDash }) {
       <div className="fu fu1">
         <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Email Address</label>
         <div style={{display:"flex",alignItems:"center",borderRadius:10,border:`1px solid ${C.border}`,background:C.card,overflow:"hidden",marginBottom:16}}>
-          <span style={{padding:"0 14px",color:C.muted,fontSize:16}}>✉</span>
+          <span style={{padding:"0 14px",color:C.muted,display:"flex",alignItems:"center"}}><Mail size={16} strokeWidth={2}/></span>
           <input type="email" placeholder="you@yourstore.com" value={email} onChange={e=>setEmail(e.target.value)} style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
         </div>
 
         <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Password</label>
         <div style={{display:"flex",alignItems:"center",borderRadius:10,border:`1px solid ${C.border}`,background:C.card,overflow:"hidden",marginBottom:8}}>
-          <span style={{padding:"0 14px",color:C.muted,fontSize:16}}>🔒</span>
+          <span style={{padding:"0 14px",color:C.muted,display:"flex",alignItems:"center"}}><Lock size={16} strokeWidth={2}/></span>
           <input type={showPass?"text":"password"} placeholder="Your password" value={password} onChange={e=>setPassword(e.target.value)} style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
           <span onClick={()=>setShowPass(v=>!v)} style={{padding:"0 14px",color:C.muted,fontSize:13,cursor:"pointer",userSelect:"none",whiteSpace:"nowrap",transition:"color .15s"}}>{showPass?"Hide":"Show"}</span>
         </div>
@@ -174,13 +175,13 @@ function Step1({ onNext, onLogin }) {
       <div className="fu fu2">
         <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Email Address</label>
         <div style={{display:"flex",alignItems:"center",borderRadius:10,border:`1px solid ${C.border}`,background:C.card,overflow:"hidden",marginBottom:16}}>
-          <span style={{padding:"0 14px",color:C.muted,fontSize:16}}>✉</span>
+          <span style={{padding:"0 14px",color:C.muted,display:"flex",alignItems:"center"}}><Mail size={16} strokeWidth={2}/></span>
           <input type="email" placeholder="you@yourstore.com" value={email} onChange={e=>setEmail(e.target.value)} style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
         </div>
 
         <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Password</label>
         <div style={{display:"flex",alignItems:"center",borderRadius:10,border:`1px solid ${C.border}`,background:C.card,overflow:"hidden",marginBottom:20}}>
-          <span style={{padding:"0 14px",color:C.muted,fontSize:16}}>🔒</span>
+          <span style={{padding:"0 14px",color:C.muted,display:"flex",alignItems:"center"}}><Lock size={16} strokeWidth={2}/></span>
           <input type="password" placeholder="Min. 8 characters" value={password} onChange={e=>setPassword(e.target.value)} style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
         </div>
       </div>
@@ -218,9 +219,9 @@ function Step2({ onNext, onBack }) {
 
       <div className="fu fu2" style={{padding:16,borderRadius:12,background:C.card,border:`1px solid ${C.border}`,marginBottom:26}}>
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:12}}>Permissions Required</p>
-        {[["📦","Read orders & fulfilment data"],["👤","Read customer information"],["📧","Send transactional emails"],["🔔","Access store webhooks"]].map(([icon,label],i)=>(
+        {[[<Package size={16} strokeWidth={2}/>, "Read orders & fulfilment data"],[<User size={16} strokeWidth={2}/>, "Read customer information"],[<Mail size={16} strokeWidth={2}/>, "Send transactional emails"],[<Bell size={16} strokeWidth={2}/>, "Access store webhooks"]].map(([icon,label],i)=>(
           <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:i<3?`1px solid ${C.dim}`:"none"}}>
-            <span style={{fontSize:15}}>{icon}</span>
+            <span style={{display:"flex",alignItems:"center",flexShrink:0,color:C.muted}}>{icon}</span>
             <span style={{fontSize:13,color:C.sub,flex:1}}>{label}</span>
             <span style={{fontSize:11,color:C.coral,fontWeight:700,background:"rgba(229,82,102,.10)",padding:"2px 7px",borderRadius:4}}>✓ Granted</span>
           </div>
@@ -229,7 +230,7 @@ function Step2({ onNext, onBack }) {
 
       <div className="fu fu3">
         <button className="btn-primary" onClick={onNext} style={{width:"100%",padding:"14px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15,marginBottom:14}}>Install Solva on Shopify →</button>
-        <p style={{textAlign:"center",fontSize:12,color:C.muted}}>🔒 256-bit encrypted. We never store or sell your customer data.</p>
+        <p style={{textAlign:"center",fontSize:12,color:C.muted,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Lock size={16} strokeWidth={2}/>256-bit encrypted. We never store or sell your customer data.</p>
       </div>
     </CardShell>
   );
@@ -245,15 +246,15 @@ function Step3({ onNext, onBack }) {
   const [lang,    setLang]    = useState("English");
 
   const tones = [
-    {key:"professional",emoji:"💼",label:"Professional",desc:"Formal, precise. Best for B2B or high-ticket."},
-    {key:"friendly",    emoji:"😊",label:"Friendly",    desc:"Warm and helpful. Works for most brands."},
-    {key:"casual",      emoji:"👋",label:"Casual",      desc:"Relaxed. Great for lifestyle brands."},
+    {key:"professional",emoji:<Briefcase size={20} strokeWidth={2}/>,label:"Professional",desc:"Formal, precise. Best for B2B or high-ticket."},
+    {key:"friendly",    emoji:<Smile size={20} strokeWidth={2}/>,    label:"Friendly",    desc:"Warm and helpful. Works for most brands."},
+    {key:"casual",      emoji:<Coffee size={20} strokeWidth={2}/>,   label:"Casual",      desc:"Relaxed. Great for lifestyle brands."},
   ];
 
   const automations = [
-    {key:"support",icon:"🤖",label:"AI Support Agent",  desc:"Auto-resolve tickets & inquiries",      color:C.teal,  on:support, toggle:()=>setSupport(v=>!v)},
-    {key:"returns",icon:"↩", label:"Return Deflection",  desc:"Offer alternatives before refunds",     color:C.amber, on:returns, toggle:()=>setReturns(v=>!v)},
-    {key:"cart",   icon:"🛒",label:"Cart Recovery",      desc:"3-touch sequence to recover lost sales", color:C.blue,  on:cart,    toggle:()=>setCart(v=>!v)},
+    {key:"support",icon:<Bot size={18} strokeWidth={2}/>,         label:"AI Support Agent",  desc:"Auto-resolve tickets & inquiries",      color:C.teal,  on:support, toggle:()=>setSupport(v=>!v)},
+    {key:"returns",icon:<RotateCcw size={18} strokeWidth={2}/>,   label:"Return Deflection",  desc:"Offer alternatives before refunds",     color:C.amber, on:returns, toggle:()=>setReturns(v=>!v)},
+    {key:"cart",   icon:<ShoppingCart size={18} strokeWidth={2}/>,label:"Cart Recovery",      desc:"3-touch sequence to recover lost sales", color:C.blue,  on:cart,    toggle:()=>setCart(v=>!v)},
   ];
 
   return (
@@ -266,7 +267,7 @@ function Step3({ onNext, onBack }) {
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
           {tones.map(t=>(
             <div key={t.key} className="tone-card" onClick={()=>setTone(t.key)} style={{padding:"14px 12px",background:tone===t.key?"rgba(229,82,102,.09)":C.card,border:`1px solid ${tone===t.key?C.coral:C.border}`}}>
-              <div style={{fontSize:22,marginBottom:8}}>{t.emoji}</div>
+              <div style={{marginBottom:8,display:"flex",alignItems:"center",color:tone===t.key?C.coral:C.muted}}>{t.emoji}</div>
               <div style={{fontSize:13,fontWeight:700,color:tone===t.key?C.coral:C.text,marginBottom:5}}>{t.label}</div>
               <div style={{fontSize:11.5,color:C.muted,lineHeight:1.5}}>{t.desc}</div>
             </div>
@@ -293,7 +294,7 @@ function Step3({ onNext, onBack }) {
       <div className="fu fu3" style={{marginBottom:18}}>
         <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Escalation Email</label>
         <div style={{display:"flex",alignItems:"center",borderRadius:10,border:`1px solid ${C.border}`,background:C.card,overflow:"hidden",marginBottom:14}}>
-          <span style={{padding:"0 14px",color:C.muted,fontSize:16}}>✉</span>
+          <span style={{padding:"0 14px",color:C.muted,display:"flex",alignItems:"center"}}><Mail size={16} strokeWidth={2}/></span>
           <input type="email" placeholder="support@yourstore.com" value={email} onChange={e=>setEmail(e.target.value)} style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
         </div>
 
@@ -336,7 +337,7 @@ function Step4({ goDash }) {
 
       <div className="fu fu2" style={{padding:16,borderRadius:14,background:C.card,border:`1px solid ${C.border}`,marginBottom:22}}>
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:12}}>Active Automations</p>
-        {[{icon:"🤖",label:"AI Support Agent",color:C.teal},{icon:"↩",label:"Return Deflection",color:C.amber},{icon:"🛒",label:"Cart Recovery",color:C.blue}].map((s,i)=>(
+        {[{icon:<Bot size={18} strokeWidth={2}/>,label:"AI Support Agent",color:C.teal},{icon:<RotateCcw size={18} strokeWidth={2}/>,label:"Return Deflection",color:C.amber},{icon:<ShoppingCart size={18} strokeWidth={2}/>,label:"Cart Recovery",color:C.blue}].map((s,i)=>(
           <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"9px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none"}}>
             <div style={{width:32,height:32,borderRadius:8,flexShrink:0,background:`${s.color}14`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>{s.icon}</div>
             <span style={{fontSize:13.5,color:C.text,flex:1,fontWeight:500}}>{s.label}</span>

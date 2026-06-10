@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C } from "../../tokens";
-import { DollarSign, Inbox, RotateCcw, Clock, Zap, Star, Trophy, TrendingUp, Lightbulb, Calendar } from "lucide-react";
+import { DollarSign, Inbox, RotateCcw, Clock, Zap, Star, Trophy, TrendingUp, Lightbulb, Calendar, Bot, ShoppingCart } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -70,9 +70,9 @@ const DOW_DATA = [
 ];
 
 const AUTOMATIONS = [
-  {name:"AI Support Agent", icon:"🤖", color:C.teal,  triggers:"1,247",rate:"87%",  rateVal:87,  impact:"+$14,200 cost saved", trend:"+18%"},
-  {name:"Cart Recovery",    icon:"🛒", color:C.blue,  triggers:"312",  rate:"19.5%",rateVal:19.5,impact:"+$8,420 recovered",   trend:"+24%"},
-  {name:"Return Deflection",icon:"↩️", color:C.amber, triggers:"247",  rate:"28%",  rateVal:28,  impact:"+$2,840 saved",       trend:"+12%"},
+  {name:"AI Support Agent", icon:<Bot size={16} strokeWidth={2}/>,         color:C.teal,  triggers:"1,247",rate:"87%",  rateVal:87,  impact:"+$14,200 cost saved", trend:"+18%"},
+  {name:"Cart Recovery",    icon:<ShoppingCart size={16} strokeWidth={2}/>, color:C.blue,  triggers:"312",  rate:"19.5%",rateVal:19.5,impact:"+$8,420 recovered",   trend:"+24%"},
+  {name:"Return Deflection",icon:<RotateCcw size={16} strokeWidth={2}/>,    color:C.amber, triggers:"247",  rate:"28%",  rateVal:28,  impact:"+$2,840 saved",       trend:"+12%"},
 ];
 
 const METRIC_CFG = {

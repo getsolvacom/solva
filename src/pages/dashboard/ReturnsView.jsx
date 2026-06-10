@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C } from "../../tokens";
-import { DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip } from "lucide-react";
+import { DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip, User, Search, Clock } from "lucide-react";
 
 const RETURNS = [
   {
@@ -158,8 +158,8 @@ function Bubble({ msg, idx }) {
     <div className="msg-bubble" style={{animationDelay:`${idx*.07}s`,display:"flex",justifyContent:isRight?"flex-end":"flex-start",margin:"6px 0"}}>
       <div style={{maxWidth:"72%",display:"flex",flexDirection:"column",alignItems:isRight?"flex-end":"flex-start",gap:5}}>
         <div style={{display:"flex",alignItems:"center",gap:6,paddingLeft:2}}>
-          {isAgent    && <span className="tag" style={{color:C.amber,background:"rgba(240,160,75,.10)",fontSize:10}}>👤 AGENT</span>}
-          {msg.from==="ai" && <span className="tag" style={{color:C.coral,background:"rgba(229,82,102,.10)",fontSize:10}}>⚡ SOLVA AI</span>}
+          {isAgent    && <span className="tag" style={{color:C.amber,background:"rgba(240,160,75,.10)",fontSize:10,display:"inline-flex",alignItems:"center",gap:3}}><User size={12} strokeWidth={2}/>AGENT</span>}
+          {msg.from==="ai" && <span className="tag" style={{color:C.coral,background:"rgba(229,82,102,.10)",fontSize:10,display:"inline-flex",alignItems:"center",gap:3}}><Zap size={12} strokeWidth={2}/>SOLVA AI</span>}
           <span style={{fontSize:10.5,color:C.muted}}>{msg.time}</span>
           {isCustomer && <span style={{fontSize:10.5,color:C.sub,fontWeight:500}}>Customer</span>}
         </div>
@@ -283,7 +283,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
         >
           <div style={{padding:"12px 12px 8px"}}>
             <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
-              <span style={{color:C.muted,fontSize:14}}>🔍</span>
+              <Search size={16} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search returns…" style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:13.5}}/>
             </div>
           </div>
@@ -460,8 +460,13 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   <span className="tag" style={{
                     color:      selected.status==="deflected"?C.teal:selected.status==="pending"?C.amber:"#FF5272",
                     background: selected.status==="deflected"?"rgba(62,207,178,.10)":selected.status==="pending"?"rgba(240,160,75,.10)":"rgba(255,82,114,.10)",
+                    display:"inline-flex", alignItems:"center", gap:5,
                   }}>
-                    {selected.status==="deflected"?"✓ Customer Accepted":selected.status==="pending"?"⏳ Awaiting Response":"— Not Applicable"}
+                    {selected.status==="deflected"
+                      ? <><CheckCircle2 size={14} strokeWidth={2}/>Customer Accepted</>
+                      : selected.status==="pending"
+                      ? <><Clock size={14} strokeWidth={2}/>Awaiting Response</>
+                      : "— Not Applicable"}
                   </span>
                 </div>
               </div>

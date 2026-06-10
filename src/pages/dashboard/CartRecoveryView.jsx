@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C } from "../../tokens";
-import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2 } from "lucide-react";
+import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2, Search, XCircle, MousePointer } from "lucide-react";
 
 const CARTS = [
   {
@@ -234,7 +234,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
         >
           <div style={{padding:"12px 12px 8px"}}>
             <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
-              <span style={{color:C.muted,fontSize:14}}>🔍</span>
+              <Search size={16} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search carts…" style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:13.5}}/>
             </div>
           </div>
@@ -339,7 +339,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
               {selected.status==="recovered" && (
                 <div style={{padding:"14px 18px",borderRadius:14,background:"rgba(62,207,178,.08)",border:"1px solid rgba(62,207,178,.22)",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <span style={{fontSize:22}}>🎉</span>
+                    <CheckCircle2 size={18} strokeWidth={2} style={{color:C.teal,flexShrink:0}}/>
                     <div>
                       <div style={{fontSize:13.5,fontWeight:700,color:C.teal,marginBottom:3}}>Cart Successfully Recovered</div>
                       <div style={{fontSize:12.5,color:C.sub}}>Converted at {selected.recoveredAt} · Solva AI recovered this without human intervention</div>
@@ -353,7 +353,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
               )}
               {selected.status==="failed" && (
                 <div style={{padding:"14px 18px",borderRadius:14,background:"rgba(255,82,114,.07)",border:"1px solid rgba(255,82,114,.18)",display:"flex",alignItems:"center",gap:12}}>
-                  <span style={{fontSize:20}}>📭</span>
+                  <XCircle size={18} strokeWidth={2} style={{color:"#FF5272",flexShrink:0}}/>
                   <div>
                     <div style={{fontSize:13.5,fontWeight:700,color:"#FF5272",marginBottom:3}}>All 3 Emails Sent — No Conversion</div>
                     <div style={{fontSize:12.5,color:C.sub}}>Customer did not open any emails. Sequence complete. Cart expired.</div>
@@ -434,8 +434,8 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
                         <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                           {(step.status==="sent"||step.status==="converted")&&(
                             <>
-                              <span className="tag" style={{color:C.sub,background:C.dim,fontSize:10}}>👁 {step.opens}</span>
-                              <span className="tag" style={{color:C.sub,background:C.dim,fontSize:10}}>🖱 {step.clicks}</span>
+                              <span className="tag" style={{color:C.sub,background:C.dim,fontSize:10,display:"inline-flex",alignItems:"center",gap:3}}><Eye size={14} strokeWidth={2}/>{step.opens}</span>
+                              <span className="tag" style={{color:C.sub,background:C.dim,fontSize:10,display:"inline-flex",alignItems:"center",gap:3}}><MousePointer size={14} strokeWidth={2}/>{step.clicks}</span>
                             </>
                           )}
                           <span className="tag" style={{color:SEQ_STATUS[step.status]?.color||C.muted,background:SEQ_STATUS[step.status]?.bg||C.dim}}>

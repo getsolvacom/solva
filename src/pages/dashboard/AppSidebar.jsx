@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
-import { BarChart3, Ticket, ShoppingCart, RotateCcw, TrendingUp, Settings, LogOut } from "lucide-react";
+import { BarChart3, Ticket, ShoppingCart, RotateCcw, TrendingUp, Settings, LogOut, Store } from "lucide-react";
 
 function SolvaLogo({ size=15 }) {
   return (
@@ -39,7 +39,7 @@ export default function AppSidebar() {
     <aside style={{width:212,flexShrink:0,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",padding:"22px 0"}}>
       <div style={{padding:"0 18px 24px"}}><SolvaLogo/></div>
       <div style={{margin:"0 10px 22px",padding:"10px 12px",borderRadius:12,background:C.card,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:9}}>
-        <div style={{width:30,height:30,borderRadius:8,flexShrink:0,background:C.grad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>🏪</div>
+        <div style={{width:30,height:30,borderRadius:8,flexShrink:0,background:C.grad,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><Store size={18} strokeWidth={2}/></div>
         <div style={{minWidth:0}}>
           <div style={{fontSize:12.5,fontWeight:600,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>Placeholder Store</div>
           <div style={{fontSize:10.5,color:C.muted}}>yourstore.myshopify.com</div>

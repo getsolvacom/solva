@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C } from "../../tokens";
-import { Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle, ArrowUpRight } from "lucide-react";
+import { Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle, ArrowUpRight, AlertTriangle, User, Search, Zap } from "lucide-react";
 
 const TICKETS = [
   {
@@ -131,7 +131,7 @@ function Bubble({ msg, idx }) {
   if (isEscalation) return (
     <div className="msg-bubble" style={{animationDelay:`${idx*.07}s`,display:"flex",justifyContent:"center",margin:"8px 0"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 14px",borderRadius:100,background:"rgba(255,82,114,.10)",border:"1px solid rgba(255,82,114,.20)",flexWrap:"wrap"}}>
-        <span style={{fontSize:12}}>⚠</span>
+        <AlertTriangle size={16} strokeWidth={2} style={{color:"#FF5272",flexShrink:0}}/>
         <span style={{fontSize:11.5,color:"#FF5272",fontWeight:600}}>{msg.text}</span>
         <span style={{fontSize:11,color:C.muted}}>· {msg.time}</span>
       </div>
@@ -147,8 +147,9 @@ function Bubble({ msg, idx }) {
               color:      isAgent ? C.sub   : C.coral,
               background: isAgent ? "rgba(255,255,255,.06)" : "rgba(229,82,102,.10)",
               fontSize:   10,
+              display:"inline-flex", alignItems:"center", gap:3,
             }}>
-              {isAgent ? "👤 AGENT" : "⚡ SOLVA AI"}
+              {isAgent ? <><User size={12} strokeWidth={2}/>AGENT</> : <><Zap size={12} strokeWidth={2}/>SOLVA AI</>}
             </span>
           )}
           <span style={{fontSize:10.5,color:C.muted}}>{msg.time}</span>
@@ -280,7 +281,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
           {/* Search */}
           <div style={{padding:"12px 14px 8px"}}>
             <div style={{display:"flex",alignItems:"center",gap:9,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
-              <span style={{color:C.muted,fontSize:14}}>🔍</span>
+              <Search size={16} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tickets…" style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:13.5}}/>
             </div>
           </div>
@@ -389,7 +390,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
             {/* AI summary bar */}
             <div className="tv-ai-bar" style={{padding:"11px 24px",flexShrink:0,background:"rgba(229,82,102,.05)",borderBottom:"1px solid rgba(229,82,102,.14)",display:"flex",alignItems:"center",gap:10}}>
-              <div style={{width:28,height:28,borderRadius:8,flexShrink:0,background:"rgba(229,82,102,.14)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>⚡</div>
+              <div style={{width:28,height:28,borderRadius:8,flexShrink:0,background:"rgba(229,82,102,.14)",display:"flex",alignItems:"center",justifyContent:"center",color:C.coral}}><Zap size={14} strokeWidth={2}/></div>
               <span style={{fontSize:12,fontWeight:700,color:C.coral,flexShrink:0}}>SOLVA AI · </span>
               <span style={{fontSize:12.5,color:C.sub}}>
                 {effectiveStatus==="resolved"  ? "This ticket was fully resolved by Solva AI without human intervention."
@@ -451,7 +452,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
               {showAttachHint && (
                 <p style={{fontSize:11.5,color:C.muted,marginTop:6,paddingLeft:2,animation:"fadeUp .3s cubic-bezier(.16,1,.3,1) both",display:"flex",alignItems:"center",gap:5}}><Paperclip size={13} strokeWidth={2}/>File attachment coming soon</p>
               )}
-              <p style={{fontSize:11.5,color:C.muted,marginTop:8}}>⚡ Solva AI will respond automatically unless you send manually.</p>
+              <p style={{fontSize:11.5,color:C.muted,marginTop:8,display:"flex",alignItems:"center",gap:4}}><Zap size={12} strokeWidth={2}/>Solva AI will respond automatically unless you send manually.</p>
             </div>
           </div>
         )}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3 } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$299", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -139,7 +140,7 @@ export default function LandingPage() {
 
         {/* Mobile hamburger */}
         <button className="nav-hamburger" onClick={()=>setMenuOpen(o=>!o)} aria-label={menuOpen?"Close menu":"Open menu"}>
-          {menuOpen ? "✕" : "☰"}
+          {menuOpen ? <X size={22} strokeWidth={2}/> : <Menu size={22} strokeWidth={2}/>}
         </button>
 
         {/* Mobile dropdown */}
@@ -202,16 +203,16 @@ export default function LandingPage() {
         </div>
         <div className="features-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
           {[
-            {icon:"🤖",title:"AI Support Agent",  color:C.teal,  stat:"87% auto-resolution",desc:"Handles order inquiries, shipping questions, and FAQs automatically. Only escalates what truly needs a human."},
-            {icon:"↩", title:"Return Deflection",  color:C.amber, stat:"28% deflection rate", desc:"Before a return is processed, our AI offers smart alternatives — exchanges, discounts, troubleshooting."},
-            {icon:"🛒",title:"Cart Recovery",      color:C.blue,  stat:"19% average recovery",desc:"A 3-touch AI sequence — email, SMS, and a personalised follow-up — written dynamically based on cart contents."},
+            {icon:<Bot size={28} strokeWidth={2}/>,         title:"AI Support Agent",  color:C.teal,  stat:"87% auto-resolution",desc:"Handles order inquiries, shipping questions, and FAQs automatically. Only escalates what truly needs a human."},
+            {icon:<RotateCcw size={28} strokeWidth={2}/>,   title:"Return Deflection",  color:C.amber, stat:"28% deflection rate", desc:"Before a return is processed, our AI offers smart alternatives — exchanges, discounts, troubleshooting."},
+            {icon:<ShoppingCart size={28} strokeWidth={2}/>,title:"Cart Recovery",      color:C.blue,  stat:"19% average recovery",desc:"A 3-touch AI sequence — email, SMS, and a personalised follow-up — written dynamically based on cart contents."},
           ].map((f,i)=>(
             <div key={i} className="card-hover feat-card" style={{padding:28,borderRadius:16,background:C.card,border:`1px solid ${C.border}`,display:"flex",flexDirection:"column"}}>
               <div className="feat-icon" style={{width:48,height:48,borderRadius:13,marginBottom:18,background:`${f.color}14`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{f.icon}</div>
               <h3 className="feat-title" style={{fontFamily:"'Outfit',sans-serif",fontSize:17.5,fontWeight:700,marginBottom:10}}>{f.title}</h3>
               <p className="feat-desc" style={{fontSize:13.5,color:C.sub,lineHeight:1.68,marginBottom:18,flex:1}}>{f.desc}</p>
               <div className="feat-badge" style={{padding:"7px 13px",borderRadius:8,background:`${f.color}10`,border:`1px solid ${f.color}26`}}>
-                <span className="feat-badge-text" style={{fontSize:11.5,color:f.color,fontWeight:600}}>📊 {f.stat}</span>
+                <span className="feat-badge-text" style={{fontSize:11.5,color:f.color,fontWeight:600,display:"inline-flex",alignItems:"center",gap:5}}><BarChart3 size={14} strokeWidth={2}/>{f.stat}</span>
               </div>
             </div>
           ))}

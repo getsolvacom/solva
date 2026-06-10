@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
+import { Mail, ShoppingCart, RotateCcw, Settings, Menu } from "lucide-react";
 import AppSidebar       from "./AppSidebar";
 import OverviewView     from "./OverviewView";
 import TicketsView      from "./TicketsView";
@@ -11,11 +12,11 @@ import SettingsView     from "./SettingsView";
 
 const NAV_ITEMS = [
   {key:"overview",  label:"Overview",      icon:"◈"},
-  {key:"tickets",   label:"AI Tickets",    icon:"✉",  badge:"12"},
-  {key:"cart",      label:"Cart Recovery", icon:"🛒", badge:"24"},
-  {key:"returns",   label:"Returns",       icon:"↩",  badge:"8"},
+  {key:"tickets",   label:"AI Tickets",    icon:<Mail size={18} strokeWidth={2}/>,         badge:"12"},
+  {key:"cart",      label:"Cart Recovery", icon:<ShoppingCart size={18} strokeWidth={2}/>, badge:"24"},
+  {key:"returns",   label:"Returns",       icon:<RotateCcw size={18} strokeWidth={2}/>,    badge:"8"},
   {key:"analytics", label:"Analytics",     icon:"↗"},
-  {key:"settings",  label:"Settings",      icon:"⚙"},
+  {key:"settings",  label:"Settings",      icon:<Settings size={18} strokeWidth={2}/>},
 ];
 
 function useOrientation() {
@@ -134,7 +135,7 @@ export default function DashboardShell() {
             className="mob-ham"
             onClick={()=>setDrawerOpen(true)}
             style={isMobile&&isLandscape?{width:32,height:32,fontSize:15}:{width:36,height:36,fontSize:17}}
-          >☰</button>
+          ><Menu size={22} strokeWidth={2}/></button>
         </div>
 
         {view === "overview"  && <OverviewView setView={setView} isLandscape={isLandscape} isMobile={isMobile}/>}
