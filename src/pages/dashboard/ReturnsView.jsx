@@ -154,6 +154,8 @@ function GlobalStyles() {
       .emoji-btn:hover{background:rgba(229,82,102,.13);}
       .sched-opt{display:flex;align-items:center;gap:8px;padding:11px 14px;width:100%;background:transparent;border:none;color:#D2B4C8;font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;text-align:left;transition:background .12s;min-height:44px;}
       .sched-opt:hover{background:rgba(229,82,102,.09);color:#E55266;}
+      .fmt-btn-sm{cursor:pointer;border:none;outline:none;transition:all .12s;font-family:'Outfit',sans-serif;background:transparent;width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+      .fmt-btn-sm:hover{background:rgba(229,82,102,.09);}
 
       /* ── Mobile layout ── */
       .rv-back-btn{display:none;}
@@ -174,7 +176,7 @@ function GlobalStyles() {
         .rv-detail-body{overflow:visible!important;flex:none!important;padding:14px!important;}
         .rv-two-col{grid-template-columns:1fr!important;}
         .rv-back-btn{display:flex!important;align-items:center;}
-        .rv-reply-box{position:sticky!important;bottom:0!important;z-index:50!important;padding:10px 14px!important;}
+        .rv-reply-box{padding:8px 12px!important;}
       }
       .ls-mob .rv-root{height:100dvh!important;overflow:hidden!important;flex:1!important;}
       .ls-mob .rv-workspace{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
@@ -186,7 +188,7 @@ function GlobalStyles() {
       .ls-mob .rv-detail-meta{display:flex!important;}
       .ls-mob .rv-back-btn{display:none!important;}
       .ls-mob .rv-two-col{grid-template-columns:1fr 1fr!important;}
-      .ls-mob .rv-reply-box{position:relative!important;bottom:unset!important;z-index:auto!important;padding:10px 16px!important;}
+      .ls-mob .rv-reply-box{padding:8px 14px!important;}
     `}</style>
   );
 }
@@ -597,79 +599,68 @@ export default function ReturnsView({ isLandscape, isMobile }) {
               </div>
             </div>
 
-            {/* Reply box — sticky so send bar always stays in view */}
-            <div className="rv-reply-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface,padding:"12px 18px",paddingBottom:"calc(12px + env(safe-area-inset-bottom))",position:"sticky",bottom:0,minHeight:60}}>
-              {attachHint && (
-                <div style={{fontSize:12,color:C.muted,marginBottom:8,padding:"6px 10px",borderRadius:7,background:C.dim,display:"flex",alignItems:"center",gap:6}}>
-                  <Paperclip size={13} strokeWidth={2}/>File attachment coming soon
-                </div>
-              )}
-
-              {/* Composer card */}
-              <div style={{borderRadius:12,background:C.surface,border:`1px solid ${C.border}`}}>
-
-                {/* Format toolbar */}
-                <div style={{display:"flex",gap:0,alignItems:"center",padding:"10px 6px"}}>
-                  <button className="fmt-btn" onClick={()=>handleFormat("bold")} title="Bold"
-                    style={{color:activeFormat==="bold"?C.coral:C.muted}}>
-                    <Bold size={14} strokeWidth={2}/>
-                  </button>
-                  <button className="fmt-btn" onClick={()=>handleFormat("italic")} title="Italic"
-                    style={{color:activeFormat==="italic"?C.coral:C.muted}}>
-                    <Italic size={14} strokeWidth={2}/>
-                  </button>
-                  <div style={{width:1,height:16,background:C.border,margin:"0 2px",flexShrink:0,alignSelf:"center"}}/>
-                  {/* Emoji picker */}
-                  <div style={{position:"relative"}} ref={emojiRef}>
-                    <button className="fmt-btn" onClick={()=>setEmojiOpen(o=>!o)} title="Emoji"
-                      style={{color:emojiOpen?C.coral:C.muted}}>
-                      <Smile size={16} strokeWidth={2}/>
-                    </button>
-                    {emojiOpen && (
-                      <div style={{
-                        position:"absolute", bottom:"100%", left:0, zIndex:500,
-                        background:C.card, border:`1px solid ${C.borderHi}`,
-                        borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
-                        padding:12, display:"grid", gridTemplateColumns:"repeat(4,1fr)",
-                        gap:8, width:220,
-                      }}>
-                        {EMOJIS.map(e=>(
-                          <button key={e} className="emoji-btn" onClick={()=>handleEmojiInsert(e)}>{e}</button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Textarea */}
+            {/* Reply box */}
+            <div className="rv-reply-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface,padding:"10px 16px",paddingBottom:"calc(10px + env(safe-area-inset-bottom))"}}>
+              {/* Compact composer card */}
+              <div style={{borderRadius:16,background:C.card,border:`1px solid ${C.borderHi}`,padding:"10px 14px"}}>
+                {/* Text input */}
                 <textarea
                   ref={textareaRef}
                   value={chatInput}
                   onChange={e=>setChatInput(e.target.value)}
                   onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();}}}
-                  placeholder="Type a message…"
-                  rows={2}
-                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:13.5,lineHeight:1.5,padding:"8px 14px 10px",minHeight:44}}
+                  placeholder="Type a message..."
+                  rows={1}
+                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.55,padding:0,minHeight:44,maxHeight:100,overflowY:"auto",resize:"none",display:"block"}}
                 />
-
-                {/* Bottom row */}
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 8px 8px"}}>
-                  <button onClick={handleAttach} className="btn-ghost"
-                    style={{minWidth:44,minHeight:44,padding:"10px 12px",borderRadius:8,border:`1px solid ${C.border}`,color:C.muted,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
-                    <Paperclip size={15} strokeWidth={2}/>
-                  </button>
-
-                  {/* Split send button */}
+                {/* Action bar */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:4}}>
+                  {/* Left: tools */}
+                  <div style={{display:"flex",alignItems:"center",gap:2}}>
+                    <button className="fmt-btn-sm" onClick={handleAttach} title="Attach"
+                      style={{color:C.muted}}>
+                      <Paperclip size={15} strokeWidth={2}/>
+                    </button>
+                    <div style={{width:1,height:14,background:C.border,margin:"0 3px",flexShrink:0}}/>
+                    <button className="fmt-btn-sm" onClick={()=>handleFormat("bold")} title="Bold"
+                      style={{color:activeFormat==="bold"?C.coral:C.muted}}>
+                      <Bold size={13} strokeWidth={2}/>
+                    </button>
+                    <button className="fmt-btn-sm" onClick={()=>handleFormat("italic")} title="Italic"
+                      style={{color:activeFormat==="italic"?C.coral:C.muted}}>
+                      <Italic size={13} strokeWidth={2}/>
+                    </button>
+                    <div style={{position:"relative"}} ref={emojiRef}>
+                      <button className="fmt-btn-sm" onClick={()=>setEmojiOpen(o=>!o)} title="Emoji"
+                        style={{color:emojiOpen?C.coral:C.muted}}>
+                        <Smile size={15} strokeWidth={2}/>
+                      </button>
+                      {emojiOpen && (
+                        <div style={{
+                          position:"absolute", bottom:"calc(100% + 6px)", left:0, zIndex:500,
+                          background:C.card, border:`1px solid ${C.borderHi}`,
+                          borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
+                          padding:12, display:"grid", gridTemplateColumns:"repeat(4,1fr)",
+                          gap:8, width:220,
+                        }}>
+                          {EMOJIS.map(e=>(
+                            <button key={e} className="emoji-btn" onClick={()=>handleEmojiInsert(e)}>{e}</button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {/* Right: split send */}
                   <div style={{position:"relative"}} ref={schedRef}>
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
                       <button className="btn-primary" onClick={handleSend}
-                        style={{minHeight:44,padding:"0 18px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,borderRadius:0,cursor:"pointer"}}>
-                        <Send size={15} strokeWidth={2}/>Send
+                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:"pointer"}}>
+                        <Send size={14} strokeWidth={2}/>Send
                       </button>
-                      <div style={{width:1,background:"rgba(255,255,255,.18)",alignSelf:"stretch",flexShrink:0}}/>
+                      <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
                       <button className="btn-primary" onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
-                        style={{minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer"}}>
-                        <ChevronUp size={14} strokeWidth={2}/>
+                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:"rgba(255,255,255,.12)"}}>
+                        <ChevronUp size={16} strokeWidth={2.5} style={{color:"#fff"}}/>
                       </button>
                     </div>
 
@@ -751,6 +742,11 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   </div>
                 </div>
               </div>
+              {attachHint && (
+                <p style={{fontSize:11,color:C.muted,marginTop:5,display:"flex",alignItems:"center",gap:4,animation:"fadeUp .3s cubic-bezier(.16,1,.3,1) both"}}>
+                  <Paperclip size={12} strokeWidth={2}/>File attachment coming soon
+                </p>
+              )}
             </div>
           </div>
         )}
