@@ -190,7 +190,7 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
             {[
               {label:"Configure AI Tone", icon:<Bot size={22} strokeWidth={2}/>,      color:C.coral,   path:"/dashboard/settings/ai"  },
               {label:"View Full Reports", icon:<BarChart3 size={22} strokeWidth={2}/>, color:C.blue,    path:"/dashboard/analytics"    },
-              {label:"Test Automation",   icon:<Zap size={22} strokeWidth={2}/>,       color:C.magenta, path:"/dashboard/tickets"      },
+              {label:"Test Automation",   icon:<Zap size={22} strokeWidth={2}/>,       color:C.magenta, path:"/dashboard/settings/automations"},
               {label:"Add Team Member",   icon:<UserPlus size={22} strokeWidth={2}/>,  color:C.amber,   path:"/dashboard/settings/team"},
             ].map((a,i)=>(
               <button key={i} className="action-card" onClick={()=>navigate(a.path)}
