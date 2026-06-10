@@ -3,7 +3,7 @@ import { C } from "../../tokens";
 import {
   DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip,
   User, Search, Clock as ClockIcon,
-  Smile, Bold, Italic, ChevronUp, Clock,
+  Smile, Bold, Italic, ChevronUp, Clock, Calendar,
 } from "lucide-react";
 
 const RETURNS = [
@@ -148,11 +148,11 @@ function GlobalStyles() {
       .toast-in{animation:toastSlideIn .35s cubic-bezier(.16,1,.3,1) both;}
       .toast-out{animation:toastFadeOut .3s ease forwards;}
       input,textarea{font-family:'Outfit',sans-serif;outline:none;}
-      .fmt-btn{cursor:pointer;border:none;outline:none;transition:all .12s;font-family:'Outfit',sans-serif;background:transparent;padding:5px 7px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+      .fmt-btn{cursor:pointer;border:none;outline:none;transition:all .12s;font-family:'Outfit',sans-serif;background:transparent;min-width:44px;min-height:44px;padding:10px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
       .fmt-btn:hover{background:rgba(229,82,102,.09);}
-      .emoji-btn{cursor:pointer;border:none;background:none;font-size:18px;padding:4px 3px;border-radius:6px;line-height:1;transition:background .1s;}
+      .emoji-btn{cursor:pointer;border:none;background:none;font-size:20px;padding:6px;border-radius:6px;line-height:1;transition:background .1s;display:flex;align-items:center;justify-content:center;}
       .emoji-btn:hover{background:rgba(229,82,102,.13);}
-      .sched-opt{display:flex;align-items:center;gap:8px;padding:9px 14px;width:100%;background:transparent;border:none;color:#D2B4C8;font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;text-align:left;transition:background .12s;}
+      .sched-opt{display:flex;align-items:center;gap:8px;padding:11px 14px;width:100%;background:transparent;border:none;color:#D2B4C8;font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;text-align:left;transition:background .12s;min-height:44px;}
       .sched-opt:hover{background:rgba(229,82,102,.09);color:#E55266;}
 
       /* ── Mobile layout ── */
@@ -174,7 +174,7 @@ function GlobalStyles() {
         .rv-detail-body{overflow:visible!important;flex:none!important;padding:14px!important;}
         .rv-two-col{grid-template-columns:1fr!important;}
         .rv-back-btn{display:flex!important;align-items:center;}
-        .rv-reply-box{padding:10px 14px!important;}
+        .rv-reply-box{position:sticky!important;bottom:0!important;z-index:50!important;padding:10px 14px!important;}
       }
       .ls-mob .rv-root{height:100dvh!important;overflow:hidden!important;flex:1!important;}
       .ls-mob .rv-workspace{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
@@ -182,11 +182,11 @@ function GlobalStyles() {
       .ls-mob .rv-list-hidden{display:flex!important;flex-direction:column!important;}
       .ls-mob .rv-detail{width:60%!important;flex:none!important;overflow:hidden!important;height:100%!important;display:flex!important;flex-direction:column!important;}
       .ls-mob .rv-detail-hidden{display:flex!important;flex-direction:column!important;}
-      .ls-mob .rv-detail-body{overflow-y:auto!important;flex:1!important;padding:12px 16px!important;}
+      .ls-mob .rv-detail-body{overflow-y:auto!important;flex:1!important;min-height:0!important;padding:12px 16px!important;}
       .ls-mob .rv-detail-meta{display:flex!important;}
       .ls-mob .rv-back-btn{display:none!important;}
       .ls-mob .rv-two-col{grid-template-columns:1fr 1fr!important;}
-      .ls-mob .rv-reply-box{padding:10px 16px!important;}
+      .ls-mob .rv-reply-box{position:relative!important;bottom:unset!important;z-index:auto!important;padding:10px 16px!important;}
     `}</style>
   );
 }
@@ -204,7 +204,7 @@ function Bubble({ msg, idx }) {
           <span style={{fontSize:10.5,color:C.muted}}>{msg.time}</span>
           {isCustomer && <span style={{fontSize:10.5,color:C.sub,fontWeight:500}}>Customer</span>}
         </div>
-        <div style={{padding:"11px 15px",borderRadius:14,borderBottomLeftRadius:isCustomer?4:14,borderBottomRightRadius:isCustomer?14:4,background:isCustomer?C.card:isAgent?"rgba(240,160,75,.10)":"rgba(229,82,102,.10)",border:`1px solid ${isCustomer?C.border:isAgent?"rgba(240,160,75,.20)":"rgba(229,82,102,.20)"}`,fontSize:13.5,color:C.text,lineHeight:1.65}}>
+        <div style={{padding:"11px 15px",borderRadius:14,borderBottomLeftRadius:isCustomer?4:14,borderBottomRightRadius:isCustomer?14:4,background:isCustomer?C.card:isAgent?"rgba(240,160,75,.10)":"rgba(229,82,102,.10)",border:`1px solid ${isCustomer?C.border:isAgent?"rgba(240,160,75,.20)":"rgba(229,82,102,.20)"}`,fontSize:13.5,color:C.text,lineHeight:1.65,wordBreak:"break-word"}}>
           {renderMd(msg.text)}
         </div>
       </div>
@@ -229,10 +229,12 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   const [activeFormat,        setActiveFormat]        = useState(null);
   const [schedToast,          setSchedToast]          = useState(false);
   const [schedToastFading,    setSchedToastFading]    = useState(false);
+  const [schedToastMsg,       setSchedToastMsg]       = useState("Message scheduled ✓");
 
-  const textareaRef = useRef(null);
-  const emojiRef    = useRef(null);
-  const schedRef    = useRef(null);
+  const textareaRef   = useRef(null);
+  const emojiRef      = useRef(null);
+  const schedRef      = useRef(null);
+  const customDateRef = useRef(null);
 
   useEffect(() => {
     if (!emojiOpen) return;
@@ -332,13 +334,34 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(newCursor, newCursor); });
   }
 
-  function handleScheduleSend(opt) {
-    setSchedPickOpen(false);
-    setChatInput("");
+  function fireSchedToast(msg) {
+    setSchedToastMsg(msg);
     setSchedToast(true);
     setSchedToastFading(false);
     setTimeout(() => setSchedToastFading(true), 2700);
     setTimeout(() => { setSchedToast(false); setSchedToastFading(false); }, 3000);
+  }
+
+  function handleScheduleSend(opt) {
+    setSchedPickOpen(false);
+    setChatInput("");
+    fireSchedToast("Message scheduled ✓");
+  }
+
+  function handleOpenCustomDate() {
+    setSchedPickOpen(false);
+    setSchedMenuOpen(false);
+    setTimeout(() => customDateRef.current?.click(), 50);
+  }
+
+  function handleCustomDate(e) {
+    const val = e.target.value;
+    if (!val) return;
+    const d = new Date(val);
+    const label = d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+    setChatInput("");
+    fireSchedToast(`Message scheduled for ${label} ✓`);
+    e.target.value = "";
   }
 
   const popupBase = {
@@ -485,8 +508,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
               )}
             </div>
 
-            {/* Scrollable body */}
-            <div className="rv-detail-body" style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
+            {/* Scrollable body — flex:1, minHeight:0 for independent scroll on desktop/ls-mob */}
+            <div className="rv-detail-body" style={{flex:1,overflowY:"auto",minHeight:0,scrollBehavior:"smooth",padding:"20px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
 
               {selected.status==="deflected" && (
                 <div style={{padding:"16px 20px",borderRadius:14,background:"rgba(62,207,178,.07)",border:"1px solid rgba(62,207,178,.20)",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
@@ -581,7 +604,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
               <div style={{borderRadius:12,background:C.surface,border:`1px solid ${C.border}`}}>
 
                 {/* Format toolbar */}
-                <div style={{display:"flex",gap:2,alignItems:"center",padding:"8px 10px 0"}}>
+                <div style={{display:"flex",gap:0,alignItems:"center",padding:"4px 6px 0"}}>
                   <button className="fmt-btn" onClick={()=>handleFormat("bold")} title="Bold"
                     style={{color:activeFormat==="bold"?C.coral:C.muted}}>
                     <Bold size={14} strokeWidth={2}/>
@@ -590,7 +613,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     style={{color:activeFormat==="italic"?C.coral:C.muted}}>
                     <Italic size={14} strokeWidth={2}/>
                   </button>
-                  <div style={{width:1,height:14,background:C.border,margin:"0 3px",flexShrink:0}}/>
+                  <div style={{width:1,height:16,background:C.border,margin:"0 2px",flexShrink:0,alignSelf:"center"}}/>
                   {/* Emoji picker */}
                   <div style={{position:"relative"}} ref={emojiRef}>
                     <button className="fmt-btn" onClick={()=>setEmojiOpen(o=>!o)} title="Emoji"
@@ -598,7 +621,13 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                       <Smile size={16} strokeWidth={2}/>
                     </button>
                     {emojiOpen && (
-                      <div style={{...popupBase,right:"auto",left:0,bottom:"calc(100% + 6px)",padding:8,display:"grid",gridTemplateColumns:"repeat(8,1fr)",gap:1,width:232}}>
+                      <div style={{
+                        position:"absolute", bottom:"100%", left:0, zIndex:500,
+                        background:C.card, border:`1px solid ${C.borderHi}`,
+                        borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
+                        padding:12, display:"grid", gridTemplateColumns:"repeat(4,1fr)",
+                        gap:8, width:220,
+                      }}>
                         {EMOJIS.map(e=>(
                           <button key={e} className="emoji-btn" onClick={()=>handleEmojiInsert(e)}>{e}</button>
                         ))}
@@ -615,26 +644,30 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();}}}
                   placeholder="Type a message…"
                   rows={2}
-                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:13.5,lineHeight:1.5,padding:"10px 14px"}}
+                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:13.5,lineHeight:1.5,padding:"8px 14px 10px"}}
                 />
 
                 {/* Bottom row */}
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 10px 10px"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 8px 8px"}}>
                   <button onClick={handleAttach} className="btn-ghost"
-                    style={{color:C.muted,padding:"6px 8px",borderRadius:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center"}}>
+                    style={{minWidth:44,minHeight:44,padding:"10px 12px",borderRadius:8,border:`1px solid ${C.border}`,color:C.muted,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
                     <Paperclip size={15} strokeWidth={2}/>
                   </button>
 
                   {/* Split send button */}
                   <div style={{position:"relative"}} ref={schedRef}>
+                    {/* Hidden datetime input for custom schedule */}
+                    <input ref={customDateRef} type="datetime-local" onChange={handleCustomDate}
+                      style={{position:"absolute",opacity:0,width:0,height:0,pointerEvents:"none"}}/>
+
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
                       <button className="btn-primary" onClick={handleSend}
-                        style={{padding:"7px 15px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,borderRadius:0}}>
+                        style={{minHeight:44,padding:"0 18px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,borderRadius:0,cursor:"pointer"}}>
                         <Send size={15} strokeWidth={2}/>Send
                       </button>
-                      <div style={{width:1,background:"rgba(255,255,255,.18)",flexShrink:0}}/>
+                      <div style={{width:1,background:"rgba(255,255,255,.18)",alignSelf:"stretch",flexShrink:0}}/>
                       <button className="btn-primary" onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
-                        style={{padding:"7px 9px",display:"flex",alignItems:"center",borderRadius:0}}>
+                        style={{minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer"}}>
                         <ChevronUp size={14} strokeWidth={2}/>
                       </button>
                     </div>
@@ -648,13 +681,16 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     )}
 
                     {schedPickOpen && (
-                      <div style={{...popupBase,minWidth:244}}>
+                      <div style={{...popupBase,minWidth:252}}>
                         <div style={{padding:"10px 14px 4px",fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase"}}>Send at…</div>
                         {SCHEDULE_OPTS.map(opt=>(
                           <button key={opt} className="sched-opt" onClick={()=>handleScheduleSend(opt)}>
                             <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt}
                           </button>
                         ))}
+                        <button className="sched-opt" onClick={handleOpenCustomDate}>
+                          <Calendar size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>Choose date &amp; time…
+                        </button>
                         <div style={{height:6}}/>
                       </div>
                     )}
@@ -679,8 +715,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
       {/* Schedule toast */}
       {schedToast && (
         <div className={schedToastFading?"toast-out":"toast-in"}
-          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.teal,color:"#082018",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:12,fontFamily:"'Outfit',sans-serif",fontWeight:600,fontSize:14,boxShadow:"0 8px 32px rgba(0,0,0,.45)",maxWidth:340}}>
-          <span style={{flex:1}}>Message scheduled ✓</span>
+          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.teal,color:"#082018",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:12,fontFamily:"'Outfit',sans-serif",fontWeight:600,fontSize:14,boxShadow:"0 8px 32px rgba(0,0,0,.45)",maxWidth:380}}>
+          <span style={{flex:1}}>{schedToastMsg}</span>
           <button onClick={()=>{ setSchedToast(false); setSchedToastFading(false); }}
             style={{cursor:"pointer",background:"none",border:"none",color:"#082018",fontSize:17,fontWeight:700,lineHeight:1,padding:0,flexShrink:0,opacity:.65}}>✕</button>
         </div>

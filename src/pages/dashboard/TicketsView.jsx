@@ -3,7 +3,7 @@ import { C } from "../../tokens";
 import {
   Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle,
   ArrowUpRight, AlertTriangle, User, Search, Zap,
-  Smile, Bold, Italic, ChevronUp, Clock,
+  Smile, Bold, Italic, ChevronUp, Clock, Calendar,
 } from "lucide-react";
 
 const TICKETS = [
@@ -123,16 +123,19 @@ function GlobalStyles() {
       .filter-tab{cursor:pointer;transition:all .15s ease;font-family:'Outfit',sans-serif;white-space:nowrap;}
       .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:600;white-space:nowrap;}
       input,textarea{font-family:'Outfit',sans-serif;outline:none;resize:none;}
-      .fmt-btn{cursor:pointer;border:none;outline:none;transition:all .12s;font-family:'Outfit',sans-serif;background:transparent;padding:5px 7px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+      .fmt-btn{cursor:pointer;border:none;outline:none;transition:all .12s;font-family:'Outfit',sans-serif;background:transparent;min-width:44px;min-height:44px;padding:10px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
       .fmt-btn:hover{background:rgba(229,82,102,.09);}
-      .emoji-btn{cursor:pointer;border:none;background:none;font-size:18px;padding:4px 3px;border-radius:6px;line-height:1;transition:background .1s;}
+      .emoji-btn{cursor:pointer;border:none;background:none;font-size:20px;padding:6px;border-radius:6px;line-height:1;transition:background .1s;display:flex;align-items:center;justify-content:center;}
       .emoji-btn:hover{background:rgba(229,82,102,.13);}
-      .sched-opt{display:flex;align-items:center;gap:8px;padding:9px 14px;width:100%;background:transparent;border:none;color:#D2B4C8;font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;text-align:left;transition:background .12s;}
+      .sched-opt{display:flex;align-items:center;gap:8px;padding:11px 14px;width:100%;background:transparent;border:none;color:#D2B4C8;font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;text-align:left;transition:background .12s;min-height:44px;}
       .sched-opt:hover{background:rgba(229,82,102,.09);color:#E55266;}
+
+      /* ── AI Suggestions strip ── */
+      .tv-suggestions{flex-shrink:0;border-top:1px solid #200026;background:#0C000F;padding:10px 24px;}
+      .tv-suggestions-toggle{display:none;}
 
       /* ── Mobile layout ── */
       .tv-back-btn{display:none;}
-      .tv-suggestions-toggle{display:none;}
       @media(max-width:767px){
         .tv-workspace{flex-direction:column!important;}
         .tv-list{width:100%!important;flex:1!important;border-right:none!important;}
@@ -143,11 +146,12 @@ function GlobalStyles() {
         .tv-back-btn{display:flex!important;align-items:center;}
         .tv-chat-header{padding:11px 14px!important;}
         .tv-ai-bar{padding:9px 14px!important;}
-        .tv-messages{padding-bottom:210px!important;padding-left:12px!important;padding-right:12px!important;}
-        .tv-reply-box{position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:50!important;padding:10px 14px 14px!important;}
+        .tv-messages{padding-left:12px!important;padding-right:12px!important;}
+        .tv-suggestions{padding:8px 14px!important;}
         .tv-suggestions-toggle{display:flex!important;align-items:center;justify-content:space-between;width:100%;}
         .tv-suggestions-chips-hidden{display:none!important;}
         .tv-suggestions-chips{margin-top:7px!important;}
+        .tv-reply-box{position:sticky!important;bottom:0!important;z-index:50!important;padding:10px 14px 14px!important;}
         .msg-bubble-inner{max-width:86%!important;}
       }
       .ls-mob .tv-workspace{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
@@ -158,7 +162,10 @@ function GlobalStyles() {
       .ls-mob .tv-chat-header-meta{display:flex!important;}
       .ls-mob .tv-back-btn{display:none!important;}
       .ls-mob .tv-messages{padding-bottom:16px!important;}
-      .ls-mob .tv-reply-box{position:relative!important;bottom:unset!important;left:unset!important;right:unset!important;z-index:auto!important;}
+      .ls-mob .tv-suggestions{padding:6px 16px!important;}
+      .ls-mob .tv-suggestions-toggle{display:none!important;}
+      .ls-mob .tv-suggestions-chips-hidden{display:flex!important;flex-wrap:wrap!important;}
+      .ls-mob .tv-reply-box{position:relative!important;bottom:unset!important;z-index:auto!important;padding:8px 16px!important;}
       .ls-mob .msg-bubble-inner{max-width:72%!important;}
     `}</style>
   );
@@ -228,9 +235,10 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [schedPickOpen,   setSchedPickOpen]   = useState(false);
   const [activeFormat,    setActiveFormat]    = useState(null);
 
-  const textareaRef = useRef(null);
-  const emojiRef    = useRef(null);
-  const schedRef    = useRef(null);
+  const textareaRef   = useRef(null);
+  const emojiRef      = useRef(null);
+  const schedRef      = useRef(null);
+  const customDateRef = useRef(null);
 
   useEffect(() => {
     if (!emojiOpen) return;
@@ -271,7 +279,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
   function fireToast(message, color, bg) {
     setToast({ message, color, bg });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 4000);
   }
 
   function handleEscalate() {
@@ -341,6 +349,22 @@ export default function TicketsView({ isLandscape, isMobile }) {
     setSchedPickOpen(false);
     setReply("");
     fireToast("Message scheduled ✓", C.teal, "rgba(62,207,178,.12)");
+  }
+
+  function handleOpenCustomDate() {
+    setSchedPickOpen(false);
+    setSchedMenuOpen(false);
+    setTimeout(() => customDateRef.current?.click(), 50);
+  }
+
+  function handleCustomDate(e) {
+    const val = e.target.value;
+    if (!val) return;
+    const d = new Date(val);
+    const label = d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+    setReply("");
+    fireToast(`Message scheduled for ${label} ✓`, C.teal, "rgba(62,207,178,.12)");
+    e.target.value = "";
   }
 
   const escalateDisabled = !!(ticketEscalated[selectedId] || ticketClosed[selectedId]);
@@ -455,7 +479,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
               </button>
               <div style={{display:"flex",gap:8}}>
                 <button className="btn-ghost" onClick={handleEscalate} disabled={escalateDisabled}
-                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center"}}>
+                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center",cursor:"pointer"}}>
                   <ShieldAlert size={16} strokeWidth={2} style={{marginRight:6}}/>Escalate
                 </button>
                 <button className="btn-primary" onClick={handleClose} disabled={closeDisabled}
@@ -483,8 +507,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
               </span>
             </div>
 
-            {/* Messages */}
-            <div className="tv-messages" style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",background:C.bg}}>
+            {/* Messages — flex:1, minHeight:0 ensures independent scroll */}
+            <div className="tv-messages" style={{flex:1,overflowY:"auto",minHeight:0,scrollBehavior:"smooth",padding:"20px 24px",display:"flex",flexDirection:"column",background:C.bg}}>
               {effectiveMsgs.map((m,i) => <Bubble key={i} msg={m} idx={i}/>)}
               {effectiveStatus === "pending" && (
                 <div style={{display:"flex",justifyContent:"flex-end",margin:"8px 0"}}>
@@ -496,47 +520,54 @@ export default function TicketsView({ isLandscape, isMobile }) {
               )}
             </div>
 
-            {/* Reply box */}
-            <div className="tv-reply-box" style={{padding:"14px 24px",flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface}}>
-              {/* AI suggestion chips */}
-              <div style={{marginBottom:10}}>
-                <button className="tv-suggestions-toggle btn-ghost" onClick={()=>setSuggestionsOpen(o=>!o)}
-                  style={{padding:"5px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,fontWeight:600}}>
-                  <span>AI Suggestions</span>
-                  <span style={{marginLeft:6}}>{suggestionsOpen?"▲":"▼"}</span>
-                </button>
-                <div className={`tv-suggestions-chips${!suggestionsOpen?" tv-suggestions-chips-hidden":""}`}
-                  style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}>
-                  <span style={{fontSize:11,color:C.muted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",display:"flex",alignItems:"center",flexShrink:0}}>AI Suggestions:</span>
-                  {["I've checked your order and…","A replacement has been arranged…","Your refund is being processed…"].map((s,i)=>(
-                    <button key={i} onClick={()=>setReply(s)} className="btn-ghost"
-                      style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12}}>{s}</button>
-                  ))}
-                </div>
+            {/* AI suggestions — static block, sits between messages and composer */}
+            <div className="tv-suggestions">
+              <button className="tv-suggestions-toggle btn-ghost" onClick={()=>setSuggestionsOpen(o=>!o)}
+                style={{padding:"5px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,fontWeight:600,cursor:"pointer"}}>
+                <span>AI Suggestions</span>
+                <span style={{marginLeft:6}}>{suggestionsOpen?"▲":"▼"}</span>
+              </button>
+              <div className={`tv-suggestions-chips${!suggestionsOpen?" tv-suggestions-chips-hidden":""}`}
+                style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}>
+                <span style={{fontSize:11,color:C.muted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",display:"flex",alignItems:"center",flexShrink:0}}>AI Suggestions:</span>
+                {["I've checked your order and…","A replacement has been arranged…","Your refund is being processed…"].map((s,i)=>(
+                  <button key={i} onClick={()=>setReply(s)} className="btn-ghost"
+                    style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,cursor:"pointer"}}>{s}</button>
+                ))}
               </div>
+            </div>
+
+            {/* Reply box — sticky on mobile so it pins to bottom when body scrolls */}
+            <div className="tv-reply-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface,padding:"12px 24px"}}>
 
               {/* Composer card */}
               <div style={{borderRadius:12,background:C.card,border:`1px solid ${C.border}`}}>
 
                 {/* Format toolbar */}
-                <div style={{display:"flex",gap:2,alignItems:"center",padding:"8px 10px 0"}}>
+                <div style={{display:"flex",alignItems:"center",padding:"4px 6px 0",gap:0}}>
                   <button className="fmt-btn" onClick={()=>handleFormat("bold")} title="Bold"
-                    style={{color:activeFormat==="bold"?C.coral:C.muted}}>
+                    style={{color:activeFormat==="bold"?C.coral:C.sub}}>
                     <Bold size={14} strokeWidth={2}/>
                   </button>
                   <button className="fmt-btn" onClick={()=>handleFormat("italic")} title="Italic"
-                    style={{color:activeFormat==="italic"?C.coral:C.muted}}>
+                    style={{color:activeFormat==="italic"?C.coral:C.sub}}>
                     <Italic size={14} strokeWidth={2}/>
                   </button>
-                  <div style={{width:1,height:14,background:C.border,margin:"0 3px",flexShrink:0}}/>
+                  <div style={{width:1,height:16,background:C.border,margin:"0 2px",flexShrink:0,alignSelf:"center"}}/>
                   {/* Emoji picker */}
                   <div style={{position:"relative"}} ref={emojiRef}>
                     <button className="fmt-btn" onClick={()=>setEmojiOpen(o=>!o)} title="Emoji"
-                      style={{color:emojiOpen?C.coral:C.muted}}>
+                      style={{color:emojiOpen?C.coral:C.sub}}>
                       <Smile size={16} strokeWidth={2}/>
                     </button>
                     {emojiOpen && (
-                      <div style={{...popupBase,right:"auto",left:0,bottom:"calc(100% + 6px)",padding:8,display:"grid",gridTemplateColumns:"repeat(8,1fr)",gap:1,width:232}}>
+                      <div style={{
+                        position:"absolute", bottom:"100%", left:0, zIndex:500,
+                        background:C.card, border:`1px solid ${C.borderHi}`,
+                        borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
+                        padding:12, display:"grid", gridTemplateColumns:"repeat(4,1fr)",
+                        gap:8, width:220,
+                      }}>
                         {EMOJIS.map(e=>(
                           <button key={e} className="emoji-btn" onClick={()=>handleEmojiInsert(e)}>{e}</button>
                         ))}
@@ -553,26 +584,30 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   onKeyDown={handleKeyDown}
                   placeholder="Type a reply or override Solva's AI response…"
                   rows={2}
-                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.6,padding:"10px 14px"}}
+                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.6,padding:"8px 14px 10px"}}
                 />
 
-                {/* Bottom row */}
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 10px 10px"}}>
+                {/* Bottom action row */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 8px 8px"}}>
                   <button className="btn-ghost" onClick={handleAttachment}
-                    style={{padding:"6px 8px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,display:"flex",alignItems:"center"}}>
-                    <Paperclip size={15} strokeWidth={2}/>
+                    style={{minWidth:44,minHeight:44,padding:"10px 12px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+                    <Paperclip size={16} strokeWidth={2}/>
                   </button>
 
                   {/* Split send button */}
                   <div style={{position:"relative"}} ref={schedRef}>
+                    {/* Hidden datetime input for custom schedule */}
+                    <input ref={customDateRef} type="datetime-local" onChange={handleCustomDate}
+                      style={{position:"absolute",opacity:0,width:0,height:0,pointerEvents:"none"}}/>
+
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
                       <button className="btn-primary" onClick={handleSend}
-                        style={{padding:"7px 15px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,borderRadius:0}}>
+                        style={{minHeight:44,padding:"0 18px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,borderRadius:0,cursor:"pointer"}}>
                         <Send size={15} strokeWidth={2}/>Send
                       </button>
-                      <div style={{width:1,background:"rgba(255,255,255,.18)",flexShrink:0}}/>
+                      <div style={{width:1,background:"rgba(255,255,255,.18)",alignSelf:"stretch",flexShrink:0}}/>
                       <button className="btn-primary" onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
-                        style={{padding:"7px 9px",display:"flex",alignItems:"center",borderRadius:0}}>
+                        style={{minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer"}}>
                         <ChevronUp size={14} strokeWidth={2}/>
                       </button>
                     </div>
@@ -586,13 +621,16 @@ export default function TicketsView({ isLandscape, isMobile }) {
                     )}
 
                     {schedPickOpen && (
-                      <div style={{...popupBase,minWidth:244}}>
+                      <div style={{...popupBase,minWidth:252}}>
                         <div style={{padding:"10px 14px 4px",fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase"}}>Send at…</div>
                         {SCHEDULE_OPTS.map(opt=>(
                           <button key={opt} className="sched-opt" onClick={()=>handleScheduleSend(opt)}>
                             <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt}
                           </button>
                         ))}
+                        <button className="sched-opt" onClick={handleOpenCustomDate}>
+                          <Calendar size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>Choose date &amp; time…
+                        </button>
                         <div style={{height:6}}/>
                       </div>
                     )}
