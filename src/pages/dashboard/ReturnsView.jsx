@@ -264,7 +264,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
           {label:"Deflected Returns", value:"24/47",                                                   color:C.blue,  icon:<CheckCircle2 size={18} strokeWidth={2}/>},
         ].map((k,i)=>(
           <div key={i} className="rv-kpi-card kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
-            <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${k.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{k.icon}</div>
+            <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${k.color}33`,color:k.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{k.icon}</div>
             <div>
               <div style={{fontSize:18,fontWeight:800,color:k.color}}>{k.value}</div>
               <div style={{fontSize:11,color:C.muted,marginTop:2}}>{k.label}</div>

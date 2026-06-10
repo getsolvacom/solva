@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3 } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$299", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -181,7 +181,7 @@ export default function LandingPage() {
         </p>
         <div className="fu fu3" style={{display:"flex",gap:12,justifyContent:"center",marginBottom:64}}>
           <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
-          <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15}}>View Live Demo ↗</button>
+          <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>View Live Demo <ArrowUpRight size={18} strokeWidth={2}/></button>
         </div>
 
         {/* Stats bar */}

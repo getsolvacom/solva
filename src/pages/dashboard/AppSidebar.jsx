@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
-import { BarChart3, Ticket, ShoppingCart, RotateCcw, TrendingUp, Settings, LogOut, Store } from "lucide-react";
+import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, LogOut, Store } from "lucide-react";
 
 function SolvaLogo({ size=15 }) {
   return (
@@ -28,11 +28,11 @@ export default function AppSidebar() {
   const setView             = (key) => navigate(`/dashboard/${key}`);
   const goLanding           = () => navigate("/");
   const items = [
-    {key:"overview",  label:"Overview",      icon:<BarChart3 size={18} strokeWidth={2}/>},
+    {key:"overview",  label:"Overview",      icon:<LayoutDashboard size={18} strokeWidth={2}/>},
     {key:"tickets",   label:"AI Tickets",    icon:<Ticket size={18} strokeWidth={2}/>,        badge:"12"},
     {key:"cart",      label:"Cart Recovery", icon:<ShoppingCart size={18} strokeWidth={2}/>,  badge:"24"},
     {key:"returns",   label:"Returns",       icon:<RotateCcw size={18} strokeWidth={2}/>,     badge:"8"},
-    {key:"analytics", label:"Analytics",     icon:<TrendingUp size={18} strokeWidth={2}/>},
+    {key:"analytics", label:"Analytics",     icon:<BarChart3 size={18} strokeWidth={2}/>},
     {key:"settings",  label:"Settings",      icon:<Settings size={18} strokeWidth={2}/>},
   ];
   return (
