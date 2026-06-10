@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { C } from "../../tokens";
-import { DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip, User, Search, Clock } from "lucide-react";
+import {
+  DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip,
+  User, Search, Clock as ClockIcon,
+  Smile, Bold, Italic, ChevronUp, Clock,
+} from "lucide-react";
 
 const RETURNS = [
   {
@@ -82,6 +86,37 @@ const REASON_CFG = {
   not_as_described: { label:"Not as Described", color:"#992A67"  },
 };
 
+const EMOJIS = ["😊","👍","🙏","❤️","🎉","✅","👋","💪","🚀","⭐","😄","🤝","📦","💯","⚡","🔥"];
+const SCHEDULE_OPTS = [
+  "Tomorrow morning (8:00 AM)",
+  "Tomorrow afternoon (1:00 PM)",
+  "Monday morning (8:00 AM)",
+];
+
+function parseMarkdown(text) {
+  const regex = /(\*\*(.+?)\*\*|_(.+?)_)/g;
+  const parts = [];
+  let lastIndex = 0, match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push({ t:"text", v:text.slice(lastIndex, match.index) });
+    if (match[0].startsWith("**")) parts.push({ t:"bold",   v:match[2] });
+    else                            parts.push({ t:"italic", v:match[3] });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) parts.push({ t:"text", v:text.slice(lastIndex) });
+  return parts;
+}
+
+function renderMd(text) {
+  const parts = parseMarkdown(text);
+  if (parts.length === 1 && parts[0].t === "text") return text;
+  return parts.map((p, i) =>
+    p.t === "bold"   ? <strong key={i} style={{fontWeight:700}}>{p.v}</strong> :
+    p.t === "italic" ? <em key={i}>{p.v}</em> :
+    <span key={i}>{p.v}</span>
+  );
+}
+
 function GlobalStyles() {
   return (
     <style>{`
@@ -113,6 +148,12 @@ function GlobalStyles() {
       .toast-in{animation:toastSlideIn .35s cubic-bezier(.16,1,.3,1) both;}
       .toast-out{animation:toastFadeOut .3s ease forwards;}
       input,textarea{font-family:'Outfit',sans-serif;outline:none;}
+      .fmt-btn{cursor:pointer;border:none;outline:none;transition:all .12s;font-family:'Outfit',sans-serif;background:transparent;padding:5px 7px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+      .fmt-btn:hover{background:rgba(229,82,102,.09);}
+      .emoji-btn{cursor:pointer;border:none;background:none;font-size:18px;padding:4px 3px;border-radius:6px;line-height:1;transition:background .1s;}
+      .emoji-btn:hover{background:rgba(229,82,102,.13);}
+      .sched-opt{display:flex;align-items:center;gap:8px;padding:9px 14px;width:100%;background:transparent;border:none;color:#D2B4C8;font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;text-align:left;transition:background .12s;}
+      .sched-opt:hover{background:rgba(229,82,102,.09);color:#E55266;}
 
       /* ── Mobile layout ── */
       .rv-back-btn{display:none;}
@@ -164,7 +205,7 @@ function Bubble({ msg, idx }) {
           {isCustomer && <span style={{fontSize:10.5,color:C.sub,fontWeight:500}}>Customer</span>}
         </div>
         <div style={{padding:"11px 15px",borderRadius:14,borderBottomLeftRadius:isCustomer?4:14,borderBottomRightRadius:isCustomer?14:4,background:isCustomer?C.card:isAgent?"rgba(240,160,75,.10)":"rgba(229,82,102,.10)",border:`1px solid ${isCustomer?C.border:isAgent?"rgba(240,160,75,.20)":"rgba(229,82,102,.20)"}`,fontSize:13.5,color:C.text,lineHeight:1.65}}>
-          {msg.text}
+          {renderMd(msg.text)}
         </div>
       </div>
     </div>
@@ -182,6 +223,34 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   const [chatInput,           setChatInput]           = useState("");
   const [extraMessages,       setExtraMessages]       = useState({});
   const [attachHint,          setAttachHint]          = useState(false);
+  const [emojiOpen,           setEmojiOpen]           = useState(false);
+  const [schedMenuOpen,       setSchedMenuOpen]       = useState(false);
+  const [schedPickOpen,       setSchedPickOpen]       = useState(false);
+  const [activeFormat,        setActiveFormat]        = useState(null);
+  const [schedToast,          setSchedToast]          = useState(false);
+  const [schedToastFading,    setSchedToastFading]    = useState(false);
+
+  const textareaRef = useRef(null);
+  const emojiRef    = useRef(null);
+  const schedRef    = useRef(null);
+
+  useEffect(() => {
+    if (!emojiOpen) return;
+    function h(e) { if (emojiRef.current && !emojiRef.current.contains(e.target)) setEmojiOpen(false); }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [emojiOpen]);
+
+  useEffect(() => {
+    if (!schedMenuOpen && !schedPickOpen) return;
+    function h(e) {
+      if (schedRef.current && !schedRef.current.contains(e.target)) {
+        setSchedMenuOpen(false); setSchedPickOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [schedMenuOpen, schedPickOpen]);
 
   const filtered = RETURNS.filter(r => {
     const mf =
@@ -235,6 +304,48 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     setAttachHint(true);
     setTimeout(() => setAttachHint(false), 2000);
   }
+
+  function handleEmojiInsert(emoji) {
+    setChatInput(v => v + emoji);
+    setEmojiOpen(false);
+    textareaRef.current?.focus();
+  }
+
+  function handleFormat(type) {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    setActiveFormat(type);
+    setTimeout(() => setActiveFormat(null), 300);
+    const marker = type === "bold" ? "**" : "_";
+    const start  = ta.selectionStart;
+    const end    = ta.selectionEnd;
+    const sel    = chatInput.slice(start, end);
+    let newVal, newCursor;
+    if (sel) {
+      newVal    = chatInput.slice(0, start) + marker + sel + marker + chatInput.slice(end);
+      newCursor = end + marker.length * 2;
+    } else {
+      newVal    = chatInput.slice(0, start) + marker + marker + chatInput.slice(end);
+      newCursor = start + marker.length;
+    }
+    setChatInput(newVal);
+    requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(newCursor, newCursor); });
+  }
+
+  function handleScheduleSend(opt) {
+    setSchedPickOpen(false);
+    setChatInput("");
+    setSchedToast(true);
+    setSchedToastFading(false);
+    setTimeout(() => setSchedToastFading(true), 2700);
+    setTimeout(() => { setSchedToast(false); setSchedToastFading(false); }, 3000);
+  }
+
+  const popupBase = {
+    position:"absolute", zIndex:500, right:0, bottom:"calc(100% + 8px)",
+    background:C.card, border:`1px solid ${C.borderHi}`,
+    borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
+  };
 
   return (
     <div className="rv-root" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",overflowX:"hidden",fontFamily:"'Outfit',sans-serif"}}>
@@ -322,7 +433,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             })}
           </div>
 
-          {/* Bottom summary */}
           <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,background:C.card}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
               <span style={{fontSize:12,color:C.muted}}>Total refund risk</span>
@@ -350,8 +460,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
           >
             {/* Header */}
             <div className="rv-detail-header" style={{padding:"15px 24px",borderBottom:`1px solid ${C.border}`,background:C.surface,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-
-              {/* Customer meta — hidden on mobile */}
               <div className="rv-detail-meta" style={{display:"flex",alignItems:"center",gap:13}}>
                 <div style={{width:40,height:40,borderRadius:12,flexShrink:0,background:`${selected.avatarColor}20`,border:`1px solid ${selected.avatarColor}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:selected.avatarColor}}>{selected.avatar}</div>
                 <div>
@@ -363,24 +471,13 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Order {selected.orderRef}</span>
                 </div>
               </div>
-
-              {/* Back button — mobile only */}
-              <button
-                className="rv-back-btn btn-ghost"
-                onClick={()=>setMobilePanel("list")}
-                style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}
-              >
+              <button className="rv-back-btn btn-ghost" onClick={()=>setMobilePanel("list")}
+                style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Returns
               </button>
-
-              {/* Override button */}
               {selected.status==="pending" && (
-                <button
-                  className="btn-primary"
-                  disabled={statusOverrides[selectedId]==="manual_override"}
-                  onClick={handleOverride}
-                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:statusOverrides[selectedId]==="manual_override"?.75:1,cursor:statusOverrides[selectedId]==="manual_override"?"not-allowed":"pointer",display:"flex",alignItems:"center"}}
-                >
+                <button className="btn-primary" disabled={statusOverrides[selectedId]==="manual_override"} onClick={handleOverride}
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:statusOverrides[selectedId]==="manual_override"?.75:1,cursor:statusOverrides[selectedId]==="manual_override"?"not-allowed":"pointer",display:"flex",alignItems:"center"}}>
                   {statusOverrides[selectedId]==="manual_override"
                     ? <><CheckCircle2 size={16} strokeWidth={2} style={{marginRight:6}}/>Override Active</>
                     : <><Zap size={16} strokeWidth={2} style={{marginRight:6}}/>Override AI</>}
@@ -391,7 +488,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             {/* Scrollable body */}
             <div className="rv-detail-body" style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
 
-              {/* Outcome banners */}
               {selected.status==="deflected" && (
                 <div style={{padding:"16px 20px",borderRadius:14,background:"rgba(62,207,178,.07)",border:"1px solid rgba(62,207,178,.20)",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -432,9 +528,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 </div>
               )}
 
-              {/* Two-col: Returned item + AI offer */}
               <div className="rv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-                {/* Product */}
                 <div style={{padding:18,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
                   <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:14}}>Returned Item</h3>
                   <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
@@ -450,8 +544,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     <span style={{fontSize:12.5,fontWeight:600,color:C.sub}}>{selected.orderRef}</span>
                   </div>
                 </div>
-
-                {/* Offer */}
                 <div style={{padding:18,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
                   <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:14}}>AI Deflection Offer</h3>
                   <div style={{fontSize:32,marginBottom:10}}>{selected.offer.icon}</div>
@@ -465,18 +557,16 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     {selected.status==="deflected"
                       ? <><CheckCircle2 size={14} strokeWidth={2}/>Customer Accepted</>
                       : selected.status==="pending"
-                      ? <><Clock size={14} strokeWidth={2}/>Awaiting Response</>
+                      ? <><ClockIcon size={14} strokeWidth={2}/>Awaiting Response</>
                       : "— Not Applicable"}
                   </span>
                 </div>
               </div>
 
-              {/* Conversation */}
               <div style={{padding:18,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
                 <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>AI Deflection Conversation</h3>
                 {allMessages.map((msg,i)=><Bubble key={i} msg={msg} idx={i}/>)}
               </div>
-
             </div>
 
             {/* Reply box */}
@@ -486,36 +576,113 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   <Paperclip size={13} strokeWidth={2}/>File attachment coming soon
                 </div>
               )}
-              <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
-                <button onClick={handleAttach} className="btn-ghost" style={{color:C.muted,padding:"7px 9px",flexShrink:0,borderRadius:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center"}}><Paperclip size={16} strokeWidth={2}/></button>
-                <div style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"9px 12px"}}>
-                  <textarea
-                    value={chatInput}
-                    onChange={e=>setChatInput(e.target.value)}
-                    onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();}}}
-                    placeholder="Type a message…"
-                    rows={2}
-                    style={{width:"100%",background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13.5,fontFamily:"'Outfit',sans-serif",resize:"none",lineHeight:1.5}}
-                  />
+
+              {/* Composer card */}
+              <div style={{borderRadius:12,background:C.surface,border:`1px solid ${C.border}`}}>
+
+                {/* Format toolbar */}
+                <div style={{display:"flex",gap:2,alignItems:"center",padding:"8px 10px 0"}}>
+                  <button className="fmt-btn" onClick={()=>handleFormat("bold")} title="Bold"
+                    style={{color:activeFormat==="bold"?C.coral:C.muted}}>
+                    <Bold size={14} strokeWidth={2}/>
+                  </button>
+                  <button className="fmt-btn" onClick={()=>handleFormat("italic")} title="Italic"
+                    style={{color:activeFormat==="italic"?C.coral:C.muted}}>
+                    <Italic size={14} strokeWidth={2}/>
+                  </button>
+                  <div style={{width:1,height:14,background:C.border,margin:"0 3px",flexShrink:0}}/>
+                  {/* Emoji picker */}
+                  <div style={{position:"relative"}} ref={emojiRef}>
+                    <button className="fmt-btn" onClick={()=>setEmojiOpen(o=>!o)} title="Emoji"
+                      style={{color:emojiOpen?C.coral:C.muted}}>
+                      <Smile size={16} strokeWidth={2}/>
+                    </button>
+                    {emojiOpen && (
+                      <div style={{...popupBase,right:"auto",left:0,bottom:"calc(100% + 6px)",padding:8,display:"grid",gridTemplateColumns:"repeat(8,1fr)",gap:1,width:232}}>
+                        {EMOJIS.map(e=>(
+                          <button key={e} className="emoji-btn" onClick={()=>handleEmojiInsert(e)}>{e}</button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <button onClick={handleSend} className="btn-primary" style={{padding:"10px 16px",borderRadius:9,color:"#fff",fontWeight:600,fontSize:13,flexShrink:0,display:"flex",alignItems:"center"}}><Send size={16} strokeWidth={2} style={{marginRight:6}}/>Send</button>
+
+                {/* Textarea */}
+                <textarea
+                  ref={textareaRef}
+                  value={chatInput}
+                  onChange={e=>setChatInput(e.target.value)}
+                  onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();}}}
+                  placeholder="Type a message…"
+                  rows={2}
+                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:13.5,lineHeight:1.5,padding:"10px 14px"}}
+                />
+
+                {/* Bottom row */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 10px 10px"}}>
+                  <button onClick={handleAttach} className="btn-ghost"
+                    style={{color:C.muted,padding:"6px 8px",borderRadius:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center"}}>
+                    <Paperclip size={15} strokeWidth={2}/>
+                  </button>
+
+                  {/* Split send button */}
+                  <div style={{position:"relative"}} ref={schedRef}>
+                    <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
+                      <button className="btn-primary" onClick={handleSend}
+                        style={{padding:"7px 15px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,borderRadius:0}}>
+                        <Send size={15} strokeWidth={2}/>Send
+                      </button>
+                      <div style={{width:1,background:"rgba(255,255,255,.18)",flexShrink:0}}/>
+                      <button className="btn-primary" onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
+                        style={{padding:"7px 9px",display:"flex",alignItems:"center",borderRadius:0}}>
+                        <ChevronUp size={14} strokeWidth={2}/>
+                      </button>
+                    </div>
+
+                    {schedMenuOpen && (
+                      <div style={{...popupBase,minWidth:164}}>
+                        <button className="sched-opt" onClick={()=>{ setSchedMenuOpen(false); setSchedPickOpen(true); }}>
+                          <Clock size={14} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>Schedule send
+                        </button>
+                      </div>
+                    )}
+
+                    {schedPickOpen && (
+                      <div style={{...popupBase,minWidth:244}}>
+                        <div style={{padding:"10px 14px 4px",fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase"}}>Send at…</div>
+                        {SCHEDULE_OPTS.map(opt=>(
+                          <button key={opt} className="sched-opt" onClick={()=>handleScheduleSend(opt)}>
+                            <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt}
+                          </button>
+                        ))}
+                        <div style={{height:6}}/>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* ── Override Toast ── */}
+      {/* Override toast */}
       {overrideToast && (
-        <div
-          className={overrideToastFading?"toast-out":"toast-in"}
-          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.amber,color:"#1A0A00",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:12,fontFamily:"'Outfit',sans-serif",fontWeight:600,fontSize:14,boxShadow:"0 8px 32px rgba(0,0,0,.45)",maxWidth:360}}
-        >
+        <div className={overrideToastFading?"toast-out":"toast-in"}
+          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.amber,color:"#1A0A00",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:12,fontFamily:"'Outfit',sans-serif",fontWeight:600,fontSize:14,boxShadow:"0 8px 32px rgba(0,0,0,.45)",maxWidth:360}}>
           <span style={{flex:1}}>⚡ Return switched to manual override</span>
-          <button
-            onClick={()=>{ setOverrideToast(false); setOverrideToastFading(false); }}
-            style={{cursor:"pointer",background:"none",border:"none",color:"#1A0A00",fontSize:17,fontWeight:700,lineHeight:1,padding:0,flexShrink:0,opacity:.65}}
-          >✕</button>
+          <button onClick={()=>{ setOverrideToast(false); setOverrideToastFading(false); }}
+            style={{cursor:"pointer",background:"none",border:"none",color:"#1A0A00",fontSize:17,fontWeight:700,lineHeight:1,padding:0,flexShrink:0,opacity:.65}}>✕</button>
+        </div>
+      )}
+
+      {/* Schedule toast */}
+      {schedToast && (
+        <div className={schedToastFading?"toast-out":"toast-in"}
+          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.teal,color:"#082018",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:12,fontFamily:"'Outfit',sans-serif",fontWeight:600,fontSize:14,boxShadow:"0 8px 32px rgba(0,0,0,.45)",maxWidth:340}}>
+          <span style={{flex:1}}>Message scheduled ✓</span>
+          <button onClick={()=>{ setSchedToast(false); setSchedToastFading(false); }}
+            style={{cursor:"pointer",background:"none",border:"none",color:"#082018",fontSize:17,fontWeight:700,lineHeight:1,padding:0,flexShrink:0,opacity:.65}}>✕</button>
         </div>
       )}
     </div>

@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { C } from "../../tokens";
-import { Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle, ArrowUpRight, AlertTriangle, User, Search, Zap } from "lucide-react";
+import {
+  Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle,
+  ArrowUpRight, AlertTriangle, User, Search, Zap,
+  Smile, Bold, Italic, ChevronUp, Clock,
+} from "lucide-react";
 
 const TICKETS = [
   {
@@ -60,6 +64,37 @@ const STATUS_T = {
   pending:   { label:"Pending",   color:"#F0A04B", bg:"rgba(240,160,75,.10)",  icon:<AlertCircle size={12} strokeWidth={2}/> },
 };
 
+const EMOJIS = ["😊","👍","🙏","❤️","🎉","✅","👋","💪","🚀","⭐","😄","🤝","📦","💯","⚡","🔥"];
+const SCHEDULE_OPTS = [
+  "Tomorrow morning (8:00 AM)",
+  "Tomorrow afternoon (1:00 PM)",
+  "Monday morning (8:00 AM)",
+];
+
+function parseMarkdown(text) {
+  const regex = /(\*\*(.+?)\*\*|_(.+?)_)/g;
+  const parts = [];
+  let lastIndex = 0, match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push({ t:"text", v:text.slice(lastIndex, match.index) });
+    if (match[0].startsWith("**")) parts.push({ t:"bold",   v:match[2] });
+    else                            parts.push({ t:"italic", v:match[3] });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) parts.push({ t:"text", v:text.slice(lastIndex) });
+  return parts;
+}
+
+function renderMd(text) {
+  const parts = parseMarkdown(text);
+  if (parts.length === 1 && parts[0].t === "text") return text;
+  return parts.map((p, i) =>
+    p.t === "bold"   ? <strong key={i} style={{fontWeight:700}}>{p.v}</strong> :
+    p.t === "italic" ? <em key={i}>{p.v}</em> :
+    <span key={i}>{p.v}</span>
+  );
+}
+
 function GlobalStyles() {
   return (
     <style>{`
@@ -88,6 +123,12 @@ function GlobalStyles() {
       .filter-tab{cursor:pointer;transition:all .15s ease;font-family:'Outfit',sans-serif;white-space:nowrap;}
       .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:600;white-space:nowrap;}
       input,textarea{font-family:'Outfit',sans-serif;outline:none;resize:none;}
+      .fmt-btn{cursor:pointer;border:none;outline:none;transition:all .12s;font-family:'Outfit',sans-serif;background:transparent;padding:5px 7px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+      .fmt-btn:hover{background:rgba(229,82,102,.09);}
+      .emoji-btn{cursor:pointer;border:none;background:none;font-size:18px;padding:4px 3px;border-radius:6px;line-height:1;transition:background .1s;}
+      .emoji-btn:hover{background:rgba(229,82,102,.13);}
+      .sched-opt{display:flex;align-items:center;gap:8px;padding:9px 14px;width:100%;background:transparent;border:none;color:#D2B4C8;font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;text-align:left;transition:background .12s;}
+      .sched-opt:hover{background:rgba(229,82,102,.09);color:#E55266;}
 
       /* ── Mobile layout ── */
       .tv-back-btn{display:none;}
@@ -102,7 +143,7 @@ function GlobalStyles() {
         .tv-back-btn{display:flex!important;align-items:center;}
         .tv-chat-header{padding:11px 14px!important;}
         .tv-ai-bar{padding:9px 14px!important;}
-        .tv-messages{padding-bottom:195px!important;padding-left:12px!important;padding-right:12px!important;}
+        .tv-messages{padding-bottom:210px!important;padding-left:12px!important;padding-right:12px!important;}
         .tv-reply-box{position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:50!important;padding:10px 14px 14px!important;}
         .tv-suggestions-toggle{display:flex!important;align-items:center;justify-content:space-between;width:100%;}
         .tv-suggestions-chips-hidden{display:none!important;}
@@ -146,8 +187,7 @@ function Bubble({ msg, idx }) {
             <span className="tag" style={{
               color:      isAgent ? C.sub   : C.coral,
               background: isAgent ? "rgba(255,255,255,.06)" : "rgba(229,82,102,.10)",
-              fontSize:   10,
-              display:"inline-flex", alignItems:"center", gap:3,
+              fontSize:10, display:"inline-flex", alignItems:"center", gap:3,
             }}>
               {isAgent ? <><User size={12} strokeWidth={2}/>AGENT</> : <><Zap size={12} strokeWidth={2}/>SOLVA AI</>}
             </span>
@@ -156,15 +196,14 @@ function Bubble({ msg, idx }) {
           {isCustomer && <span style={{fontSize:10.5,color:C.sub,fontWeight:500}}>Customer</span>}
         </div>
         <div style={{
-          padding:"11px 15px",
-          borderRadius:14,
+          padding:"11px 15px", borderRadius:14,
           borderBottomLeftRadius:isCustomer?4:14,
           borderBottomRightRadius:isCustomer?14:4,
           background: isCustomer ? C.card : isAgent ? "rgba(78,2,105,.22)" : "rgba(229,82,102,.10)",
           border:`1px solid ${isCustomer ? C.border : isAgent ? "rgba(78,2,105,.38)" : "rgba(229,82,102,.20)"}`,
-          fontSize:13.5,color:C.text,lineHeight:1.65,wordBreak:"break-word",
+          fontSize:13.5, color:C.text, lineHeight:1.65, wordBreak:"break-word",
         }}>
-          {msg.text}
+          {renderMd(msg.text)}
         </div>
       </div>
     </div>
@@ -181,9 +220,35 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [ticketClosed,    setTicketClosed]    = useState({});
   const [toast,           setToast]           = useState(null);
   const [extraMessages,   setExtraMessages]   = useState({});
-  const [showAttachHint,   setShowAttachHint]  = useState(false);
-  const [mobilePanel,      setMobilePanel]     = useState("list");
-  const [suggestionsOpen,  setSuggestionsOpen] = useState(false);
+  const [showAttachHint,  setShowAttachHint]  = useState(false);
+  const [mobilePanel,     setMobilePanel]     = useState("list");
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [emojiOpen,       setEmojiOpen]       = useState(false);
+  const [schedMenuOpen,   setSchedMenuOpen]   = useState(false);
+  const [schedPickOpen,   setSchedPickOpen]   = useState(false);
+  const [activeFormat,    setActiveFormat]    = useState(null);
+
+  const textareaRef = useRef(null);
+  const emojiRef    = useRef(null);
+  const schedRef    = useRef(null);
+
+  useEffect(() => {
+    if (!emojiOpen) return;
+    function h(e) { if (emojiRef.current && !emojiRef.current.contains(e.target)) setEmojiOpen(false); }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [emojiOpen]);
+
+  useEffect(() => {
+    if (!schedMenuOpen && !schedPickOpen) return;
+    function h(e) {
+      if (schedRef.current && !schedRef.current.contains(e.target)) {
+        setSchedMenuOpen(false); setSchedPickOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [schedMenuOpen, schedPickOpen]);
 
   const getStatus = (id, def) => statusOverrides[id] || def;
 
@@ -237,10 +302,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
   }
 
   function handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   }
 
   function handleTicketSelect(id) {
@@ -248,8 +310,47 @@ export default function TicketsView({ isLandscape, isMobile }) {
     setMobilePanel("chat");
   }
 
+  function handleEmojiInsert(emoji) {
+    setReply(r => r + emoji);
+    setEmojiOpen(false);
+    textareaRef.current?.focus();
+  }
+
+  function handleFormat(type) {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    setActiveFormat(type);
+    setTimeout(() => setActiveFormat(null), 300);
+    const marker = type === "bold" ? "**" : "_";
+    const start  = ta.selectionStart;
+    const end    = ta.selectionEnd;
+    const sel    = reply.slice(start, end);
+    let newVal, newCursor;
+    if (sel) {
+      newVal    = reply.slice(0, start) + marker + sel + marker + reply.slice(end);
+      newCursor = end + marker.length * 2;
+    } else {
+      newVal    = reply.slice(0, start) + marker + marker + reply.slice(end);
+      newCursor = start + marker.length;
+    }
+    setReply(newVal);
+    requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(newCursor, newCursor); });
+  }
+
+  function handleScheduleSend(opt) {
+    setSchedPickOpen(false);
+    setReply("");
+    fireToast("Message scheduled ✓", C.teal, "rgba(62,207,178,.12)");
+  }
+
   const escalateDisabled = !!(ticketEscalated[selectedId] || ticketClosed[selectedId]);
   const closeDisabled    = !!ticketClosed[selectedId];
+
+  const popupBase = {
+    position:"absolute", zIndex:500, right:0, bottom:"calc(100% + 8px)",
+    background:C.card, border:`1px solid ${C.borderHi}`,
+    borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,.55)",
+  };
 
   return (
     <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
@@ -278,7 +379,6 @@ export default function TicketsView({ isLandscape, isMobile }) {
           className={`tv-list${mobilePanel === "chat" ? " tv-list-hidden" : ""}`}
           style={{width:320,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}
         >
-          {/* Search */}
           <div style={{padding:"12px 14px 8px"}}>
             <div style={{display:"flex",alignItems:"center",gap:9,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
               <Search size={16} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>
@@ -286,7 +386,6 @@ export default function TicketsView({ isLandscape, isMobile }) {
             </div>
           </div>
 
-          {/* Filters */}
           <div style={{display:"flex",gap:4,padding:"0 14px 10px",flexWrap:"wrap"}}>
             {["All","Pending","Resolved","Escalated"].map(f=>(
               <button key={f} className="filter-tab" onClick={()=>setFilter(f)}
@@ -296,7 +395,6 @@ export default function TicketsView({ isLandscape, isMobile }) {
             ))}
           </div>
 
-          {/* Stats strip */}
           <div style={{display:"flex",margin:"0 14px 12px",borderRadius:10,overflow:"hidden",border:`1px solid ${C.border}`}}>
             {[{label:"Auto-resolved",value:"87%",color:C.teal},{label:"Avg response",value:"<1m",color:C.blue},{label:"Escalated",value:"3%",color:"#FF5272"}].map((s,i)=>(
               <div key={i} style={{flex:1,padding:"9px 6px",textAlign:"center",background:C.card,borderRight:i<2?`1px solid ${C.border}`:"none"}}>
@@ -306,7 +404,6 @@ export default function TicketsView({ isLandscape, isMobile }) {
             ))}
           </div>
 
-          {/* List */}
           <div style={{flex:1,overflowY:"auto"}}>
             {filtered.map(t => {
               const st = STATUS_T[getStatus(t.id, t.status)];
@@ -334,16 +431,14 @@ export default function TicketsView({ isLandscape, isMobile }) {
           </div>
         </div>
 
-        {/* ── Detail / Chat panel ── */}
+        {/* ── Chat panel ── */}
         {selected && (
           <div
             className={`sr tv-chat${mobilePanel === "list" ? " tv-chat-hidden" : ""}`}
             style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}
           >
-            {/* Panel header */}
+            {/* Header */}
             <div className="tv-chat-header" style={{padding:"15px 24px",borderBottom:`1px solid ${C.border}`,background:C.surface,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-
-              {/* Customer meta — hidden on mobile via CSS */}
               <div className="tv-chat-header-meta" style={{display:"flex",alignItems:"center",gap:13}}>
                 <div style={{width:40,height:40,borderRadius:12,flexShrink:0,background:`${selected.avatarColor}22`,border:`1px solid ${selected.avatarColor}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13.5,fontWeight:700,color:selected.avatarColor}}>{selected.avatar}</div>
                 <div>
@@ -354,41 +449,30 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   <div style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · {selected.type}</div>
                 </div>
               </div>
-
-              {/* Back button — visible on mobile only via CSS */}
-              <button
-                className="tv-back-btn btn-ghost"
-                onClick={() => setMobilePanel("list")}
-                style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}
-              >
+              <button className="tv-back-btn btn-ghost" onClick={() => setMobilePanel("list")}
+                style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Tickets
               </button>
-
-              {/* Action buttons */}
               <div style={{display:"flex",gap:8}}>
-                <button
-                  className="btn-ghost"
-                  onClick={handleEscalate}
-                  disabled={escalateDisabled}
-                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center"}}
-                ><ShieldAlert size={16} strokeWidth={2} style={{marginRight:6}}/>Escalate</button>
-                <button
-                  className="btn-primary"
-                  onClick={handleClose}
-                  disabled={closeDisabled}
-                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center"}}
-                ><XCircle size={16} strokeWidth={2} style={{marginRight:6}}/>Close Ticket</button>
+                <button className="btn-ghost" onClick={handleEscalate} disabled={escalateDisabled}
+                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center"}}>
+                  <ShieldAlert size={16} strokeWidth={2} style={{marginRight:6}}/>Escalate
+                </button>
+                <button className="btn-primary" onClick={handleClose} disabled={closeDisabled}
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center"}}>
+                  <XCircle size={16} strokeWidth={2} style={{marginRight:6}}/>Close Ticket
+                </button>
               </div>
             </div>
 
-            {/* Toast */}
+            {/* Toast bar */}
             {toast && (
               <div style={{padding:"9px 24px",flexShrink:0,background:toast.bg,borderBottom:`1px solid ${toast.color}44`,display:"flex",alignItems:"center",gap:8,animation:"fadeUp .3s cubic-bezier(.16,1,.3,1) both"}}>
                 <span style={{fontSize:13,color:toast.color,fontWeight:600}}>✓ {toast.message}</span>
               </div>
             )}
 
-            {/* AI summary bar */}
+            {/* AI bar */}
             <div className="tv-ai-bar" style={{padding:"11px 24px",flexShrink:0,background:"rgba(229,82,102,.05)",borderBottom:"1px solid rgba(229,82,102,.14)",display:"flex",alignItems:"center",gap:10}}>
               <div style={{width:28,height:28,borderRadius:8,flexShrink:0,background:"rgba(229,82,102,.14)",display:"flex",alignItems:"center",justifyContent:"center",color:C.coral}}><Zap size={14} strokeWidth={2}/></div>
               <span style={{fontSize:12,fontWeight:700,color:C.coral,flexShrink:0}}>SOLVA AI · </span>
@@ -414,45 +498,116 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
             {/* Reply box */}
             <div className="tv-reply-box" style={{padding:"14px 24px",flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface}}>
+              {/* AI suggestion chips */}
               <div style={{marginBottom:10}}>
-                {/* Toggle chip — visible on mobile only via .tv-suggestions-toggle */}
-                <button
-                  className="tv-suggestions-toggle btn-ghost"
-                  onClick={()=>setSuggestionsOpen(o=>!o)}
-                  style={{padding:"5px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,fontWeight:600}}
-                >
+                <button className="tv-suggestions-toggle btn-ghost" onClick={()=>setSuggestionsOpen(o=>!o)}
+                  style={{padding:"5px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,fontWeight:600}}>
                   <span>AI Suggestions</span>
                   <span style={{marginLeft:6}}>{suggestionsOpen?"▲":"▼"}</span>
                 </button>
-                {/* Chips — always shown on desktop, toggled on mobile */}
-                <div
-                  className={`tv-suggestions-chips${!suggestionsOpen?" tv-suggestions-chips-hidden":""}`}
-                  style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}
-                >
+                <div className={`tv-suggestions-chips${!suggestionsOpen?" tv-suggestions-chips-hidden":""}`}
+                  style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}>
                   <span style={{fontSize:11,color:C.muted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",display:"flex",alignItems:"center",flexShrink:0}}>AI Suggestions:</span>
                   {["I've checked your order and…","A replacement has been arranged…","Your refund is being processed…"].map((s,i)=>(
-                    <button key={i} onClick={()=>setReply(s)} className="btn-ghost" style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12}}>{s}</button>
+                    <button key={i} onClick={()=>setReply(s)} className="btn-ghost"
+                      style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12}}>{s}</button>
                   ))}
                 </div>
               </div>
-              <div style={{display:"flex",gap:10,alignItems:"flex-end",padding:"12px 16px",borderRadius:12,background:C.card,border:`1px solid ${C.border}`}}>
+
+              {/* Composer card */}
+              <div style={{borderRadius:12,background:C.card,border:`1px solid ${C.border}`}}>
+
+                {/* Format toolbar */}
+                <div style={{display:"flex",gap:2,alignItems:"center",padding:"8px 10px 0"}}>
+                  <button className="fmt-btn" onClick={()=>handleFormat("bold")} title="Bold"
+                    style={{color:activeFormat==="bold"?C.coral:C.muted}}>
+                    <Bold size={14} strokeWidth={2}/>
+                  </button>
+                  <button className="fmt-btn" onClick={()=>handleFormat("italic")} title="Italic"
+                    style={{color:activeFormat==="italic"?C.coral:C.muted}}>
+                    <Italic size={14} strokeWidth={2}/>
+                  </button>
+                  <div style={{width:1,height:14,background:C.border,margin:"0 3px",flexShrink:0}}/>
+                  {/* Emoji picker */}
+                  <div style={{position:"relative"}} ref={emojiRef}>
+                    <button className="fmt-btn" onClick={()=>setEmojiOpen(o=>!o)} title="Emoji"
+                      style={{color:emojiOpen?C.coral:C.muted}}>
+                      <Smile size={16} strokeWidth={2}/>
+                    </button>
+                    {emojiOpen && (
+                      <div style={{...popupBase,right:"auto",left:0,bottom:"calc(100% + 6px)",padding:8,display:"grid",gridTemplateColumns:"repeat(8,1fr)",gap:1,width:232}}>
+                        {EMOJIS.map(e=>(
+                          <button key={e} className="emoji-btn" onClick={()=>handleEmojiInsert(e)}>{e}</button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Textarea */}
                 <textarea
+                  ref={textareaRef}
                   value={reply}
                   onChange={e=>setReply(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type a reply or override Solva's AI response…"
                   rows={2}
-                  style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.6}}
+                  style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.6,padding:"10px 14px"}}
                 />
-                <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  <button className="btn-ghost" onClick={handleAttachment} style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13,display:"flex",alignItems:"center"}}><Paperclip size={16} strokeWidth={2}/></button>
-                  <button className="btn-primary" onClick={handleSend} style={{padding:"8px 18px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center"}}><Send size={16} strokeWidth={2} style={{marginRight:6}}/>Send</button>
+
+                {/* Bottom row */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 10px 10px"}}>
+                  <button className="btn-ghost" onClick={handleAttachment}
+                    style={{padding:"6px 8px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,display:"flex",alignItems:"center"}}>
+                    <Paperclip size={15} strokeWidth={2}/>
+                  </button>
+
+                  {/* Split send button */}
+                  <div style={{position:"relative"}} ref={schedRef}>
+                    <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
+                      <button className="btn-primary" onClick={handleSend}
+                        style={{padding:"7px 15px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,borderRadius:0}}>
+                        <Send size={15} strokeWidth={2}/>Send
+                      </button>
+                      <div style={{width:1,background:"rgba(255,255,255,.18)",flexShrink:0}}/>
+                      <button className="btn-primary" onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
+                        style={{padding:"7px 9px",display:"flex",alignItems:"center",borderRadius:0}}>
+                        <ChevronUp size={14} strokeWidth={2}/>
+                      </button>
+                    </div>
+
+                    {schedMenuOpen && (
+                      <div style={{...popupBase,minWidth:164}}>
+                        <button className="sched-opt" onClick={()=>{ setSchedMenuOpen(false); setSchedPickOpen(true); }}>
+                          <Clock size={14} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>Schedule send
+                        </button>
+                      </div>
+                    )}
+
+                    {schedPickOpen && (
+                      <div style={{...popupBase,minWidth:244}}>
+                        <div style={{padding:"10px 14px 4px",fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase"}}>Send at…</div>
+                        {SCHEDULE_OPTS.map(opt=>(
+                          <button key={opt} className="sched-opt" onClick={()=>handleScheduleSend(opt)}>
+                            <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt}
+                          </button>
+                        ))}
+                        <div style={{height:6}}/>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+
               {showAttachHint && (
-                <p style={{fontSize:11.5,color:C.muted,marginTop:6,paddingLeft:2,animation:"fadeUp .3s cubic-bezier(.16,1,.3,1) both",display:"flex",alignItems:"center",gap:5}}><Paperclip size={13} strokeWidth={2}/>File attachment coming soon</p>
+                <p style={{fontSize:11.5,color:C.muted,marginTop:6,paddingLeft:2,animation:"fadeUp .3s cubic-bezier(.16,1,.3,1) both",display:"flex",alignItems:"center",gap:5}}>
+                  <Paperclip size={13} strokeWidth={2}/>File attachment coming soon
+                </p>
               )}
-              <p style={{fontSize:11.5,color:C.muted,marginTop:8,display:"flex",alignItems:"center",gap:4}}><Zap size={12} strokeWidth={2}/>Solva AI will respond automatically unless you send manually.</p>
+              <p style={{fontSize:11.5,color:C.muted,marginTop:8,display:"flex",alignItems:"center",gap:4}}>
+                <Zap size={12} strokeWidth={2}/>Solva AI will respond automatically unless you send manually.
+              </p>
             </div>
           </div>
         )}
