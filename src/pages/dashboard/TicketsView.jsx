@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C } from "../../tokens";
+import { Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle, ArrowUpRight } from "lucide-react";
 
 const TICKETS = [
   {
@@ -54,9 +55,9 @@ const TICKETS = [
 ];
 
 const STATUS_T = {
-  resolved:  { label:"Resolved",  color:"#3ECFB2", bg:"rgba(62,207,178,.10)"  },
-  escalated: { label:"Escalated", color:"#FF5272", bg:"rgba(255,82,114,.10)"  },
-  pending:   { label:"Pending",   color:"#F0A04B", bg:"rgba(240,160,75,.10)"  },
+  resolved:  { label:"Resolved",  color:"#3ECFB2", bg:"rgba(62,207,178,.10)",  icon:<CheckCircle2 size={12} strokeWidth={2}/> },
+  escalated: { label:"Escalated", color:"#FF5272", bg:"rgba(255,82,114,.10)",  icon:<ArrowUpRight size={12} strokeWidth={2}/> },
+  pending:   { label:"Pending",   color:"#F0A04B", bg:"rgba(240,160,75,.10)",  icon:<AlertCircle size={12} strokeWidth={2}/> },
 };
 
 function GlobalStyles() {
@@ -321,7 +322,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       <div style={{fontSize:12.5,fontWeight:t.unread?600:400,color:t.unread?C.text:C.sub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:5}}>{t.subject}</div>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                         <span style={{fontSize:11.5,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:150}}>{t.preview}</span>
-                        <span className="tag" style={{color:st.color,background:st.bg,marginLeft:6}}>{st.label}</span>
+                        <span className="tag" style={{color:st.color,background:st.bg,marginLeft:6,gap:4}}>{st.icon}{st.label}</span>
                       </div>
                     </div>
                     {t.unread && <div style={{width:7,height:7,borderRadius:"50%",background:C.coral,flexShrink:0,marginTop:4}}/>}
@@ -347,7 +348,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:3}}>
                     <span style={{fontSize:15,fontWeight:700,color:C.text}}>{selected.name}</span>
-                    <span className="tag" style={{color:STATUS_T[effectiveStatus].color,background:STATUS_T[effectiveStatus].bg}}>{STATUS_T[effectiveStatus].label}</span>
+                    <span className="tag" style={{color:STATUS_T[effectiveStatus].color,background:STATUS_T[effectiveStatus].bg,gap:4}}>{STATUS_T[effectiveStatus].icon}{STATUS_T[effectiveStatus].label}</span>
                   </div>
                   <div style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · {selected.type}</div>
                 </div>
@@ -368,14 +369,14 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   className="btn-ghost"
                   onClick={handleEscalate}
                   disabled={escalateDisabled}
-                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13}}
-                >⚠ Escalate</button>
+                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center"}}
+                ><ShieldAlert size={16} strokeWidth={2} style={{marginRight:6}}/>Escalate</button>
                 <button
                   className="btn-primary"
                   onClick={handleClose}
                   disabled={closeDisabled}
-                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}
-                >✓ Close Ticket</button>
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center"}}
+                ><XCircle size={16} strokeWidth={2} style={{marginRight:6}}/>Close Ticket</button>
               </div>
             </div>
 
@@ -443,12 +444,12 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:14,lineHeight:1.6}}
                 />
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  <button className="btn-ghost" onClick={handleAttachment} style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13}}>📎</button>
-                  <button className="btn-primary" onClick={handleSend} style={{padding:"8px 18px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13}}>Send →</button>
+                  <button className="btn-ghost" onClick={handleAttachment} style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13,display:"flex",alignItems:"center"}}><Paperclip size={16} strokeWidth={2}/></button>
+                  <button className="btn-primary" onClick={handleSend} style={{padding:"8px 18px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center"}}><Send size={16} strokeWidth={2} style={{marginRight:6}}/>Send</button>
                 </div>
               </div>
               {showAttachHint && (
-                <p style={{fontSize:11.5,color:C.muted,marginTop:6,paddingLeft:2,animation:"fadeUp .3s cubic-bezier(.16,1,.3,1) both"}}>📎 File attachment coming soon</p>
+                <p style={{fontSize:11.5,color:C.muted,marginTop:6,paddingLeft:2,animation:"fadeUp .3s cubic-bezier(.16,1,.3,1) both",display:"flex",alignItems:"center",gap:5}}><Paperclip size={13} strokeWidth={2}/>File attachment coming soon</p>
               )}
               <p style={{fontSize:11.5,color:C.muted,marginTop:8}}>⚡ Solva AI will respond automatically unless you send manually.</p>
             </div>

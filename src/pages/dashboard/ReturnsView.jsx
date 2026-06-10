@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C } from "../../tokens";
+import { DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip } from "lucide-react";
 
 const RETURNS = [
   {
@@ -257,10 +258,10 @@ export default function ReturnsView({ isLandscape, isMobile }) {
       {/* KPI strip */}
       <div className="rv-kpi-strip" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
         {[
-          {label:"Margin Saved",      value:`$${totalSaved.toFixed(2)}`,                              color:C.teal,  icon:"💰"},
-          {label:"Deflection Rate",   value:`${deflectRate}%`,                                        color:C.coral, icon:"🛡️"},
-          {label:"Total at Risk",     value:`$${RETURNS.reduce((s,r)=>s+r.orderValue,0).toFixed(2)}`, color:C.amber, icon:"⚠️"},
-          {label:"Deflected Returns", value:"24/47",                                                   color:C.blue,  icon:"✅"},
+          {label:"Margin Saved",      value:`$${totalSaved.toFixed(2)}`,                              color:C.teal,  icon:<DollarSign size={18} strokeWidth={2}/>},
+          {label:"Deflection Rate",   value:`${deflectRate}%`,                                        color:C.coral, icon:<Shield size={18} strokeWidth={2}/>},
+          {label:"Total at Risk",     value:`$${RETURNS.reduce((s,r)=>s+r.orderValue,0).toFixed(2)}`, color:C.amber, icon:<AlertTriangle size={18} strokeWidth={2}/>},
+          {label:"Deflected Returns", value:"24/47",                                                   color:C.blue,  icon:<CheckCircle2 size={18} strokeWidth={2}/>},
         ].map((k,i)=>(
           <div key={i} className="rv-kpi-card kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${k.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{k.icon}</div>
@@ -378,9 +379,11 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   className="btn-primary"
                   disabled={statusOverrides[selectedId]==="manual_override"}
                   onClick={handleOverride}
-                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:statusOverrides[selectedId]==="manual_override"?.75:1,cursor:statusOverrides[selectedId]==="manual_override"?"not-allowed":"pointer"}}
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:statusOverrides[selectedId]==="manual_override"?.75:1,cursor:statusOverrides[selectedId]==="manual_override"?"not-allowed":"pointer",display:"flex",alignItems:"center"}}
                 >
-                  {statusOverrides[selectedId]==="manual_override" ? "✓ Override Active" : "⚡ Override AI"}
+                  {statusOverrides[selectedId]==="manual_override"
+                    ? <><CheckCircle2 size={16} strokeWidth={2} style={{marginRight:6}}/>Override Active</>
+                    : <><Zap size={16} strokeWidth={2} style={{marginRight:6}}/>Override AI</>}
                 </button>
               )}
             </div>
@@ -475,11 +478,11 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             <div className="rv-reply-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.card,padding:"12px 18px"}}>
               {attachHint && (
                 <div style={{fontSize:12,color:C.muted,marginBottom:8,padding:"6px 10px",borderRadius:7,background:C.dim,display:"flex",alignItems:"center",gap:6}}>
-                  📎 File attachment coming soon
+                  <Paperclip size={13} strokeWidth={2}/>File attachment coming soon
                 </div>
               )}
               <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
-                <button onClick={handleAttach} className="btn-ghost" style={{color:C.muted,fontSize:18,padding:"7px 9px",flexShrink:0,borderRadius:8,border:`1px solid ${C.border}`}}>📎</button>
+                <button onClick={handleAttach} className="btn-ghost" style={{color:C.muted,padding:"7px 9px",flexShrink:0,borderRadius:8,border:`1px solid ${C.border}`,display:"flex",alignItems:"center"}}><Paperclip size={16} strokeWidth={2}/></button>
                 <div style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"9px 12px"}}>
                   <textarea
                     value={chatInput}
@@ -490,7 +493,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     style={{width:"100%",background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13.5,fontFamily:"'Outfit',sans-serif",resize:"none",lineHeight:1.5}}
                   />
                 </div>
-                <button onClick={handleSend} className="btn-primary" style={{padding:"10px 16px",borderRadius:9,color:"#fff",fontWeight:600,fontSize:13,flexShrink:0}}>Send</button>
+                <button onClick={handleSend} className="btn-primary" style={{padding:"10px 16px",borderRadius:9,color:"#fff",fontWeight:600,fontSize:13,flexShrink:0,display:"flex",alignItems:"center"}}><Send size={16} strokeWidth={2} style={{marginRight:6}}/>Send</button>
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { C } from "../../tokens";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart } from "lucide-react";
 
 // ── Comprehensive dropdown options ──
 const INDUSTRY_OPTIONS = [
@@ -125,7 +126,7 @@ function Toggle({ on, onToggle, size=42 }) {
 function FieldLabel({ children, hint }) {
   return (
     <div style={{marginBottom:8}}>
-      <label style={{fontSize:12,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block"}}>{children}</label>
+      <label style={{fontSize:12,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"flex",alignItems:"center"}}>{children}</label>
       {hint&&<p style={{fontSize:12,color:C.muted,marginTop:3}}>{hint}</p>}
     </div>
   );
@@ -251,8 +252,8 @@ function GeneralSection({ storeName, onSaveStoreName }) {
       <div className="section-card fu">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:18}}>Store Information</p>
         <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
-          <div><FieldLabel>Store Name</FieldLabel><TextInput value={name} onChange={e=>setName(e.target.value)}/></div>
-          <div><FieldLabel>Account Email</FieldLabel><TextInput value={email} onChange={e=>setEmail(e.target.value)}/></div>
+          <div><FieldLabel><Store size={16} strokeWidth={2} style={{marginRight:6}}/>Store Name</FieldLabel><TextInput value={name} onChange={e=>setName(e.target.value)}/></div>
+          <div><FieldLabel><Mail size={16} strokeWidth={2} style={{marginRight:6}}/>Account Email</FieldLabel><TextInput value={email} onChange={e=>setEmail(e.target.value)}/></div>
         </div>
         <div>
           <FieldLabel>Store URL</FieldLabel>
@@ -267,9 +268,9 @@ function GeneralSection({ storeName, onSaveStoreName }) {
       <div className="section-card fu fu1">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:18}}>Regional Settings</p>
         <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:18}}>
-          <div><FieldLabel>Industry</FieldLabel><SearchableSelect value={industry} onChange={e=>setIndustry(e.target.value)} options={INDUSTRY_OPTIONS}/></div>
-          <div><FieldLabel>Timezone</FieldLabel><SearchableSelect value={timezone} onChange={e=>setTimezone(e.target.value)} options={TIMEZONE_OPTIONS}/></div>
-          <div><FieldLabel>Currency</FieldLabel><SearchableSelect value={currency} onChange={e=>setCurrency(e.target.value)} options={CURRENCY_OPTIONS}/></div>
+          <div><FieldLabel><Globe size={16} strokeWidth={2} style={{marginRight:6}}/>Industry</FieldLabel><SearchableSelect value={industry} onChange={e=>setIndustry(e.target.value)} options={INDUSTRY_OPTIONS}/></div>
+          <div><FieldLabel><Clock size={16} strokeWidth={2} style={{marginRight:6}}/>Timezone</FieldLabel><SearchableSelect value={timezone} onChange={e=>setTimezone(e.target.value)} options={TIMEZONE_OPTIONS}/></div>
+          <div><FieldLabel><DollarSign size={16} strokeWidth={2} style={{marginRight:6}}/>Currency</FieldLabel><SearchableSelect value={currency} onChange={e=>setCurrency(e.target.value)} options={CURRENCY_OPTIONS}/></div>
         </div>
       </div>
       <SaveBar onSave={save} saved={saved}/>
@@ -288,9 +289,9 @@ function AIConfigSection() {
   const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
 
   const tones = [
-    {key:"professional", emoji:"💼", label:"Professional", desc:"Formal, precise. Best for B2B or high-ticket."},
-    {key:"friendly",     emoji:"😊", label:"Friendly",     desc:"Warm and helpful. Works for most brands."},
-    {key:"casual",       emoji:"👋", label:"Casual",       desc:"Relaxed. Great for lifestyle brands."},
+    {key:"professional", icon:<Briefcase size={20} strokeWidth={2}/>, label:"Professional", desc:"Formal, precise. Best for B2B or high-ticket."},
+    {key:"friendly",     icon:<Smile size={20} strokeWidth={2}/>,     label:"Friendly",     desc:"Warm and helpful. Works for most brands."},
+    {key:"casual",       icon:<Coffee size={20} strokeWidth={2}/>,    label:"Casual",       desc:"Relaxed. Great for lifestyle brands."},
   ];
 
   const LANGUAGES = [
@@ -313,7 +314,7 @@ function AIConfigSection() {
                 boxShadow: tone===t.key?`0 0 0 2px rgba(229,82,102,.22),0 0 22px rgba(229,82,102,.14)`:"none",
                 transition:"all .18s ease",
               }}>
-              <div style={{fontSize:24,marginBottom:10}}>{t.emoji}</div>
+              <div style={{marginBottom:10,color:tone===t.key?C.coral:C.sub,display:"flex"}}>{t.icon}</div>
               <div style={{fontSize:13.5,fontWeight:700,color:tone===t.key?C.coral:C.text,marginBottom:5}}>{t.label}</div>
               <div style={{fontSize:12,color:C.muted,lineHeight:1.55,marginBottom:10}}>{t.desc}</div>
               <div style={{display:"flex",alignItems:"center",gap:5,opacity:tone===t.key?1:0,transition:"opacity .18s"}}>
@@ -422,7 +423,7 @@ function AutomationsSection() {
       <div className="section-card fu" style={{marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:support?20:0}}>
           <div style={{display:"flex",alignItems:"center",gap:13}}>
-            <div style={{width:42,height:42,borderRadius:12,background:`${C.teal}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,color:C.teal}}>🤖</div>
+            <div style={{width:42,height:42,borderRadius:12,background:`${C.teal}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.teal}}><Bot size={20} strokeWidth={2}/></div>
             <div>
               <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>AI Support Agent</div>
               <div style={{fontSize:12.5,color:C.muted}}>Auto-resolve tickets, order inquiries, and FAQs</div>
@@ -444,7 +445,7 @@ function AutomationsSection() {
       <div className="section-card fu fu1" style={{marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:returns?20:0}}>
           <div style={{display:"flex",alignItems:"center",gap:13}}>
-            <div style={{width:42,height:42,borderRadius:12,background:`${C.amber}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:C.amber}}>↩️</div>
+            <div style={{width:42,height:42,borderRadius:12,background:`${C.amber}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.amber}}><RotateCcw size={20} strokeWidth={2}/></div>
             <div>
               <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>Return Deflection</div>
               <div style={{fontSize:12.5,color:C.muted}}>Offer smart alternatives before processing refunds</div>
@@ -475,7 +476,7 @@ function AutomationsSection() {
       <div className="section-card fu fu2" style={{marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:cart?20:0}}>
           <div style={{display:"flex",alignItems:"center",gap:13}}>
-            <div style={{width:42,height:42,borderRadius:12,background:`${C.blue}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,color:C.blue}}>🛒</div>
+            <div style={{width:42,height:42,borderRadius:12,background:`${C.blue}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.blue}}><ShoppingCart size={20} strokeWidth={2}/></div>
             <div>
               <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>Cart Recovery</div>
               <div style={{fontSize:12.5,color:C.muted}}>3-touch AI sequence to recover abandoned carts</div>
@@ -622,7 +623,7 @@ function TeamSection() {
         <div className="sv-invite-grid" style={{display:"grid",gridTemplateColumns:"1fr 160px auto",gap:12,alignItems:"end"}}>
           <div><FieldLabel>Email Address</FieldLabel><TextInput value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)} placeholder="colleague@yourstore.com"/></div>
           <div><FieldLabel>Role</FieldLabel><SelectInput value={inviteRole} onChange={e=>setInviteRole(e.target.value)} options={["Support","Manager","Admin"]}/></div>
-          <button className="btn-primary" onClick={invite} style={{padding:"11px 22px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14,whiteSpace:"nowrap"}}>Send Invite →</button>
+          <button className="btn-primary" onClick={invite} style={{padding:"11px 22px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14,whiteSpace:"nowrap",display:"flex",alignItems:"center"}}><UserPlus size={16} strokeWidth={2} style={{marginRight:6}}/>Send Invite</button>
         </div>
         {saved&&<div className="saved-badge" style={{marginTop:14,display:"flex",alignItems:"center",gap:7,padding:"8px 14px",borderRadius:9,background:"rgba(62,207,178,.10)",border:"1px solid rgba(62,207,178,.22)",width:"fit-content"}}><span style={{color:C.teal}}>✓</span><span style={{fontSize:13,fontWeight:600,color:C.teal}}>Invite sent successfully</span></div>}
       </div>
@@ -766,8 +767,8 @@ function BillingSection() {
                 <span style={{fontSize:12.5,color:C.teal,fontWeight:600}}>Paid</span>
               </span>
               <button className="btn-ghost" onClick={handleDownload}
-                style={{padding:"5px 11px",borderRadius:7,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,fontWeight:600,width:"fit-content"}}>
-                ⬇ PDF
+                style={{padding:"5px 11px",borderRadius:7,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,fontWeight:600,width:"fit-content",display:"flex",alignItems:"center"}}>
+                <Download size={14} strokeWidth={2} style={{marginRight:6}}/>PDF
               </button>
             </div>
           ))}
@@ -805,6 +806,7 @@ const DANGER_ACTIONS = [
     title:"Reset Settings",
     desc:"Resets all Solva settings to factory defaults. Your store connection and existing data will remain intact, but all AI configurations, automations, and preferences will be permanently cleared.",
     btn:"Reset Settings",
+    icon:<RotateCcw size={18} strokeWidth={2}/>,
     warn:"This will erase all your custom AI configurations and automation settings permanently.",
     confirmWord:"RESET",
   },
@@ -812,6 +814,7 @@ const DANGER_ACTIONS = [
     title:"Disconnect Shopify Store",
     desc:"Removes Solva's access to your store. All automations stop immediately. Your data is retained for 30 days before being purged.",
     btn:"Disconnect Store",
+    icon:<Unplug size={18} strokeWidth={2}/>,
     warn:"All active automations will stop immediately and your store will be fully disconnected from Solva.",
     confirmWord:"DISCONNECT",
   },
@@ -819,6 +822,7 @@ const DANGER_ACTIONS = [
     title:"Delete Account",
     desc:"Permanently deletes your Solva account, all configurations, and all data. This cannot be undone under any circumstances.",
     btn:"Delete Account",
+    icon:<Trash2 size={18} strokeWidth={2}/>,
     warn:"Your account, all stored data, and all configurations will be permanently deleted and cannot be recovered.",
     confirmWord:"DELETE",
   },
@@ -888,8 +892,9 @@ function DangerSection() {
               style={{padding:"9px 18px",borderRadius:9,flexShrink:0,
                 border:`1px solid ${i===2?"#FF5272":C.border}`,
                 color:i===2?"#FF5272":C.sub,
-                fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
-              {item.btn}
+                fontSize:13,fontWeight:600,whiteSpace:"nowrap",
+                display:"flex",alignItems:"center",gap:6}}>
+              {item.icon}{item.btn}
             </button>
           </div>
         </div>
@@ -900,10 +905,10 @@ function DangerSection() {
 
 // ── MAIN EXPORT ──
 const SECTIONS = [
-  {key:"general",       label:"General",       icon:"🏪"},
+  {key:"general",       label:"General",       icon:<Store size={15} strokeWidth={2}/>},
   {key:"ai",            label:"AI Config",     icon:"⚡"},
   {key:"automations",   label:"Automations",   icon:"⚙️"},
-  {key:"notifications", label:"Notifications", icon:"🔔"},
+  {key:"notifications", label:"Notifications", icon:<Bell size={15} strokeWidth={2}/>},
   {key:"team",          label:"Team",          icon:"👥"},
   {key:"billing",       label:"Billing",       icon:"💳"},
   {key:"danger",        label:"Danger Zone",   icon:"⚠️"},
@@ -948,13 +953,13 @@ export default function SettingsView({ isLandscape, isMobile }) {
         >
           {/* Store name in nav header */}
           <div style={{padding:"4px 10px 14px",marginBottom:8,borderBottom:`1px solid ${C.border}`}}>
-            <div style={{fontSize:13,fontWeight:700,color:C.text,marginBottom:2}}>🏪 {storeName}</div>
+            <div style={{fontSize:13,fontWeight:700,color:C.text,marginBottom:2,display:"flex",alignItems:"center",gap:6}}><Store size={14} strokeWidth={2}/>{storeName}</div>
             <div style={{fontSize:11,color:C.muted}}>Manage your settings</div>
           </div>
           {SECTIONS.map(s=>(
             <div key={s.key} className="setting-nav-item" onClick={()=>handleNavClick(s.key)}
               style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",marginBottom:2,background:section===s.key?"rgba(229,82,102,.09)":"transparent",color:section===s.key?C.coral:s.key==="danger"?"#FF5272":C.sub,fontSize:13.5,fontWeight:section===s.key?600:400}}>
-              <span style={{fontSize:15}}>{s.icon}</span>{s.label}
+              <span style={{fontSize:15,display:"inline-flex",alignItems:"center"}}>{s.icon}</span>{s.label}
             </div>
           ))}
         </div>

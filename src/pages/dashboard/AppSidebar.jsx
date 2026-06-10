@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
+import { BarChart3, Ticket, ShoppingCart, RotateCcw, TrendingUp, Settings, LogOut } from "lucide-react";
 
 function SolvaLogo({ size=15 }) {
   return (
@@ -27,12 +28,12 @@ export default function AppSidebar() {
   const setView             = (key) => navigate(`/dashboard/${key}`);
   const goLanding           = () => navigate("/");
   const items = [
-    {key:"overview",  label:"Overview",      icon:"◈"},
-    {key:"tickets",   label:"AI Tickets",    icon:"✉",  badge:"12"},
-    {key:"cart",      label:"Cart Recovery", icon:"🛒", badge:"24"},
-    {key:"returns",   label:"Returns",       icon:"↩",  badge:"8"},
-    {key:"analytics", label:"Analytics",     icon:"↗"},
-    {key:"settings",  label:"Settings",      icon:"⚙"},
+    {key:"overview",  label:"Overview",      icon:<BarChart3 size={18} strokeWidth={2}/>},
+    {key:"tickets",   label:"AI Tickets",    icon:<Ticket size={18} strokeWidth={2}/>,        badge:"12"},
+    {key:"cart",      label:"Cart Recovery", icon:<ShoppingCart size={18} strokeWidth={2}/>,  badge:"24"},
+    {key:"returns",   label:"Returns",       icon:<RotateCcw size={18} strokeWidth={2}/>,     badge:"8"},
+    {key:"analytics", label:"Analytics",     icon:<TrendingUp size={18} strokeWidth={2}/>},
+    {key:"settings",  label:"Settings",      icon:<Settings size={18} strokeWidth={2}/>},
   ];
   return (
     <aside style={{width:212,flexShrink:0,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",padding:"22px 0"}}>
@@ -49,14 +50,14 @@ export default function AppSidebar() {
         {items.map(({key,label,icon,badge})=>(
           <div key={key} onClick={()=>setView(key)}
             style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:9,cursor:"pointer",background:view===key?"rgba(229,82,102,.09)":"transparent",color:view===key?C.coral:C.sub,fontSize:13.5,fontWeight:view===key?600:400,transition:"all .14s"}}>
-            <span style={{fontSize:14}}>{icon}</span>{label}
+            {icon}{label}
             {badge&&<span style={{marginLeft:"auto",fontSize:10.5,fontWeight:700,background:view===key?C.coral:C.dim,color:view===key?"#fff":C.muted,padding:"1px 7px",borderRadius:100}}>{badge}</span>}
           </div>
         ))}
       </nav>
       <div style={{padding:"14px 8px 0",borderTop:`1px solid ${C.border}`,marginTop:6}}>
         <div onClick={goLanding} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:9,cursor:"pointer",color:C.muted,fontSize:13,transition:"all .14s"}}>
-          <span>↖</span> Back to Landing
+          <LogOut size={18} strokeWidth={2}/> Back to Landing
         </div>
       </div>
     </aside>

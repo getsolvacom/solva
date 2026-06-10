@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C } from "../../tokens";
+import { DollarSign, Inbox, RotateCcw, Clock, Zap, Star, Trophy, TrendingUp, Lightbulb, Calendar } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -30,28 +31,28 @@ const ANALYTICS_DATA = {
 
 const KPI_DATA = {
   "7D": [
-    {label:"Revenue Recovered", value:"$12,430", change:"+24%", color:C.teal,    icon:"💰"},
-    {label:"Tickets Resolved",  value:"408",      change:"+18%", color:C.coral,   icon:"📧"},
-    {label:"Returns Deflected", value:"76",        change:"+12%", color:C.amber,   icon:"🛡️"},
-    {label:"Hours Saved",       value:"47.5h",     change:"+31%", color:C.blue,    icon:"⏱️"},
-    {label:"Avg Response",      value:"<45s",      change:"-18%", color:C.magenta, icon:"⚡"},
-    {label:"Satisfaction",      value:"98.3%",     change:"+2%",  color:C.violet,  icon:"⭐"},
+    {label:"Revenue Recovered", value:"$12,430", change:"+24%", color:C.teal,    icon:<DollarSign size={18} strokeWidth={2}/>},
+    {label:"Tickets Resolved",  value:"408",      change:"+18%", color:C.coral,   icon:<Inbox size={18} strokeWidth={2}/>},
+    {label:"Returns Deflected", value:"76",        change:"+12%", color:C.amber,   icon:<RotateCcw size={18} strokeWidth={2}/>},
+    {label:"Hours Saved",       value:"47.5h",     change:"+31%", color:C.blue,    icon:<Clock size={18} strokeWidth={2}/>},
+    {label:"Avg Response",      value:"<45s",      change:"-18%", color:C.magenta, icon:<Zap size={18} strokeWidth={2}/>},
+    {label:"Satisfaction",      value:"98.3%",     change:"+2%",  color:C.violet,  icon:<Star size={18} strokeWidth={2}/>},
   ],
   "30D":[
-    {label:"Revenue Recovered", value:"$36,820", change:"+31%", color:C.teal,    icon:"💰"},
-    {label:"Tickets Resolved",  value:"1,247",   change:"+22%", color:C.coral,   icon:"📧"},
-    {label:"Returns Deflected", value:"217",      change:"+15%", color:C.amber,   icon:"🛡️"},
-    {label:"Hours Saved",       value:"184h",     change:"+28%", color:C.blue,    icon:"⏱️"},
-    {label:"Avg Response",      value:"<52s",     change:"-12%", color:C.magenta, icon:"⚡"},
-    {label:"Satisfaction",      value:"97.8%",    change:"+1%",  color:C.violet,  icon:"⭐"},
+    {label:"Revenue Recovered", value:"$36,820", change:"+31%", color:C.teal,    icon:<DollarSign size={18} strokeWidth={2}/>},
+    {label:"Tickets Resolved",  value:"1,247",   change:"+22%", color:C.coral,   icon:<Inbox size={18} strokeWidth={2}/>},
+    {label:"Returns Deflected", value:"217",      change:"+15%", color:C.amber,   icon:<RotateCcw size={18} strokeWidth={2}/>},
+    {label:"Hours Saved",       value:"184h",     change:"+28%", color:C.blue,    icon:<Clock size={18} strokeWidth={2}/>},
+    {label:"Avg Response",      value:"<52s",     change:"-12%", color:C.magenta, icon:<Zap size={18} strokeWidth={2}/>},
+    {label:"Satisfaction",      value:"97.8%",    change:"+1%",  color:C.violet,  icon:<Star size={18} strokeWidth={2}/>},
   ],
   "90D":[
-    {label:"Revenue Recovered", value:"$113,320", change:"+41%", color:C.teal,    icon:"💰"},
-    {label:"Tickets Resolved",  value:"3,367",    change:"+38%", color:C.coral,   icon:"📧"},
-    {label:"Returns Deflected", value:"577",       change:"+29%", color:C.amber,   icon:"🛡️"},
-    {label:"Hours Saved",       value:"512h",      change:"+44%", color:C.blue,    icon:"⏱️"},
-    {label:"Avg Response",      value:"<48s",      change:"-22%", color:C.magenta, icon:"⚡"},
-    {label:"Satisfaction",      value:"98.1%",     change:"+3%",  color:C.violet,  icon:"⭐"},
+    {label:"Revenue Recovered", value:"$113,320", change:"+41%", color:C.teal,    icon:<DollarSign size={18} strokeWidth={2}/>},
+    {label:"Tickets Resolved",  value:"3,367",    change:"+38%", color:C.coral,   icon:<Inbox size={18} strokeWidth={2}/>},
+    {label:"Returns Deflected", value:"577",       change:"+29%", color:C.amber,   icon:<RotateCcw size={18} strokeWidth={2}/>},
+    {label:"Hours Saved",       value:"512h",      change:"+44%", color:C.blue,    icon:<Clock size={18} strokeWidth={2}/>},
+    {label:"Avg Response",      value:"<48s",      change:"-22%", color:C.magenta, icon:<Zap size={18} strokeWidth={2}/>},
+    {label:"Satisfaction",      value:"98.1%",     change:"+3%",  color:C.violet,  icon:<Star size={18} strokeWidth={2}/>},
   ],
 };
 
@@ -305,7 +306,7 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
               </BarChart>
             </ResponsiveContainer>
             <div style={{marginTop:14,padding:"9px 14px",borderRadius:9,background:"rgba(229,82,102,.07)",border:"1px solid rgba(229,82,102,.16)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:12.5,color:C.sub}}>📈 Peak day — <span style={{color:C.coral,fontWeight:700}}>{peakDay.day}</span></span>
+              <span style={{fontSize:12.5,color:C.sub,display:"inline-flex",alignItems:"center",gap:6}}><Calendar size={16} strokeWidth={2}/>Peak day — <span style={{color:C.coral,fontWeight:700}}>{peakDay.day}</span></span>
               <span style={{fontSize:12.5,fontWeight:700,color:C.coral}}>{peakDay.tickets} tickets</span>
             </div>
           </div>
@@ -350,9 +351,9 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
         {/* Insight strip */}
         <div className="av-insights-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,paddingBottom:8}}>
           {[
-            {icon:"🏆",color:C.coral, label:"Best performing automation", value:"AI Support Agent",             sub:"87% auto-resolution rate this period"},
-            {icon:"📈",color:C.teal,  label:"Fastest growing metric",     value:"Hours Saved",                  sub:"+31% vs last period · 47.5h this week"},
-            {icon:"💡",color:C.amber, label:"AI recommendation",           value:"Increase cart recovery window", sub:"Friday carts convert 2× faster — extend to 48h"},
+            {icon:<Trophy size={18} strokeWidth={2}/>,    color:C.coral, label:"Best performing automation", value:"AI Support Agent",             sub:"87% auto-resolution rate this period"},
+            {icon:<TrendingUp size={18} strokeWidth={2}/>,color:C.teal,  label:"Fastest growing metric",     value:"Hours Saved",                  sub:"+31% vs last period · 47.5h this week"},
+            {icon:<Lightbulb size={18} strokeWidth={2}/>, color:C.amber, label:"AI recommendation",           value:"Increase cart recovery window", sub:"Friday carts convert 2× faster — extend to 48h"},
           ].map((ins,i)=>(
             <div key={i} style={{padding:"16px 18px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`,display:"flex",gap:13,alignItems:"flex-start"}}>
               <div style={{width:38,height:38,borderRadius:10,flexShrink:0,background:`${ins.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,color:ins.color}}>{ins.icon}</div>

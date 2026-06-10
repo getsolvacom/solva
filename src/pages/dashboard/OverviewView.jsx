@@ -4,6 +4,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
+import { DollarSign, Inbox, RotateCcw, Clock, TrendingUp, Bot, BarChart3, Zap, UserPlus } from "lucide-react";
 
 const weekData = [
   { day:"Mon", tickets:45,  revenue:1200 },
@@ -73,10 +74,10 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
   const [activeChart, setActiveChart] = useState("revenue");
 
   const kpis = [
-    { label:"Tickets Resolved",  value:"1,247", change:"+18%", color:C.teal,    bar:68 },
-    { label:"Revenue Recovered", value:"$8,420",change:"+24%", color:C.coral,   bar:74 },
-    { label:"Returns Deflected", value:"89",    change:"+12%", color:C.amber,   bar:52 },
-    { label:"Hours Saved",       value:"47.5h", change:"+31%", color:C.magenta, bar:80 },
+    { label:"Tickets Resolved",  value:"1,247", change:"+18%", color:C.teal,    bar:68, icon:<Inbox size={18} strokeWidth={2}/> },
+    { label:"Revenue Recovered", value:"$8,420",change:"+24%", color:C.coral,   bar:74, icon:<DollarSign size={18} strokeWidth={2}/> },
+    { label:"Returns Deflected", value:"89",    change:"+12%", color:C.amber,   bar:52, icon:<RotateCcw size={18} strokeWidth={2}/> },
+    { label:"Hours Saved",       value:"47.5h", change:"+31%", color:C.magenta, bar:80, icon:<Clock size={18} strokeWidth={2}/> },
   ];
 
   return (
@@ -106,8 +107,13 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
           {kpis.map((k,i)=>(
             <div key={i} className="kpi-card fu" style={{padding:"18px 20px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`,animationDelay:`${i*.06}s`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                <span style={{fontSize:11.5,color:C.sub,fontWeight:500}}>{k.label}</span>
-                <span style={{fontSize:10.5,padding:"2px 8px",borderRadius:100,background:"rgba(62,207,178,.12)",color:C.teal,fontWeight:700}}>{k.change}</span>
+                <div style={{display:"flex",alignItems:"center",gap:7}}>
+                  <span style={{color:k.color,display:"flex"}}>{k.icon}</span>
+                  <span style={{fontSize:11.5,color:C.sub,fontWeight:500}}>{k.label}</span>
+                </div>
+                <span style={{display:"flex",alignItems:"center",gap:4,fontSize:10.5,padding:"2px 8px",borderRadius:100,background:"rgba(62,207,178,.12)",color:C.teal,fontWeight:700}}>
+                  <TrendingUp size={14} strokeWidth={2}/>{k.change}
+                </span>
               </div>
               <div style={{fontFamily:"'Outfit',sans-serif",fontSize:25,fontWeight:800,color:k.color,marginBottom:4}}>{k.value}</div>
               <div style={{fontSize:10.5,color:C.muted,marginBottom:12}}>this week</div>
@@ -180,10 +186,10 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
           <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:16}}>Quick Actions</h3>
           <div className="actions-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
             {[
-              {label:"Configure AI Tone", icon:"⚙", color:C.coral,   view:"settings" },
-              {label:"View Full Reports", icon:"↗", color:C.blue,    view:"analytics"},
-              {label:"Test Automation",   icon:"▶", color:C.magenta, view:"tickets"  },
-              {label:"Add Team Member",   icon:"+", color:C.amber,   view:"settings" },
+              {label:"Configure AI Tone", icon:<Bot size={22} strokeWidth={2}/>,      color:C.coral,   view:"settings" },
+              {label:"View Full Reports", icon:<BarChart3 size={22} strokeWidth={2}/>, color:C.blue,    view:"analytics"},
+              {label:"Test Automation",   icon:<Zap size={22} strokeWidth={2}/>,       color:C.magenta, view:"tickets"  },
+              {label:"Add Team Member",   icon:<UserPlus size={22} strokeWidth={2}/>,  color:C.amber,   view:"settings" },
             ].map((a,i)=>(
               <button key={i} className="action-card" onClick={()=>setView(a.view)}
                 style={{padding:"14px 10px",borderRadius:10,border:`1px solid ${C.borderHi}`,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:8,background:"transparent"}}>

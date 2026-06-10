@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C } from "../../tokens";
+import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2 } from "lucide-react";
 
 const CARTS = [
   {
@@ -208,10 +209,10 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
       {/* KPI strip */}
       <div className="cr-kpi-strip" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
         {[
-          {label:"Recovered Revenue", value:`$${totalRecovered.toFixed(2)}`, color:C.teal,  icon:"💰"},
-          {label:"Recovery Rate",     value:"19.4%",                         color:C.coral, icon:"📈"},
-          {label:"Carts in Sequence", value:counts["In Sequence"].toString(),color:C.amber, icon:"⏳"},
-          {label:"Avg Cart Value",    value:"$178.20",                       color:C.blue,  icon:"🛒"},
+          {label:"Recovered Revenue", value:`$${totalRecovered.toFixed(2)}`, color:C.teal,  icon:<DollarSign size={18} strokeWidth={2}/>},
+          {label:"Recovery Rate",     value:"19.4%",                         color:C.coral, icon:<TrendingUp size={18} strokeWidth={2}/>},
+          {label:"Carts in Sequence", value:counts["In Sequence"].toString(),color:C.amber, icon:<ShoppingCart size={18} strokeWidth={2}/>},
+          {label:"Avg Cart Value",    value:"$178.20",                       color:C.blue,  icon:<DollarSign size={18} strokeWidth={2}/>},
         ].map((k,i)=>(
           <div key={i} className="cr-kpi-card kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${k.color}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{k.icon}</div>
@@ -326,8 +327,8 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
                 {selected.status==="in_sequence"
                   ? triggerLoading
                     ? <><div className="cr-spinner"/><span>Triggering...</span></>
-                    : "⚡ Trigger Next Step"
-                  : "📋 View Order"}
+                    : <><Zap size={16} strokeWidth={2} style={{marginRight:6}}/>Trigger Next Step</>
+                  : <><Eye size={16} strokeWidth={2} style={{marginRight:6}}/>View Order</>}
               </button>
             </div>
 
@@ -402,10 +403,12 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
                     })}
                   </div>
                   <div style={{padding:"8px 12px",borderRadius:8,background:"rgba(229,82,102,.07)",border:"1px solid rgba(229,82,102,.14)"}}>
-                    <span style={{fontSize:12,color:C.sub}}>
-                      {selected.status==="in_sequence" ? `⚡ Step ${selected.step} sent · Next step scheduled automatically`
-                      :selected.status==="recovered"   ? "✓ Sequence complete — cart recovered"
-                      : "✕ All 3 steps sent · Sequence ended"}
+                    <span style={{fontSize:12,color:C.sub,display:"flex",alignItems:"center",gap:6}}>
+                      {selected.status==="in_sequence"
+                        ? <><Zap size={13} strokeWidth={2}/>{`Step ${selected.step} sent · Next step scheduled automatically`}</>
+                        : selected.status==="recovered"
+                          ? <><CheckCircle2 size={13} strokeWidth={2}/>Sequence complete — cart recovered</>
+                          : "✕ All 3 steps sent · Sequence ended"}
                     </span>
                   </div>
                 </div>
@@ -418,7 +421,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
                   <div key={i} style={{display:"flex",gap:14,paddingBottom:i<selected.sequence.length-1?16:0}}>
                     <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
                       <div style={{width:30,height:30,borderRadius:"50%",background:step.status==="converted"?C.teal:step.status==="sent"?C.blue:C.dim,border:`2px solid ${step.status==="converted"?C.teal:step.status==="sent"?C.blue:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#fff"}}>
-                        {step.status==="converted"?"✓":step.step}
+                        {step.status==="converted"?<CheckCircle2 size={14} strokeWidth={2}/>:step.step}
                       </div>
                       {i<selected.sequence.length-1&&<div style={{width:2,flex:1,minHeight:20,background:step.status==="sent"||step.status==="converted"?`linear-gradient(${C.blue},${C.dim})`:C.dim,margin:"4px 0"}}/>}
                     </div>
