@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../../tokens";
-import { Settings, CreditCard, UserPlus, Store, HelpCircle, MessageCircle, Sparkles, LogOut } from "lucide-react";
+import { Settings, CreditCard, UserPlus, Store, HelpCircle, MessageCircle, Sparkles, LogOut, Sun } from "lucide-react";
 
 const AVATAR_URL = "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=4E0269";
 
@@ -117,6 +117,7 @@ export default function AvatarMenu() {
 
           {/* Section 2 — Quick Nav */}
           <div style={{padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
+            <MenuItem icon={<Sun size={15}/>} label="Appearance" onClick={() => go("/dashboard/settings/appearance")}/>
             <MenuItem icon={<Settings size={15}/>} label="Account Settings" onClick={() => go("/dashboard/settings/general")}/>
             <MenuItem icon={<CreditCard size={15}/>} label="Billing & Plan" onClick={() => go("/dashboard/settings/billing")}/>
             <MenuItem icon={<UserPlus size={15}/>} label="Invite Team Member" onClick={() => go("/dashboard/settings/team")}/>

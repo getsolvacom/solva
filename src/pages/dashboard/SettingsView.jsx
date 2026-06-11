@@ -940,8 +940,8 @@ const BRIGHTNESS_KEY   = "solva-brightness";
 const BRIGHTNESS_EVENT = "solva-brightness-change";
 const BRIGHTNESS_PRESETS = [
   { key:"dark",   label:"Dark",   value:1.0,  desc:"Default" },
-  { key:"dim",    label:"Dim",    value:1.12, desc:"Slightly lighter" },
-  { key:"bright", label:"Bright", value:1.25, desc:"More visible" },
+  { key:"dim",    label:"Dim",    value:1.2,  desc:"Slightly lighter" },
+  { key:"bright", label:"Bright", value:1.45, desc:"More visible" },
 ];
 
 function AppearanceSection() {
@@ -958,7 +958,7 @@ function AppearanceSection() {
   }
 
   const activePreset = BRIGHTNESS_PRESETS.find(p => Math.abs(p.value - brightness) < 0.005);
-  const fillPct = ((brightness - 1) / 0.35) * 100;
+  const fillPct = ((brightness - 1) / 0.6) * 100;
 
   return (
     <div>
@@ -1013,7 +1013,7 @@ function AppearanceSection() {
             type="range"
             className="brightness-slider"
             min={1.0}
-            max={1.35}
+            max={1.6}
             step={0.01}
             value={brightness}
             onChange={e => applyBrightness(parseFloat(e.target.value))}
