@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Gift, MessageSquare } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
@@ -411,6 +411,13 @@ function AutomationsSection() {
   const [saved,        setSaved]        = useState(false);
   const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
 
+  const [winBack,         setWinBack]         = useState(false);
+  const [winBackDays,     setWinBackDays]     = useState(60);
+  const [winBackDiscType, setWinBackDiscType] = useState("percentage");
+  const [winBackDiscVal,  setWinBackDiscVal]  = useState(10);
+  const [winBackSaved,    setWinBackSaved]    = useState(false);
+  const winBackSave = () => { setWinBackSaved(true); setTimeout(()=>setWinBackSaved(false),2500); };
+
   const inputStyle = {flex:1,padding:"11px 12px",borderRadius:10,background:C.card,border:`1px solid ${C.borderHi}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"};
 
   const delayField = (value, setValue, cVal, setCVal, unit, setUnit, presets, label) => (
@@ -513,6 +520,76 @@ function AutomationsSection() {
             <div><FieldLabel hint="Discount code included in Email 2.">Discount Code</FieldLabel><TextInput value={cartCode} onChange={e=>setCartCode(e.target.value)} placeholder="e.g. COMEBACK10"/></div>
           </div>
         )}
+      </div>
+
+      {/* Win-Back Campaign */}
+      <div className="section-card fu fu3" style={{marginBottom:14}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:winBack?16:0,transition:"margin-bottom .25s ease"}}>
+          <div style={{display:"flex",alignItems:"center",gap:13}}>
+            <div style={{width:42,height:42,borderRadius:12,background:`${C.magenta}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.magenta}}>
+              <Gift size={20} strokeWidth={2}/>
+            </div>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>Win-Back Campaign</div>
+              <div style={{fontSize:12.5,color:C.muted,maxWidth:420}}>Automatically send a discount to customers who haven't ordered in a set number of days to bring them back.</div>
+            </div>
+          </div>
+          <Toggle on={winBack} onToggle={()=>setWinBack(v=>!v)}/>
+        </div>
+        <div style={{overflow:"hidden",maxHeight:winBack?"800px":"0",opacity:winBack?1:0,transition:"max-height .38s cubic-bezier(.16,1,.3,1),opacity .25s ease"}}>
+          <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
+            {/* Days of inactivity */}
+            <div style={{marginBottom:16}}>
+              <FieldLabel hint="Recommended: 60 days">Send win-back after X days of no orders</FieldLabel>
+              <input type="number" value={winBackDays} onChange={e=>setWinBackDays(e.target.value)} min={1}
+                style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"}}/>
+            </div>
+            {/* Discount type pills */}
+            <div style={{marginBottom:16}}>
+              <FieldLabel>Discount Type</FieldLabel>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {[{key:"percentage",label:"Percentage (%)"},{key:"fixed",label:"Fixed Amount ($)"}].map(opt=>(
+                  <button key={opt.key} onClick={()=>setWinBackDiscType(opt.key)}
+                    style={{padding:"9px 18px",borderRadius:100,border:`1px solid ${winBackDiscType===opt.key?C.coral:C.border}`,background:winBackDiscType===opt.key?"rgba(229,82,102,.10)":"transparent",color:winBackDiscType===opt.key?C.coral:C.sub,fontWeight:winBackDiscType===opt.key?700:400,fontSize:13,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .15s",outline:"none"}}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Discount value */}
+            <div style={{marginBottom:16}}>
+              <FieldLabel>{winBackDiscType==="percentage"?"Discount Value (%)":"Discount Amount ($)"}</FieldLabel>
+              <input type="number" value={winBackDiscVal} onChange={e=>setWinBackDiscVal(e.target.value)} min={1}
+                style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"}}/>
+            </div>
+            {/* Message preview */}
+            <div style={{marginBottom:20}}>
+              <FieldLabel>Message Preview</FieldLabel>
+              <div style={{padding:"14px 16px",borderRadius:10,background:C.dim,border:`1px solid ${C.borderHi}`,color:C.sub,fontSize:13.5,lineHeight:1.7}}>
+                Hey [Customer name], we miss you! Here's{" "}
+                <strong style={{color:C.coral}}>
+                  {winBackDiscType==="percentage"?`${winBackDiscVal}% off`:`$${winBackDiscVal} off`}
+                </strong>
+                {" "}your next order — use code{" "}
+                <span style={{fontFamily:"monospace",color:C.text,fontWeight:700}}>WINBACK10</span>
+                {" "}at checkout. Valid for 7 days.
+              </div>
+            </div>
+            {/* Save */}
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <button className="btn-primary" onClick={winBackSave}
+                style={{padding:"10px 28px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14}}>
+                Save Changes
+              </button>
+              {winBackSaved&&(
+                <div className="saved-badge" style={{display:"flex",alignItems:"center",gap:7,padding:"7px 14px",borderRadius:9,background:"rgba(62,207,178,.10)",border:"1px solid rgba(62,207,178,.22)"}}>
+                  <span style={{color:C.teal,fontSize:14}}>✓</span>
+                  <span style={{fontSize:13.5,fontWeight:600,color:C.teal}}>Changes saved</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       <SaveBar onSave={save} saved={saved}/>
@@ -1032,6 +1109,126 @@ function AppearanceSection() {
   );
 }
 
+// ── WIDGET ──
+const WIDGET_COLORS = [
+  { value:"#E55266", label:"Coral" },
+  { value:"#992A67", label:"Magenta" },
+  { value:"#4E0269", label:"Violet" },
+];
+const EMBED_CODE = `<script src="https://cdn.getsolva.com/widget.js" data-store-id="YOUR_STORE_ID"></script>`;
+
+function WidgetSection() {
+  const [widgetEnabled, setWidgetEnabled] = useState(true);
+  const [position,      setPosition]      = useState("bottom-right");
+  const [greeting,      setGreeting]      = useState("Hi there 👋 How can we help you today?");
+  const [widgetColor,   setWidgetColor]   = useState("#E55266");
+  const [copied,        setCopied]        = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(EMBED_CODE).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <div>
+      <SectionTitle sub="Manage the live chat widget on your Shopify store.">Chat Widget</SectionTitle>
+
+      {/* Section 1 — Status */}
+      <div className="section-card fu">
+        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Chat Widget Status</p>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
+          <div style={{flex:1}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,flexWrap:"wrap"}}>
+              <span style={{fontSize:14,fontWeight:600,color:C.text}}>Enable Chat Widget</span>
+              <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"3px 10px",borderRadius:100,background:widgetEnabled?"rgba(62,207,178,.10)":"rgba(255,82,114,.10)",border:`1px solid ${widgetEnabled?"rgba(62,207,178,.25)":"rgba(255,82,114,.25)"}`}}>
+                <span style={{width:6,height:6,borderRadius:"50%",background:widgetEnabled?C.teal:C.red,flexShrink:0}}/>
+                <span style={{fontSize:11,fontWeight:700,color:widgetEnabled?C.teal:C.red}}>{widgetEnabled?"Active":"Inactive"}</span>
+              </span>
+            </div>
+            <span style={{fontSize:12.5,color:C.muted,lineHeight:1.65}}>When enabled, a chat bubble appears on your Shopify store for customers to reach support.</span>
+          </div>
+          <Toggle on={widgetEnabled} onToggle={()=>setWidgetEnabled(v=>!v)}/>
+        </div>
+      </div>
+
+      {/* Section 2 — Appearance */}
+      <div className="section-card fu fu1">
+        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Widget Appearance</p>
+
+        {/* Position pills */}
+        <div style={{marginBottom:18}}>
+          <FieldLabel>Widget Position</FieldLabel>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {[{key:"bottom-right",label:"Bottom Right"},{key:"bottom-left",label:"Bottom Left"}].map(opt=>(
+              <button key={opt.key} onClick={()=>setPosition(opt.key)}
+                style={{padding:"9px 18px",borderRadius:100,border:`1px solid ${position===opt.key?C.coral:C.border}`,background:position===opt.key?"rgba(229,82,102,.10)":"transparent",color:position===opt.key?C.coral:C.sub,fontWeight:position===opt.key?700:400,fontSize:13,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .15s",outline:"none"}}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Greeting message */}
+        <div style={{marginBottom:18}}>
+          <FieldLabel>Greeting Message</FieldLabel>
+          <TextInput value={greeting} onChange={e=>setGreeting(e.target.value)} placeholder="Hi there 👋 How can we help you today?"/>
+        </div>
+
+        {/* Color swatches */}
+        <div style={{marginBottom:18}}>
+          <FieldLabel>Widget Color</FieldLabel>
+          <div style={{display:"flex",gap:12}}>
+            {WIDGET_COLORS.map(c=>(
+              <button key={c.value} onClick={()=>setWidgetColor(c.value)} title={c.label}
+                style={{width:40,height:40,borderRadius:"50%",background:c.value,border:`2px solid ${widgetColor===c.value?"#fff":"transparent"}`,outline:`2px solid ${widgetColor===c.value?c.value:"transparent"}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s",flexShrink:0}}>
+                {widgetColor===c.value&&<Check size={16} strokeWidth={3} style={{color:"#fff"}}/>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Live preview */}
+        <div>
+          <FieldLabel>Preview</FieldLabel>
+          <div style={{width:"100%",height:120,background:C.dim,borderRadius:12,border:`1px solid ${C.border}`,position:"relative",overflow:"hidden",display:"flex",alignItems:"flex-end",justifyContent:position==="bottom-right"?"flex-end":"flex-start",padding:14,transition:"justify-content .2s"}}>
+            <span style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:11,color:C.muted,pointerEvents:"none",textAlign:"center",lineHeight:1.6}}>Your Shopify Store</span>
+            <div style={{width:44,height:44,borderRadius:"50%",background:widgetColor,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(0,0,0,.5)",color:"#fff",position:"relative",zIndex:1,transition:"background .2s,left .2s,right .2s"}}>
+              <MessageSquare size={20} strokeWidth={2}/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 3 — Embed Code */}
+      <div className="section-card fu fu2">
+        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:12}}>Embed Code</p>
+        <p style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:6}}>Install on your Shopify Store</p>
+        <p style={{fontSize:13,color:C.muted,lineHeight:1.65,marginBottom:16}}>
+          Copy this snippet and paste it into your Shopify theme's{" "}
+          <code style={{fontFamily:"monospace",color:C.sub,background:C.dim,padding:"2px 6px",borderRadius:4}}>theme.liquid</code>
+          {" "}file just before the closing{" "}
+          <code style={{fontFamily:"monospace",color:C.sub,background:C.dim,padding:"2px 6px",borderRadius:4}}>&lt;/body&gt;</code>
+          {" "}tag.
+        </p>
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:10,background:C.dim,border:`1px solid ${C.borderHi}`,marginBottom:12}}>
+          <code style={{flex:1,fontFamily:"monospace",fontSize:12,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{EMBED_CODE}</code>
+          <button onClick={handleCopy}
+            style={{padding:"7px 14px",borderRadius:8,border:`1px solid ${copied?C.teal:C.border}`,background:copied?"rgba(62,207,178,.10)":"transparent",color:copied?C.teal:C.sub,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .18s",flexShrink:0,whiteSpace:"nowrap",outline:"none"}}>
+            {copied?"✓ Copied!":"Copy Code"}
+          </button>
+        </div>
+        <p style={{fontSize:12.5,color:C.muted,lineHeight:1.65}}>
+          Need help installing?{" "}
+          <span style={{color:C.coral,cursor:"pointer",textDecoration:"underline",textDecorationColor:"rgba(229,82,102,.4)"}}>Visit our Help Center</span>
+          {" "}for a step-by-step guide.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN EXPORT ──
 const SECTIONS = [
   {key:"general",       label:"General",       icon:<Store size={15} strokeWidth={2}/>},
@@ -1041,6 +1238,7 @@ const SECTIONS = [
   {key:"team",          label:"Team",          icon:<Users size={16} strokeWidth={2}/>},
   {key:"billing",       label:"Billing",       icon:<CreditCard size={16} strokeWidth={2}/>},
   {key:"appearance",    label:"Appearance",    icon:<Sun size={15} strokeWidth={2}/>},
+  {key:"widget",        label:"Widget",        icon:<MessageSquare size={15} strokeWidth={2}/>},
   {key:"danger",        label:"Danger Zone",   icon:<AlertTriangle size={16} strokeWidth={2}/>},
 ];
 
@@ -1155,6 +1353,7 @@ export default function SettingsView({ isLandscape, isMobile }) {
           {section==="team"          && <TeamSection/>}
           {section==="billing"       && <BillingSection isLandscape={isLandscape} isMobile={isMobile}/>}
           {section==="appearance"    && <AppearanceSection/>}
+          {section==="widget"        && <WidgetSection/>}
           {section==="danger"        && <DangerSection isLandscape={isLandscape} isMobile={isMobile}/>}
         </div>
       </div>
