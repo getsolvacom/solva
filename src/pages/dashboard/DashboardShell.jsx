@@ -61,6 +61,9 @@ function DrawerLogo({ small }) {
   );
 }
 
+const BRIGHTNESS_KEY   = "solva-brightness";
+const BRIGHTNESS_EVENT = "solva-brightness-change";
+
 export default function DashboardShell({ fixedView }) {
   const navigate             = useNavigate();
   const { view: viewParam }  = useParams();
@@ -70,11 +73,25 @@ export default function DashboardShell({ fixedView }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navTo                = (key) => { navigate(`/dashboard/${key}`); setDrawerOpen(false); };
 
+  const [brightness, setBrightness] = useState(() => {
+    const saved = localStorage.getItem(BRIGHTNESS_KEY);
+    return saved ? parseFloat(saved) : 1.0;
+  });
+
+  useEffect(() => {
+    function onBrightnessChange(e) { setBrightness(e.detail); }
+    window.addEventListener(BRIGHTNESS_EVENT, onBrightnessChange);
+    return () => window.removeEventListener(BRIGHTNESS_EVENT, onBrightnessChange);
+  }, []);
+
   const { isLandscape, isMobile } = useOrientation();
   const headerHeight = isMobile ? (isLandscape ? 44 : 60) : 0;
+  const brightnessFilter = brightness !== 1.0
+    ? `brightness(${brightness}) contrast(${(1 - (brightness - 1) * 0.08).toFixed(3)})`
+    : undefined;
 
   return (
-    <div className={`dash-root${isMobile && isLandscape ? " ls-mob" : ""}`} style={{display:"flex",height:"100dvh",background:C.bg,overflow:"hidden",overflowX:"hidden"}}>
+    <div className={`dash-root${isMobile && isLandscape ? " ls-mob" : ""}`} style={{display:"flex",height:"100dvh",background:C.bg,overflow:"hidden",overflowX:"hidden",filter:brightnessFilter}}>
       <style>{`
         @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
         .mob-header{display:none;align-items:center;justify-content:space-between;padding:0 16px;background:${C.surface};border-bottom:1px solid ${C.border};flex-shrink:0;}

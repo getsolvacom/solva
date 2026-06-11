@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
@@ -84,6 +84,11 @@ function GlobalStyles() {
       .ss-option{padding:9px 14px;font-size:13.5px;cursor:pointer;transition:background .1s;}
       .ss-option:hover{background:rgba(255,255,255,.05)!important;}
       input,select,textarea{font-family:'Outfit',sans-serif;outline:none;resize:none;}
+      .brightness-slider{-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;outline:none;cursor:pointer;}
+      .brightness-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:#E55266;cursor:pointer;box-shadow:0 1px 6px rgba(229,82,102,.45);transition:transform .15s;}
+      .brightness-slider::-webkit-slider-thumb:hover{transform:scale(1.2);}
+      .brightness-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#E55266;cursor:pointer;border:none;box-shadow:0 1px 6px rgba(229,82,102,.45);}
+      .brightness-preset-btn{cursor:pointer;transition:all .18s ease;border-radius:10px;font-family:'Outfit',sans-serif;}
 
       /* ── Mobile ── */
       .sv-back-btn{display:none;}
@@ -930,6 +935,103 @@ function DangerSection({ isLandscape = false, isMobile = false }) {
   );
 }
 
+// ── APPEARANCE ──
+const BRIGHTNESS_KEY   = "solva-brightness";
+const BRIGHTNESS_EVENT = "solva-brightness-change";
+const BRIGHTNESS_PRESETS = [
+  { key:"dark",   label:"Dark",   value:1.0,  desc:"Default" },
+  { key:"dim",    label:"Dim",    value:1.12, desc:"Slightly lighter" },
+  { key:"bright", label:"Bright", value:1.25, desc:"More visible" },
+];
+
+function AppearanceSection() {
+  const [brightness, setBrightness] = useState(() => {
+    const saved = localStorage.getItem(BRIGHTNESS_KEY);
+    return saved ? parseFloat(saved) : 1.0;
+  });
+
+  function applyBrightness(val) {
+    const clamped = Math.round(val * 100) / 100;
+    setBrightness(clamped);
+    localStorage.setItem(BRIGHTNESS_KEY, String(clamped));
+    window.dispatchEvent(new CustomEvent(BRIGHTNESS_EVENT, { detail: clamped }));
+  }
+
+  const activePreset = BRIGHTNESS_PRESETS.find(p => Math.abs(p.value - brightness) < 0.005);
+  const fillPct = ((brightness - 1) / 0.35) * 100;
+
+  return (
+    <div>
+      <SectionTitle sub="Personalise how the interface looks on your screen.">Appearance</SectionTitle>
+
+      <div className="section-card fu">
+        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:8}}>Display Brightness</p>
+        <p style={{fontSize:13,color:C.muted,lineHeight:1.65,marginBottom:20}}>Adjust the interface brightness to your comfort. Useful in bright environments or for improved readability.</p>
+
+        {/* Preset buttons */}
+        <div style={{display:"flex",gap:10,marginBottom:24}}>
+          {BRIGHTNESS_PRESETS.map(p => {
+            const active = activePreset?.key === p.key;
+            return (
+              <button
+                key={p.key}
+                className="brightness-preset-btn"
+                onClick={() => applyBrightness(p.value)}
+                style={{
+                  flex:1,
+                  padding:"13px 10px",
+                  border:`1px solid ${active ? C.coral : C.border}`,
+                  background: active ? "rgba(229,82,102,.10)" : C.surface,
+                  color: active ? C.coral : C.sub,
+                  fontSize:14,
+                  fontWeight: active ? 700 : 400,
+                  boxShadow: active ? "0 0 0 2px rgba(229,82,102,.20)" : "none",
+                  outline:"none",
+                }}
+              >
+                <div style={{fontSize:18,marginBottom:5,display:"flex",justifyContent:"center",color:active?C.coral:C.muted}}>
+                  <Sun size={18} strokeWidth={active?2.5:1.8} style={{opacity:p.key==="dark"?.45:p.key==="dim"?.72:1}}/>
+                </div>
+                <div>{p.label}</div>
+                <div style={{fontSize:11,color:active?C.coral:C.muted,marginTop:2,fontWeight:400}}>{p.desc}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Fine slider */}
+        <div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+            <label style={{fontSize:12,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase"}}>Fine Control</label>
+            <span style={{fontSize:12.5,color:activePreset ? C.coral : C.text,fontWeight:600,fontFamily:"'Outfit',monospace,sans-serif"}}>
+              {activePreset
+                ? activePreset.label
+                : `+${Math.round((brightness - 1) * 100)}% brightness`}
+            </span>
+          </div>
+          <input
+            type="range"
+            className="brightness-slider"
+            min={1.0}
+            max={1.35}
+            step={0.01}
+            value={brightness}
+            onChange={e => applyBrightness(parseFloat(e.target.value))}
+            style={{
+              width:"100%",
+              background:`linear-gradient(to right,${C.coral} 0%,${C.coral} ${fillPct}%,${C.dim} ${fillPct}%,${C.dim} 100%)`,
+            }}
+          />
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
+            <span style={{fontSize:11,color:C.muted}}>Default</span>
+            <span style={{fontSize:11,color:C.muted}}>Maximum</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN EXPORT ──
 const SECTIONS = [
   {key:"general",       label:"General",       icon:<Store size={15} strokeWidth={2}/>},
@@ -938,6 +1040,7 @@ const SECTIONS = [
   {key:"notifications", label:"Notifications", icon:<Bell size={15} strokeWidth={2}/>},
   {key:"team",          label:"Team",          icon:<Users size={16} strokeWidth={2}/>},
   {key:"billing",       label:"Billing",       icon:<CreditCard size={16} strokeWidth={2}/>},
+  {key:"appearance",    label:"Appearance",    icon:<Sun size={15} strokeWidth={2}/>},
   {key:"danger",        label:"Danger Zone",   icon:<AlertTriangle size={16} strokeWidth={2}/>},
 ];
 
@@ -1051,6 +1154,7 @@ export default function SettingsView({ isLandscape, isMobile }) {
           {section==="notifications" && <NotificationsSection/>}
           {section==="team"          && <TeamSection/>}
           {section==="billing"       && <BillingSection isLandscape={isLandscape} isMobile={isMobile}/>}
+          {section==="appearance"    && <AppearanceSection/>}
           {section==="danger"        && <DangerSection isLandscape={isLandscape} isMobile={isMobile}/>}
         </div>
       </div>
