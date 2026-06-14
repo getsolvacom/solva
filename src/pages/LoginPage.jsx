@@ -23,6 +23,7 @@ function GlobalStyles() {
       .btn-ghost:hover{background:rgba(229,82,102,.07)!important;color:#E55266!important;}
       .orb{border-radius:50%;filter:blur(80px);animation:orbPulse 6s ease-in-out infinite;position:absolute;pointer-events:none;}
       input{font-family:'Outfit',sans-serif;outline:none;}
+      @keyframes spin{to{transform:rotate(360deg)}}
     `}</style>
   );
 }
@@ -55,6 +56,20 @@ export default function LoginPage() {
   const [error,        setError]        = useState("");
   const [resetSent,    setResetSent]    = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setGoogleLoading(true);
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: "https://solva-sigma.vercel.app/dashboard" },
+    });
+    if (err) {
+      setGoogleLoading(false);
+      setError(err.message);
+    }
+  };
 
   const handleSignIn = async () => {
     setError("");
@@ -106,7 +121,31 @@ export default function LoginPage() {
         <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",borderRadius:"22px 22px 0 0"}}/>
 
         <h1 className="fu" style={{fontFamily:"'Outfit',sans-serif",fontSize:24,fontWeight:800,letterSpacing:"-.02em",marginBottom:8}}>Welcome back</h1>
-        <p className="fu" style={{fontSize:13.5,color:C.sub,lineHeight:1.7,marginBottom:28}}>Sign in to your account</p>
+        <p className="fu" style={{fontSize:13.5,color:C.sub,lineHeight:1.7,marginBottom:20}}>Sign in to your account</p>
+
+        {/* Google SSO */}
+        <button className="btn-ghost" onClick={handleGoogleSignIn} disabled={googleLoading} style={{width:"100%",padding:"12px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontWeight:500,marginBottom:20,display:"flex",alignItems:"center",justifyContent:"center",gap:10,opacity:googleLoading?0.7:1}}>
+          {googleLoading ? (
+            <>
+              <div style={{width:16,height:16,borderRadius:"50%",border:`2px solid ${C.dim}`,borderTopColor:C.muted,animation:"spin .7s linear infinite",flexShrink:0}}/>
+              Redirecting to Google…
+            </>
+          ) : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 18 18">
+                <path fill="#EA4335" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+                <path fill="#4285F4" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                <path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/>
+                <path fill="#34A853" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/>
+              </svg>
+              Continue with Google
+            </>
+          )}
+        </button>
+
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
+          <div style={{flex:1,height:1,background:C.border}}/><span style={{fontSize:12,color:C.muted,whiteSpace:"nowrap"}}>or continue with email</span><div style={{flex:1,height:1,background:C.border}}/>
+        </div>
 
         <div className="fu fu1">
           <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Email Address</label>
