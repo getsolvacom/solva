@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { C } from "../tokens";
-import { Mail, Lock, Package, User, Bell, Briefcase, Smile, Coffee, Bot, RotateCcw, ShoppingCart } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Package, User, Bell, Briefcase, Smile, Coffee, Bot, RotateCcw, ShoppingCart } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 const CONFETTI_PIECES = Array.from({ length: 20 }, (_, i) => ({
@@ -149,25 +149,48 @@ function LoginForm({ onSignup, goDash }) {
 
 // ── STEP 1 ──
 function Step1({ onNext, onLogin }) {
-  const [email,    setEmail]    = useState("");
-  const [password, setPassword] = useState("");
-  const [agreed,   setAgreed]   = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState("");
-  const [done,     setDone]     = useState(false);
+  const [email,          setEmail]          = useState("");
+  const [password,       setPassword]       = useState("");
+  const [showPass,       setShowPass]       = useState(false);
+  const [agreed,         setAgreed]         = useState(false);
+  const [loading,        setLoading]        = useState(false);
+  const [error,          setError]          = useState("");
+  const [duplicateEmail, setDuplicateEmail] = useState(false);
+  const [done,           setDone]           = useState(false);
+
+  const getStrength = (pw) => {
+    const hasLetter  = /[a-zA-Z]/.test(pw);
+    const hasNumber  = /[0-9]/.test(pw);
+    const hasSpecial = /[^a-zA-Z0-9]/.test(pw);
+    if (pw.length < 8)                         return { level:"Weak",        pct:25,  color:C.red   };
+    if (!hasLetter || !hasNumber)              return { level:"Fair",        pct:50,  color:C.amber };
+    if (hasLetter && hasNumber && !hasSpecial) return { level:"Strong",      pct:75,  color:C.teal  };
+    return                                            { level:"Very Strong", pct:100, color:C.coral };
+  };
+
+  const strength = password.length > 0 ? getStrength(password) : null;
 
   const handleSignup = async () => {
     setError("");
+    setDuplicateEmail(false);
     if (!agreed) { setError("Please agree to the Terms of Service and Privacy Policy."); return; }
     setLoading(true);
-    const { error: err } = await supabase.auth.signUp({
+    const { data, error: err } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: "" } },
     });
     setLoading(false);
     if (err) {
-      setError(err.message);
+      const msg = err.message || "";
+      if (msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already exists")) {
+        setDuplicateEmail(true);
+      } else {
+        setError(msg);
+      }
+    } else if (data?.user?.identities?.length === 0) {
+      // Supabase returns success but empty identities when email already exists
+      setDuplicateEmail(true);
     } else {
       setDone(true);
     }
@@ -222,10 +245,23 @@ function Step1({ onNext, onLogin }) {
         </div>
 
         <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Password</label>
-        <div style={{display:"flex",alignItems:"center",borderRadius:10,border:`1px solid ${C.border}`,background:C.card,overflow:"hidden",marginBottom:20}}>
+        <div style={{display:"flex",alignItems:"center",borderRadius:10,border:`1px solid ${C.border}`,background:C.card,overflow:"hidden",marginBottom:8}}>
           <span style={{padding:"0 14px",color:C.muted,display:"flex",alignItems:"center"}}><Lock size={16} strokeWidth={2}/></span>
-          <input type="password" placeholder="Min. 8 characters" value={password} onChange={e=>setPassword(e.target.value)} style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
+          <input type={showPass?"text":"password"} placeholder="Min. 8 characters" value={password} onChange={e=>setPassword(e.target.value)} style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
+          <span onClick={()=>setShowPass(v=>!v)} style={{padding:"0 14px",color:showPass?C.coral:C.muted,display:"flex",alignItems:"center",cursor:"pointer",transition:"color .15s"}}>
+            {showPass ? <EyeOff size={16} strokeWidth={2}/> : <Eye size={16} strokeWidth={2}/>}
+          </span>
         </div>
+
+        {strength && (
+          <div style={{marginBottom:12}}>
+            <div style={{height:3,borderRadius:100,background:C.dim,overflow:"hidden",marginBottom:6}}>
+              <div style={{height:"100%",width:`${strength.pct}%`,borderRadius:100,background:strength.color,transition:"width .3s ease, background .3s ease"}}/>
+            </div>
+            <span style={{fontSize:11.5,fontWeight:600,color:strength.color,transition:"color .3s ease"}}>{strength.level}</span>
+          </div>
+        )}
+        {!strength && <div style={{marginBottom:20}}/>}
       </div>
 
       <div className="fu fu3" style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:16}}>
@@ -234,6 +270,13 @@ function Step1({ onNext, onLogin }) {
         </div>
         <span style={{fontSize:13,color:C.sub,lineHeight:1.6}}>I agree to Solva's <span style={{color:C.coral,cursor:"pointer"}}>Terms of Service</span> and <span style={{color:C.coral,cursor:"pointer"}}>Privacy Policy</span></span>
       </div>
+
+      {duplicateEmail && (
+        <p style={{fontSize:13,color:C.red,marginBottom:16,padding:"10px 14px",borderRadius:8,background:"rgba(255,82,114,.08)",border:"1px solid rgba(255,82,114,.20)"}}>
+          An account with this email already exists.{" "}
+          <span onClick={onLogin} style={{color:C.coral,cursor:"pointer",fontWeight:600}}>Sign in instead.</span>
+        </p>
+      )}
 
       {error && (
         <p style={{fontSize:13,color:C.red,marginBottom:16,padding:"10px 14px",borderRadius:8,background:"rgba(255,82,114,.08)",border:"1px solid rgba(255,82,114,.20)"}}>

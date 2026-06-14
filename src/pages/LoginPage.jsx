@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 function GlobalStyles() {
@@ -133,7 +133,9 @@ export default function LoginPage() {
               onKeyDown={handleKeyDown}
               style={{flex:1,padding:"13px 14px 13px 0",background:"transparent",border:"none",color:C.text,fontSize:14.5}}
             />
-            <span onClick={()=>setShowPass(v=>!v)} style={{padding:"0 14px",color:C.muted,fontSize:13,cursor:"pointer",userSelect:"none",whiteSpace:"nowrap",transition:"color .15s"}}>{showPass?"Hide":"Show"}</span>
+            <span onClick={()=>setShowPass(v=>!v)} style={{padding:"0 14px",color:showPass?C.coral:C.muted,display:"flex",alignItems:"center",cursor:"pointer",transition:"color .15s"}}>
+              {showPass ? <EyeOff size={16} strokeWidth={2}/> : <Eye size={16} strokeWidth={2}/>}
+            </span>
           </div>
 
           <p style={{textAlign:"right",marginBottom:resetSent?12:26}}>
