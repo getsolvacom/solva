@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../../tokens";
 import { Settings, CreditCard, UserPlus, Store, HelpCircle, MessageCircle, Sparkles, LogOut, Sun } from "lucide-react";
+import { supabase } from "../../lib/supabase";
 
 const AVATAR_URL = "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=4E0269";
 
@@ -68,6 +69,11 @@ export default function AvatarMenu() {
   }, [open]);
 
   const go = (path) => { navigate(path); setOpen(false); };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
 
   return (
     <>
@@ -147,7 +153,7 @@ export default function AvatarMenu() {
               : (
                 <div style={{padding:"8px 16px",display:"flex",alignItems:"center",gap:8}}>
                   <span style={{fontSize:12.5,color:C.muted,flex:1}}>Are you sure?</span>
-                  <button style={{fontSize:12,fontWeight:700,color:"#fff",background:C.red,border:"none",borderRadius:7,padding:"5px 12px",cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Yes</button>
+                  <button onClick={handleLogout} style={{fontSize:12,fontWeight:700,color:"#fff",background:C.red,border:"none",borderRadius:7,padding:"5px 12px",cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Yes</button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setLogoutConfirm(false); }}
                     style={{fontSize:12,color:C.sub,background:"transparent",border:`1px solid ${C.borderHi}`,borderRadius:7,padding:"5px 10px",cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}

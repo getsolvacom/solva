@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { C } from "../tokens";
 import { Mail, Lock, Package, User, Bell, Briefcase, Smile, Coffee, Bot, RotateCcw, ShoppingCart } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 const CONFETTI_PIECES = Array.from({ length: 20 }, (_, i) => ({
   id: i,
@@ -151,6 +152,47 @@ function Step1({ onNext, onLogin }) {
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [agreed,   setAgreed]   = useState(false);
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
+  const [done,     setDone]     = useState(false);
+
+  const handleSignup = async () => {
+    setError("");
+    if (!agreed) { setError("Please agree to the Terms of Service and Privacy Policy."); return; }
+    setLoading(true);
+    const { error: err } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: "" } },
+    });
+    setLoading(false);
+    if (err) {
+      setError(err.message);
+    } else {
+      setDone(true);
+    }
+  };
+
+  if (done) {
+    return (
+      <CardShell>
+        <div style={{textAlign:"center",padding:"12px 0"}}>
+          <div style={{width:64,height:64,borderRadius:"50%",background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px",boxShadow:"0 0 32px rgba(229,82,102,.30)"}}>
+            <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+              <path d="M8 18.5l7.5 7.5 12.5-14" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:22,fontWeight:800,letterSpacing:"-.02em",marginBottom:12}}>Check your email</h2>
+          <p style={{fontSize:14,color:C.sub,lineHeight:1.7,marginBottom:8}}>
+            We've sent a verification link to <span style={{color:C.coral,fontWeight:600}}>{email}</span>.
+          </p>
+          <p style={{fontSize:13.5,color:C.muted,lineHeight:1.7}}>
+            Check your email to verify your account before continuing.
+          </p>
+        </div>
+      </CardShell>
+    );
+  }
 
   return (
     <CardShell>
@@ -186,15 +228,23 @@ function Step1({ onNext, onLogin }) {
         </div>
       </div>
 
-      <div className="fu fu3" style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:24}}>
+      <div className="fu fu3" style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:16}}>
         <div onClick={()=>setAgreed(!agreed)} style={{width:18,height:18,borderRadius:5,flexShrink:0,border:`1.5px solid ${agreed?C.coral:C.border}`,background:agreed?C.coral:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",marginTop:1}}>
           {agreed&&<span style={{color:"#fff",fontSize:11,fontWeight:700}}>✓</span>}
         </div>
         <span style={{fontSize:13,color:C.sub,lineHeight:1.6}}>I agree to Solva's <span style={{color:C.coral,cursor:"pointer"}}>Terms of Service</span> and <span style={{color:C.coral,cursor:"pointer"}}>Privacy Policy</span></span>
       </div>
 
+      {error && (
+        <p style={{fontSize:13,color:C.red,marginBottom:16,padding:"10px 14px",borderRadius:8,background:"rgba(255,82,114,.08)",border:"1px solid rgba(255,82,114,.20)"}}>
+          {error}
+        </p>
+      )}
+
       <div className="fu fu4">
-        <button className="btn-primary" onClick={onNext} style={{width:"100%",padding:"14px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15,marginBottom:16}}>Create My Account →</button>
+        <button className="btn-primary" onClick={handleSignup} disabled={loading} style={{width:"100%",padding:"14px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15,marginBottom:16,opacity:loading?0.7:1}}>
+          {loading?"Creating account…":"Create My Account →"}
+        </button>
         <p style={{textAlign:"center",fontSize:13,color:C.muted}}>Already have an account? <span onClick={onLogin} style={{color:C.coral,cursor:"pointer"}}>Sign in</span></p>
       </div>
     </CardShell>
@@ -399,7 +449,7 @@ export default function OnboardingPage() {
       {/* Login / Steps */}
       <div style={{width:"100%",maxWidth:520,position:"relative",zIndex:1}}>
         {mode === "login"  && <LoginForm onSignup={()=>setMode("signup")} goDash={goDash}/>}
-        {mode === "signup" && step===1 && <Step1 onNext={()=>setStep(2)} onLogin={()=>setMode("login")}/>}
+        {mode === "signup" && step===1 && <Step1 onNext={()=>setStep(2)} onLogin={()=>navigate("/login")}/>}
         {mode === "signup" && step===2 && <Step2 onNext={()=>setStep(3)} onBack={()=>setStep(1)}/>}
         {mode === "signup" && step===3 && <Step3 onNext={()=>setStep(4)} onBack={()=>setStep(2)}/>}
         {mode === "signup" && step===4 && <Step4 goDash={goDash}/>}

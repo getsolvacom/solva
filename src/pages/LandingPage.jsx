@@ -134,7 +134,7 @@ export default function LandingPage() {
 
         {/* Desktop actions */}
         <div className="nav-actions-desktop">
-          <button className="btn-ghost" onClick={()=>navigate("/onboarding?mode=login")} style={{padding:"8px 18px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13.5}}>Sign In</button>
+          <button className="btn-ghost" onClick={()=>navigate("/login")} style={{padding:"8px 18px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13.5}}>Sign In</button>
           <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"9px 22px",borderRadius:8,color:"#fff",fontWeight:700,fontSize:13.5}}>Get Started →</button>
         </div>
 
@@ -153,7 +153,7 @@ export default function LandingPage() {
               </span>
             ))}
             <div style={{display:"flex",flexDirection:"column",gap:10,paddingTop:14}}>
-              <button className="btn-ghost" onClick={()=>{closeMenu();navigate("/onboarding?mode=login");}}
+              <button className="btn-ghost" onClick={()=>{closeMenu();navigate("/login");}}
                 style={{padding:"12px",borderRadius:9,border:`1px solid ${C.border}`,color:C.sub,fontSize:14,width:"100%"}}>
                 Sign In
               </button>
