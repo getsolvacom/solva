@@ -48,7 +48,13 @@ export default async function handler(req, res) {
     console.log('Supabase result:', { data, error });
 
     if (error) {
-      return res.status(500).json({ error: 'Database save failed', details: error });
+      return res.status(500).json({
+        error: 'Database save failed',
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
     }
 
     res.redirect('https://solva-sigma.vercel.app/dashboard');
