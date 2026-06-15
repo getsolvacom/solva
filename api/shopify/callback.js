@@ -18,27 +18,43 @@ export default async function handler(req, res) {
       }),
     });
 
-    const { access_token } = await tokenResponse.json();
+    const tokenData = await tokenResponse.json();
+    console.log('Token response:', tokenData);
+
+    const { access_token } = tokenData;
 
     if (!access_token) {
-      return res.status(400).json({ error: 'Failed to get access token' });
+      return res.status(400).json({ error: 'Failed to get access token', details: tokenData });
     }
 
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
     );
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('stores')
-      .upsert({ shop_domain: shop, access_token }, { onConflict: 'shop_domain' });
+      .upsert(
+        { shop_domain: shop, access_token, is_active: true },
+        { onConflict: 'shop_domain' }
+      );
 
-    if (error) throw error;
+    console.log('Supabase result:', { data, error });
+
+    if (error) {
+      return res.status(500).json({ error: 'Database save failed', details: error });
+    }
 
     res.redirect('https://solva-sigma.vercel.app/dashboard');
 
   } catch (err) {
     console.error('Shopify OAuth error:', err);
-    res.status(500).json({ error: 'OAuth failed' });
+    res.status(500).json({ error: 'OAuth failed', details: err.message });
   }
 }
