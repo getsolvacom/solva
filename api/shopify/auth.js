@@ -4,7 +4,7 @@ export default function handler(req, res) {
     return res.status(400).json({ error: 'Missing shop parameter' });
   }
   const clientId = process.env.SHOPIFY_CLIENT_ID;
-  const redirectUri = 'https://solva-sigma.vercel.app/api/shopify/callback';
+  const redirectUri = 'https://solva-sigma.vercel.app/auth/shopify/callback';
   const scopes = 'read_orders,read_customers,read_checkouts,write_checkouts';
   const state = Math.random().toString(36).substring(2, 15);
   const authUrl = `https://${shop}/admin/oauth/authorize?client_id=${clientId}&scope=${scopes}&redirect_uri=${redirectUri}&state=${state}`;

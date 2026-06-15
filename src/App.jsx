@@ -4,7 +4,8 @@ import { supabase } from "./lib/supabase";
 import LandingPage    from "./pages/LandingPage";
 import LoginPage      from "./pages/LoginPage";
 import OnboardingPage from "./pages/OnboardingPage";
-import DashboardShell from "./pages/dashboard/DashboardShell";
+import DashboardShell    from "./pages/dashboard/DashboardShell";
+import ShopifyCallback   from "./pages/ShopifyCallback";
 
 function LoadingScreen() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
       <Route path="/dashboard/returns/:returnId" element={<ProtectedRoute session={session}><DashboardShell fixedView="returns" /></ProtectedRoute>} />
       <Route path="/dashboard/settings/:tab"     element={<ProtectedRoute session={session}><DashboardShell fixedView="settings" /></ProtectedRoute>} />
       <Route path="/dashboard/:view"             element={<ProtectedRoute session={session}><DashboardShell /></ProtectedRoute>} />
+      <Route path="/auth/shopify/callback"        element={<ShopifyCallback />} />
       <Route path="*"                            element={<Navigate to="/" replace />} />
     </Routes>
   );
