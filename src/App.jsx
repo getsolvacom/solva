@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "./lib/supabase";
 import LandingPage    from "./pages/LandingPage";
 import LoginPage      from "./pages/LoginPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import DashboardShell    from "./pages/dashboard/DashboardShell";
 import ShopifyCallback   from "./pages/ShopifyCallback";
+
+const checkUserStore = async (userId) => {
+  const { data } = await supabase
+    .from('stores')
+    .select('id')
+    .eq('user_id', userId)
+    .single();
+  return data;
+};
 
 function LoadingScreen() {
   return (
@@ -28,13 +37,18 @@ function GuestRoute({ session, children }) {
 
 export default function App() {
   const [session, setSession] = useState(undefined);
+  const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
+      if (event === 'SIGNED_IN' && session?.user) {
+        const store = await checkUserStore(session.user.id);
+        navigate(store ? '/dashboard' : '/onboarding', { replace: true });
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -45,7 +59,7 @@ export default function App() {
     <Routes>
       <Route path="/"                            element={<LandingPage />} />
       <Route path="/login"                       element={<GuestRoute session={session}><LoginPage /></GuestRoute>} />
-      <Route path="/onboarding"                  element={<GuestRoute session={session}><OnboardingPage /></GuestRoute>} />
+      <Route path="/onboarding"                  element={<ProtectedRoute session={session}><OnboardingPage /></ProtectedRoute>} />
       <Route path="/dashboard"                   element={<ProtectedRoute session={session}><DashboardShell /></ProtectedRoute>} />
       <Route path="/dashboard/tickets/:ticketId" element={<ProtectedRoute session={session}><DashboardShell fixedView="tickets" /></ProtectedRoute>} />
       <Route path="/dashboard/cart/:cartId"      element={<ProtectedRoute session={session}><DashboardShell fixedView="cart" /></ProtectedRoute>} />
