@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { C } from "../tokens";
 import { Mail, Lock, Eye, EyeOff, Package, User, Bell, Briefcase, Smile, Coffee, Bot, RotateCcw, ShoppingCart } from "lucide-react";
@@ -523,6 +523,16 @@ export default function OnboardingPage() {
   const goBack         = () => navigate("/");
   const [step, setStep] = useState(1);
   const [mode, setMode] = useState(initialMode);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setStep(2);
+      }
+    };
+    checkSession();
+  }, []);
 
   return (
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,display:"flex",flexDirection:"column",alignItems:"center",padding:"28px 24px 48px",position:"relative",overflow:"hidden"}}>
