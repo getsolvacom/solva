@@ -321,7 +321,27 @@ function Step1({ onNext, onLogin }) {
 
 // ── STEP 2 ──
 function Step2({ onNext, onBack }) {
-  const [url, setUrl] = useState("");
+  const [shopDomain, setShopDomain] = useState("");
+  const [shopError,  setShopError]  = useState("");
+
+  const handleConnectStore = () => {
+    let domain = shopDomain.trim().toLowerCase();
+
+    domain = domain.replace("https://", "").replace("http://", "").replace(/\/$/, "");
+
+    if (!domain) {
+      setShopError("Please enter your Shopify store URL");
+      return;
+    }
+
+    if (!domain.includes(".myshopify.com")) {
+      domain = domain + ".myshopify.com";
+    }
+
+    setShopError("");
+    window.location.href = `/api/shopify/auth?shop=${domain}`;
+  };
+
   return (
     <CardShell>
       <h1 className="fu" style={{fontFamily:"'Outfit',sans-serif",fontSize:24,fontWeight:800,letterSpacing:"-.02em",marginBottom:8}}>Connect Your Shopify Store</h1>
@@ -329,10 +349,20 @@ function Step2({ onNext, onBack }) {
 
       <div className="fu fu1">
         <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:8}}>Store URL</label>
-        <div style={{display:"flex",borderRadius:10,border:`1px solid ${url?C.coral:C.border}`,background:C.card,overflow:"hidden",marginBottom:22,transition:"border-color .2s"}}>
-          <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="your-store" style={{flex:1,padding:"13px 16px",background:"transparent",border:"none",color:C.text,fontSize:14.5}}/>
-          <div style={{padding:"13px 14px",background:C.dim,color:C.muted,fontSize:13.5,borderLeft:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>.myshopify.com</div>
+        <div style={{display:"flex",borderRadius:10,border:`1px solid ${shopDomain?C.coral:C.border}`,background:C.card,overflow:"hidden",marginBottom:shopError?8:22,transition:"border-color .2s"}}>
+          <input
+            value={shopDomain}
+            onChange={e=>{ setShopDomain(e.target.value); setShopError(""); }}
+            onKeyDown={e=>{ if (e.key==="Enter") handleConnectStore(); }}
+            placeholder="yourstore.myshopify.com"
+            style={{flex:1,padding:"13px 16px",background:"transparent",border:"none",color:C.text,fontSize:14.5}}
+          />
         </div>
+        {shopError && (
+          <p style={{fontSize:13,color:C.red,marginBottom:16,padding:"10px 14px",borderRadius:8,background:"rgba(255,82,114,.08)",border:"1px solid rgba(255,82,114,.20)"}}>
+            {shopError}
+          </p>
+        )}
       </div>
 
       <div className="fu fu2" style={{padding:16,borderRadius:12,background:C.card,border:`1px solid ${C.border}`,marginBottom:26}}>
@@ -347,7 +377,7 @@ function Step2({ onNext, onBack }) {
       </div>
 
       <div className="fu fu3">
-        <button className="btn-primary" onClick={onNext} style={{width:"100%",padding:"14px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15,marginBottom:14}}>Install Solva on Shopify →</button>
+        <button className="btn-primary" onClick={handleConnectStore} style={{width:"100%",padding:"14px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15,marginBottom:14}}>Install Solva on Shopify →</button>
         <p style={{textAlign:"center",fontSize:12,color:C.muted,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Lock size={16} strokeWidth={2}/>256-bit encrypted. We never store or sell your customer data.</p>
       </div>
     </CardShell>
