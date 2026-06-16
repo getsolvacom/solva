@@ -28,6 +28,8 @@ export default function ResetPasswordPage() {
       setError(error.message);
       setLoading(false);
     } else {
+      // Sign out immediately after password update to clear the recovery session
+      await supabase.auth.signOut();
       setSuccess(true);
       setTimeout(() => navigate('/login'), 3000);
     }
