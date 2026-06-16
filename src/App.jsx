@@ -9,11 +9,14 @@ import ShopifyCallback   from "./pages/ShopifyCallback";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const checkUserStore = async (userId) => {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('stores')
     .select('id')
     .eq('user_id', userId)
-    .single();
+    .eq('is_active', true)
+    .maybeSingle();
+
+  console.log('Store check result:', { data, error, userId });
   return data;
 };
 
