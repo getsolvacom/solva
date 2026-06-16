@@ -525,14 +525,17 @@ export default function OnboardingPage() {
   const [mode, setMode] = useState(initialMode);
 
   useEffect(() => {
+    let mounted = true;
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
       if (session) {
         const { data: store } = await supabase
           .from('stores')
           .select('id')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
+        if (!mounted) return;
         if (store) {
           navigate('/dashboard');
         } else {
@@ -543,6 +546,7 @@ export default function OnboardingPage() {
       }
     };
     checkSession();
+    return () => { mounted = false; };
   }, []);
 
   return (
