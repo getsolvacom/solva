@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { C } from "../tokens";
 import { Mail, Lock, Eye, EyeOff, Package, User, Bell, Briefcase, Smile, Coffee, Bot, RotateCcw, ShoppingCart } from "lucide-react";
@@ -521,33 +521,8 @@ export default function OnboardingPage() {
   const initialMode    = searchParams.get("mode") || "signup";
   const goDash         = () => navigate("/dashboard");
   const goBack         = () => navigate("/");
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(2);
   const [mode, setMode] = useState(initialMode);
-
-  useEffect(() => {
-    let mounted = true;
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      if (session) {
-        const { data: store } = await supabase
-          .from('stores')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-        if (!mounted) return;
-        if (store) {
-          navigate('/dashboard');
-        } else {
-          setStep(2);
-        }
-      } else {
-        setStep(1);
-      }
-    };
-    checkSession();
-    return () => { mounted = false; };
-  }, []);
 
   return (
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,display:"flex",flexDirection:"column",alignItems:"center",padding:"28px 24px 48px",position:"relative",overflow:"hidden"}}>
