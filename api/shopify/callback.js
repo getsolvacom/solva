@@ -1,5 +1,59 @@
 import { createClient } from '@supabase/supabase-js';
 
+const registerWebhooks = async (shop, accessToken) => {
+  const webhooks = [
+    {
+      topic: 'checkouts/create',
+      address: 'https://solva-sigma.vercel.app/api/webhooks/checkout-abandoned'
+    },
+    {
+      topic: 'orders/create',
+      address: 'https://solva-sigma.vercel.app/api/webhooks/orders-create'
+    },
+    {
+      topic: 'returns/create',
+      address: 'https://solva-sigma.vercel.app/api/webhooks/returns-create'
+    },
+    {
+      topic: 'app/uninstalled',
+      address: 'https://solva-sigma.vercel.app/api/webhooks/app-uninstalled'
+    },
+    {
+      topic: 'customers/data_request',
+      address: 'https://solva-sigma.vercel.app/api/webhooks/customers-data-request'
+    },
+    {
+      topic: 'customers/redact',
+      address: 'https://solva-sigma.vercel.app/api/webhooks/customers-redact'
+    },
+    {
+      topic: 'shop/redact',
+      address: 'https://solva-sigma.vercel.app/api/webhooks/shop-redact'
+    }
+  ];
+
+  for (const webhook of webhooks) {
+    try {
+      const response = await fetch(`https://${shop}/admin/api/2026-04/webhooks.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Access-Token': accessToken
+        },
+        body: JSON.stringify({ webhook: {
+          topic: webhook.topic,
+          address: webhook.address,
+          format: 'json'
+        }})
+      });
+      const result = await response.json();
+      console.log(`Webhook registered: ${webhook.topic}`, result);
+    } catch (err) {
+      console.error(`Failed to register webhook: ${webhook.topic}`, err);
+    }
+  }
+};
+
 export default async function handler(req, res) {
   const { shop, code } = req.query;
 
@@ -56,6 +110,8 @@ export default async function handler(req, res) {
         hint: error.hint
       });
     }
+
+    await registerWebhooks(shop, access_token);
 
     res.redirect('https://solva-sigma.vercel.app/dashboard');
 
