@@ -528,7 +528,18 @@ export default function OnboardingPage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setStep(2);
+        const { data: store } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .single();
+        if (store) {
+          navigate('/dashboard');
+        } else {
+          setStep(2);
+        }
+      } else {
+        setStep(1);
       }
     };
     checkSession();

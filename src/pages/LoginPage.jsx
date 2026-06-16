@@ -90,7 +90,9 @@ export default function LoginPage() {
       return;
     }
     setResetLoading(true);
-    const { error: err } = await supabase.auth.resetPasswordForEmail(email);
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://solva-sigma.vercel.app/reset-password',
+    });
     setResetLoading(false);
     if (err) {
       setError(err.message);

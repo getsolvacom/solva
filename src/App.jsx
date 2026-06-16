@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "./lib/supabase";
 import LandingPage       from "./pages/LandingPage";
 import LoginPage         from "./pages/LoginPage";
@@ -43,8 +43,16 @@ function DashboardRoute({ session, hasStore, children }) {
 }
 
 export default function App() {
+  const navigate   = useNavigate();
   const [session,  setSession]  = useState(undefined);
   const [hasStore, setHasStore] = useState(undefined);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes('type=recovery')) {
+      navigate('/reset-password');
+    }
+  }, []);
 
   const resolveStore = async (userId) => {
     const store = await checkUserStore(userId);
@@ -77,7 +85,7 @@ export default function App() {
     <Routes>
       <Route path="/"                            element={<LandingPage />} />
       <Route path="/login"                       element={<GuestRoute session={session}><LoginPage /></GuestRoute>} />
-      <Route path="/onboarding"                  element={<ProtectedRoute session={session}><OnboardingPage /></ProtectedRoute>} />
+      <Route path="/onboarding"                  element={<OnboardingPage />} />
       <Route path="/dashboard"                   element={<DashboardRoute session={session} hasStore={hasStore}><DashboardShell /></DashboardRoute>} />
       <Route path="/dashboard/tickets/:ticketId" element={<DashboardRoute session={session} hasStore={hasStore}><DashboardShell fixedView="tickets" /></DashboardRoute>} />
       <Route path="/dashboard/cart/:cartId"      element={<DashboardRoute session={session} hasStore={hasStore}><DashboardShell fixedView="cart" /></DashboardRoute>} />
