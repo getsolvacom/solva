@@ -89,6 +89,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Failed to get access token', details: tokenData });
     }
 
+    const shopResponse = await fetch(
+      `https://${shop}/admin/api/2026-04/shop.json`,
+      { headers: { 'X-Shopify-Access-Token': access_token } }
+    );
+    const shopData = await shopResponse.json();
+    const shopName = shopData?.shop?.name || '';
+
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -103,7 +110,7 @@ export default async function handler(req, res) {
     const { data, error } = await supabase
       .from('stores')
       .upsert(
-        { shop_domain: shop, access_token, is_active: true, user_id: userId || null },
+        { shop_domain: shop, access_token, is_active: true, user_id: userId || null, shop_name: shopName },
         { onConflict: 'shop_domain' }
       );
 
