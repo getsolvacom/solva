@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
+import { supabase } from "../../lib/supabase";
+import { useStore } from "../../hooks/useStore";
 import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Gift, MessageSquare } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
@@ -251,9 +253,11 @@ function SectionTitle({ children, sub }) {
 }
 
 // ── SECTIONS ──
-function GeneralSection({ storeName, onSaveStoreName }) {
+function GeneralSection({ storeName, onSaveStoreName, store, userEmail }) {
   const [name,     setName]     = useState(storeName);
-  const [email,    setEmail]    = useState("owner@placeholder.com");
+  const [email,    setEmail]    = useState('');
+
+  useEffect(() => { setEmail(userEmail || ''); }, [userEmail]);
   const [timezone, setTimezone] = useState("UTC+0 London");
   const [currency, setCurrency] = useState("USD — US Dollar");
   const [industry, setIndustry] = useState("Fashion & Apparel");
@@ -278,7 +282,7 @@ function GeneralSection({ storeName, onSaveStoreName }) {
           <FieldLabel>Store URL</FieldLabel>
           <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1px solid ${C.border}`,opacity:.65,cursor:"not-allowed"}}>
             <div style={{padding:"11px 12px",background:C.dim,color:C.muted,display:"flex",alignItems:"center",flexShrink:0,borderRight:`1px solid ${C.border}`}}><Lock size={14} strokeWidth={2}/></div>
-            <input value="yourstore" readOnly style={{flex:1,padding:"11px 12px",background:C.dim,border:"none",color:C.muted,fontSize:14,cursor:"not-allowed"}}/>
+            <input value={store?.shop_domain?.replace('.myshopify.com', '') || ''} readOnly style={{flex:1,padding:"11px 12px",background:C.dim,border:"none",color:C.muted,fontSize:14,cursor:"not-allowed"}}/>
             <div style={{padding:"11px 14px",background:C.surface,color:C.muted,fontSize:14,borderLeft:`1px solid ${C.border}`,whiteSpace:"nowrap",display:"flex",alignItems:"center"}}>.myshopify.com</div>
           </div>
           <p style={{fontSize:12,color:C.muted,marginTop:6}}>Store URL is locked. Contact support to transfer stores.</p>
@@ -1247,8 +1251,20 @@ export default function SettingsView({ isLandscape, isMobile }) {
   const { tab }                           = useParams();
   const section                           = tab || "general";
   const mobilePanel                       = tab ? "content" : "menu";
-  const [storeName,   setStoreName]   = useState("Placeholder Store");
+  const { store }               = useStore();
+  const [storeName,   setStoreName]   = useState('');
+  const [userEmail,   setUserEmail]   = useState('');
   const [lsNavOpen,   setLsNavOpen]   = useState(false);
+
+  useEffect(() => {
+    if (store) setStoreName(store.shop_name || store.shop_domain || '');
+  }, [store]);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserEmail(session?.user?.email || '');
+    });
+  }, []);
 
   const lsMob = isLandscape && isMobile;
   const currentSection = SECTIONS.find(s => s.key === section) || SECTIONS[0];
@@ -1346,7 +1362,7 @@ export default function SettingsView({ isLandscape, isMobile }) {
             ← Back to Settings Menu
           </button>
 
-          {section==="general"       && <GeneralSection storeName={storeName} onSaveStoreName={setStoreName}/>}
+          {section==="general"       && <GeneralSection storeName={storeName} onSaveStoreName={setStoreName} store={store} userEmail={userEmail}/>}
           {section==="ai"            && <AIConfigSection/>}
           {section==="automations"   && <AutomationsSection/>}
           {section==="notifications" && <NotificationsSection/>}

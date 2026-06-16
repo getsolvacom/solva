@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
+import { useStore } from "../../hooks/useStore";
 import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, LogOut, Store } from "lucide-react";
 
 function SolvaLogo({ size=15 }) {
@@ -23,6 +24,7 @@ function SolvaLogo({ size=15 }) {
 
 export default function AppSidebar() {
   const navigate            = useNavigate();
+  const { store }           = useStore();
   const { view: viewParam } = useParams();
   const view                = viewParam || "overview";
   const setView             = (key) => navigate(`/dashboard/${key}`);
@@ -41,8 +43,8 @@ export default function AppSidebar() {
       <div style={{margin:"0 10px 22px",padding:"10px 12px",borderRadius:12,background:C.card,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:9}}>
         <div style={{width:30,height:30,borderRadius:8,flexShrink:0,background:C.grad,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><Store size={18} strokeWidth={2}/></div>
         <div style={{minWidth:0}}>
-          <div style={{fontSize:12.5,fontWeight:600,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>Placeholder Store</div>
-          <div style={{fontSize:10.5,color:C.muted}}>yourstore.myshopify.com</div>
+          <div style={{fontSize:12.5,fontWeight:600,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{store?.shop_name || store?.shop_domain || 'Your Store'}</div>
+          <div style={{fontSize:10.5,color:C.muted}}>{store?.shop_domain || 'yourstore.myshopify.com'}</div>
         </div>
         <div style={{width:6,height:6,borderRadius:"50%",background:C.coral,marginLeft:"auto",flexShrink:0}}/>
       </div>

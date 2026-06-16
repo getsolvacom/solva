@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, Menu } from "lucide-react";
 import AppSidebar       from "./AppSidebar";
+import { useStore }     from "../../hooks/useStore";
 import OverviewView     from "./OverviewView";
 import TicketsView      from "./TicketsView";
 import CartRecoveryView from "./CartRecoveryView";
@@ -70,6 +71,7 @@ export default function DashboardShell({ fixedView }) {
   const view                 = fixedView || viewParam || "overview";
   const setView              = (key) => navigate(`/dashboard/${key}`);
   const goLanding            = () => navigate("/");
+  const { store }            = useStore();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navTo                = (key) => { navigate(`/dashboard/${key}`); setDrawerOpen(false); };
 
@@ -120,7 +122,7 @@ export default function DashboardShell({ fixedView }) {
 
       {/* Desktop sidebar */}
       <div className="dash-sidebar">
-        <AppSidebar />
+        <AppSidebar store={store} />
       </div>
 
       {/* Mobile overlay */}
