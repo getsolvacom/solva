@@ -8,39 +8,11 @@ import DashboardShell    from "./pages/dashboard/DashboardShell";
 import ShopifyCallback   from "./pages/ShopifyCallback";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
-const checkUserStore = async (userId) => {
-  const { data, error } = await supabase
-    .from('stores')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('is_active', true)
-    .maybeSingle();
-
-  console.log('Store check result:', { data, error, userId });
-  return data;
-};
-
-function ProtectedRoute({ session, children }) {
-  if (!session) return <Navigate to="/login" replace />;
-  return children;
-}
-
-function GuestRoute({ session, children }) {
-  if (session) return <Navigate to="/dashboard" replace />;
-  return children;
-}
-
-function DashboardRoute({ session, hasStore, children }) {
-  if (!session) return <Navigate to="/login" replace />;
-  if (!hasStore) return <Navigate to="/onboarding" replace />;
-  return children;
-}
-
 export default function App() {
-  const navigate                      = useNavigate();
-  const [isAppReady, setIsAppReady]   = useState(false);
-  const [session,    setSession]      = useState(null);
-  const [hasStore,   setHasStore]     = useState(false);
+  const navigate = useNavigate();
+  const [isAppReady, setIsAppReady] = useState(false);
+  const [session,    setSession]    = useState(null);
+  const [hasStore,   setHasStore]   = useState(false);
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -50,45 +22,96 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
+
+    const checkStore = async (userId) => {
+      const { data } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .maybeSingle();
+      return !!data;
+    };
+
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
       setSession(session);
       if (session?.user) {
-        const store = await checkUserStore(session.user.id);
-        setHasStore(!!store);
+        const found = await checkStore(session.user.id);
+        if (!mounted) return;
+        setHasStore(found);
       }
       setIsAppReady(true);
     };
+
     init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      if (event === 'SIGNED_IN' && session?.user) {
-        const store = await checkUserStore(session.user.id);
-        setHasStore(!!store);
-      } else if (event === 'SIGNED_OUT') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (!mounted) return;
+      if (event === 'INITIAL_SESSION') return;
+      setSession(newSession);
+      if (event === 'SIGNED_IN' && newSession?.user) {
+        const found = await checkStore(newSession.user.id);
+        if (!mounted) return;
+        setHasStore(found);
+      }
+      if (event === 'SIGNED_OUT') {
         setHasStore(false);
       }
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  if (!isAppReady) return <div style={{backgroundColor:'#060008',minHeight:'100vh'}}/>;
+  if (!isAppReady) {
+    return <div style={{ backgroundColor: '#060008', minHeight: '100vh' }} />;
+  }
 
   return (
     <Routes>
-      <Route path="/"                            element={<LandingPage />} />
-      <Route path="/login"                       element={<GuestRoute session={session}><LoginPage /></GuestRoute>} />
-      <Route path="/onboarding"                  element={<OnboardingPage />} />
-      <Route path="/dashboard"                   element={<DashboardRoute session={session} hasStore={hasStore}><DashboardShell /></DashboardRoute>} />
-      <Route path="/dashboard/tickets/:ticketId" element={<DashboardRoute session={session} hasStore={hasStore}><DashboardShell fixedView="tickets" /></DashboardRoute>} />
-      <Route path="/dashboard/cart/:cartId"      element={<DashboardRoute session={session} hasStore={hasStore}><DashboardShell fixedView="cart" /></DashboardRoute>} />
-      <Route path="/dashboard/returns/:returnId" element={<DashboardRoute session={session} hasStore={hasStore}><DashboardShell fixedView="returns" /></DashboardRoute>} />
-      <Route path="/dashboard/settings/:tab"     element={<DashboardRoute session={session} hasStore={hasStore}><DashboardShell fixedView="settings" /></DashboardRoute>} />
-      <Route path="/dashboard/:view"             element={<DashboardRoute session={session} hasStore={hasStore}><DashboardShell /></DashboardRoute>} />
-      <Route path="/auth/shopify/callback"       element={<ShopifyCallback />} />
-      <Route path="/reset-password"              element={<ResetPasswordPage />} />
-      <Route path="*"                            element={<Navigate to="/" replace />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={
+        session ? <Navigate to={hasStore ? "/dashboard" : "/onboarding"} replace /> : <LoginPage />
+      } />
+      <Route path="/onboarding" element={<OnboardingPage />} />
+      <Route path="/dashboard" element={
+        !session ? <Navigate to="/login" replace /> :
+        !hasStore ? <Navigate to="/onboarding" replace /> :
+        <DashboardShell />
+      } />
+      <Route path="/dashboard/tickets/:ticketId" element={
+        !session ? <Navigate to="/login" replace /> :
+        !hasStore ? <Navigate to="/onboarding" replace /> :
+        <DashboardShell fixedView="tickets" />
+      } />
+      <Route path="/dashboard/cart/:cartId" element={
+        !session ? <Navigate to="/login" replace /> :
+        !hasStore ? <Navigate to="/onboarding" replace /> :
+        <DashboardShell fixedView="cart" />
+      } />
+      <Route path="/dashboard/returns/:returnId" element={
+        !session ? <Navigate to="/login" replace /> :
+        !hasStore ? <Navigate to="/onboarding" replace /> :
+        <DashboardShell fixedView="returns" />
+      } />
+      <Route path="/dashboard/settings/:tab" element={
+        !session ? <Navigate to="/login" replace /> :
+        !hasStore ? <Navigate to="/onboarding" replace /> :
+        <DashboardShell fixedView="settings" />
+      } />
+      <Route path="/dashboard/:view" element={
+        !session ? <Navigate to="/login" replace /> :
+        !hasStore ? <Navigate to="/onboarding" replace /> :
+        <DashboardShell />
+      } />
+      <Route path="/auth/shopify/callback" element={<ShopifyCallback />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
