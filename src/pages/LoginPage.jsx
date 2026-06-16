@@ -79,7 +79,7 @@ export default function LoginPage() {
     if (err) {
       setError(err.message);
     } else {
-      navigate("/dashboard");
+      // App.jsx handles redirect
     }
   };
 
