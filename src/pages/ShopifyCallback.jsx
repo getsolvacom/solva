@@ -21,9 +21,9 @@ export default function ShopifyCallback() {
     fetch(`/api/shopify/callback?shop=${shop}&code=${code}&state=${state}`)
       .then(res => {
         if (res.redirected) {
-          navigate('/dashboard');
+          setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
         } else if (res.ok) {
-          navigate('/dashboard');
+          setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
         } else {
           return res.json().then(data => {
             setStatus('Connection failed: ' + (data.error || 'Unknown error'));
