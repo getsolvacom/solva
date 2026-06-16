@@ -55,10 +55,18 @@ const registerWebhooks = async (shop, accessToken) => {
 };
 
 export default async function handler(req, res) {
-  const { shop, code } = req.query;
+  const { shop, code, state } = req.query;
 
   if (!shop || !code) {
     return res.status(400).json({ error: 'Missing shop or code' });
+  }
+
+  let userId = null;
+  try {
+    const stateData = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
+    userId = stateData.userId || null;
+  } catch (e) {
+    console.log('Could not parse state:', e.message);
   }
 
   try {
@@ -95,7 +103,7 @@ export default async function handler(req, res) {
     const { data, error } = await supabase
       .from('stores')
       .upsert(
-        { shop_domain: shop, access_token, is_active: true },
+        { shop_domain: shop, access_token, is_active: true, user_id: userId || null },
         { onConflict: 'shop_domain' }
       );
 

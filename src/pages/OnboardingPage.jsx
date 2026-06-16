@@ -324,22 +324,22 @@ function Step2({ onNext, onBack }) {
   const [shopDomain, setShopDomain] = useState("");
   const [shopError,  setShopError]  = useState("");
 
-  const handleConnectStore = () => {
+  const handleConnectStore = async () => {
     let domain = shopDomain.trim().toLowerCase();
-
-    domain = domain.replace("https://", "").replace("http://", "").replace(/\/$/, "");
-
+    domain = domain.replace('https://', '').replace('http://', '').replace(/\/$/, '');
+    if (!domain.includes('.myshopify.com')) {
+      domain = domain + '.myshopify.com';
+    }
     if (!domain) {
-      setShopError("Please enter your Shopify store URL");
+      setShopError('Please enter your Shopify store URL');
       return;
     }
+    setShopError('');
 
-    if (!domain.includes(".myshopify.com")) {
-      domain = domain + ".myshopify.com";
-    }
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id || '';
 
-    setShopError("");
-    window.location.href = `/api/shopify/auth?shop=${domain}`;
+    window.location.href = `/api/shopify/auth?shop=${domain}&userId=${userId}`;
   };
 
   return (
