@@ -7,6 +7,7 @@ import OnboardingPage    from "./pages/OnboardingPage";
 import DashboardShell    from "./pages/dashboard/DashboardShell";
 import ShopifyCallback   from "./pages/ShopifyCallback";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import { useStore }      from "./hooks/useStore";
 
 const checkUserStore = async (userId) => {
   const { data, error } = await supabase
@@ -49,6 +50,7 @@ export default function App() {
   const navigate   = useNavigate();
   const [session,  setSession]  = useState(undefined);
   const [hasStore, setHasStore] = useState(undefined);
+  const { loading: storeLoading } = useStore();
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -82,7 +84,7 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (session === undefined || (session && hasStore === undefined)) return <LoadingScreen />;
+  if (session === undefined || (session && hasStore === undefined) || (session && storeLoading)) return <LoadingScreen />;
 
   return (
     <Routes>

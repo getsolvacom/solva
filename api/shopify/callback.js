@@ -94,7 +94,7 @@ export default async function handler(req, res) {
       { headers: { 'X-Shopify-Access-Token': access_token } }
     );
     const shopData = await shopResponse.json();
-    const shopName = shopData?.shop?.name || '';
+    const shopName = shopData?.shop?.name || shop;
 
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL,

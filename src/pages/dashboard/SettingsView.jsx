@@ -257,6 +257,7 @@ function GeneralSection({ storeName, onSaveStoreName, store, userEmail }) {
   const [name,     setName]     = useState(storeName);
   const [email,    setEmail]    = useState('');
 
+  useEffect(() => { if (store?.shop_name) setName(store.shop_name); }, [store]);
   useEffect(() => { setEmail(userEmail || ''); }, [userEmail]);
   const [timezone, setTimezone] = useState("UTC+0 London");
   const [currency, setCurrency] = useState("USD — US Dollar");
