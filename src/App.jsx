@@ -7,7 +7,6 @@ import OnboardingPage    from "./pages/OnboardingPage";
 import DashboardShell    from "./pages/dashboard/DashboardShell";
 import ShopifyCallback   from "./pages/ShopifyCallback";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-import { useStore }      from "./hooks/useStore";
 
 const checkUserStore = async (userId) => {
   const { data, error } = await supabase
@@ -20,15 +19,6 @@ const checkUserStore = async (userId) => {
   console.log('Store check result:', { data, error, userId });
   return data;
 };
-
-function LoadingScreen() {
-  return (
-    <div style={{background:"#060008",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <div style={{width:32,height:32,borderRadius:"50%",border:"3px solid #200026",borderTopColor:"#E55266",animation:"spin 0.7s linear infinite"}}/>
-    </div>
-  );
-}
 
 function ProtectedRoute({ session, children }) {
   if (!session) return <Navigate to="/login" replace />;
@@ -47,10 +37,10 @@ function DashboardRoute({ session, hasStore, children }) {
 }
 
 export default function App() {
-  const navigate   = useNavigate();
-  const [session,  setSession]  = useState(undefined);
-  const [hasStore, setHasStore] = useState(undefined);
-  const { loading: storeLoading } = useStore();
+  const navigate                      = useNavigate();
+  const [isAppReady, setIsAppReady]   = useState(false);
+  const [session,    setSession]      = useState(null);
+  const [hasStore,   setHasStore]     = useState(false);
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -59,32 +49,31 @@ export default function App() {
     }
   }, []);
 
-  const resolveStore = async (userId) => {
-    const store = await checkUserStore(userId);
-    setHasStore(!!store);
-  };
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       if (session?.user) {
-        resolveStore(session.user.id);
-      } else {
-        setHasStore(null);
+        const store = await checkUserStore(session.user.id);
+        setHasStore(!!store);
       }
-    });
+      setIsAppReady(true);
+    };
+    init();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       if (event === 'SIGNED_IN' && session?.user) {
-        resolveStore(session.user.id);
+        const store = await checkUserStore(session.user.id);
+        setHasStore(!!store);
       } else if (event === 'SIGNED_OUT') {
-        setHasStore(null);
+        setHasStore(false);
       }
     });
     return () => subscription.unsubscribe();
   }, []);
 
-  if (session === undefined || (session && hasStore === undefined) || (session && storeLoading)) return <LoadingScreen />;
+  if (!isAppReady) return <div style={{backgroundColor:'#060008',minHeight:'100vh'}}/>;
 
   return (
     <Routes>
