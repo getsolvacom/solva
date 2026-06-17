@@ -33,14 +33,17 @@ export default function AvatarMenu() {
   const [pos, setPos] = useState({ top:0, right:0, scrollable:false });
   const btnRef = useRef(null);
   const dropRef = useRef(null);
-  const [userEmail, setUserEmail] = useState("");
-  const [storeName, setStoreName] = useState("Your Store");
+  const [userEmail,    setUserEmail]    = useState("");
+  const [displayName,  setDisplayName]  = useState("");
+  const [storeName,    setStoreName]    = useState("Your Store");
 
   useEffect(() => {
     const loadData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email || "");
+        const fullName = user.user_metadata?.full_name;
+        setDisplayName(fullName || user.email?.split('@')[0] || 'Store Owner');
         const { data: store } = await supabase
           .from('stores')
           .select('shop_name')
@@ -134,7 +137,7 @@ export default function AvatarMenu() {
               <img src={AVATAR_URL} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
             </div>
             <div style={{minWidth:0}}>
-              <div style={{fontSize:14,fontWeight:700,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{userEmail}</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{displayName}</div>
               <div style={{fontSize:11.5,color:C.muted,marginBottom:5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{userEmail}</div>
               <span style={{fontSize:10.5,fontWeight:700,color:C.coral,background:`${C.coral}1A`,padding:"2px 8px",borderRadius:100,letterSpacing:".04em"}}>Owner</span>
             </div>

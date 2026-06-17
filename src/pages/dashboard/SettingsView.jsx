@@ -254,17 +254,28 @@ function SectionTitle({ children, sub }) {
 
 // ── SECTIONS ──
 function GeneralSection({ storeName, onSaveStoreName, store, userEmail }) {
-  const [name,     setName]     = useState(storeName);
-  const [email,    setEmail]    = useState('');
+  const [name,        setName]        = useState(storeName);
+  const [email,       setEmail]       = useState('');
+  const [displayName, setDisplayName] = useState('');
 
   useEffect(() => { if (store?.shop_name) setName(store.shop_name); }, [store]);
   useEffect(() => { setEmail(userEmail || ''); }, [userEmail]);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.user_metadata?.full_name) {
+        setDisplayName(user.user_metadata.full_name);
+      }
+    });
+  }, []);
   const [timezone, setTimezone] = useState("UTC+0 London");
   const [currency, setCurrency] = useState("USD — US Dollar");
   const [industry, setIndustry] = useState("Fashion & Apparel");
   const [saved,    setSaved]    = useState(false);
 
-  const save = () => {
+  const save = async () => {
+    await supabase.auth.updateUser({
+      data: { full_name: displayName }
+    });
     onSaveStoreName(name);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -275,6 +286,10 @@ function GeneralSection({ storeName, onSaveStoreName, store, userEmail }) {
       <SectionTitle sub="Basic information about your store and account.">General Settings</SectionTitle>
       <div className="section-card fu">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:18}}>Store Information</p>
+        <div style={{marginBottom:18}}>
+          <FieldLabel>Full Name</FieldLabel>
+          <TextInput value={displayName} onChange={e=>setDisplayName(e.target.value)} placeholder="Your name"/>
+        </div>
         <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
           <div><FieldLabel><Store size={16} strokeWidth={2} style={{marginRight:6}}/>Store Name</FieldLabel><TextInput value={name} onChange={e=>setName(e.target.value)}/></div>
           <div><FieldLabel><Mail size={16} strokeWidth={2} style={{marginRight:6}}/>Account Email</FieldLabel><TextInput value={email} onChange={e=>setEmail(e.target.value)}/></div>
