@@ -33,6 +33,25 @@ export default function AvatarMenu() {
   const [pos, setPos] = useState({ top:0, right:0, scrollable:false });
   const btnRef = useRef(null);
   const dropRef = useRef(null);
+  const [userEmail, setUserEmail] = useState("");
+  const [storeName, setStoreName] = useState("Your Store");
+
+  useEffect(() => {
+    const loadData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email || "");
+        const { data: store } = await supabase
+          .from('stores')
+          .select('shop_name')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle();
+        if (store?.shop_name) setStoreName(store.shop_name);
+      }
+    };
+    loadData();
+  }, []);
 
   const toggle = () => {
     const next = !open;
@@ -115,8 +134,8 @@ export default function AvatarMenu() {
               <img src={AVATAR_URL} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
             </div>
             <div style={{minWidth:0}}>
-              <div style={{fontSize:14,fontWeight:700,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>Ecom Elevate</div>
-              <div style={{fontSize:11.5,color:C.muted,marginBottom:5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>owner@yourstore.com</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{userEmail}</div>
+              <div style={{fontSize:11.5,color:C.muted,marginBottom:5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{userEmail}</div>
               <span style={{fontSize:10.5,fontWeight:700,color:C.coral,background:`${C.coral}1A`,padding:"2px 8px",borderRadius:100,letterSpacing:".04em"}}>Owner</span>
             </div>
           </div>
@@ -132,7 +151,7 @@ export default function AvatarMenu() {
           {/* Section 3 — Store Info */}
           <div style={{padding:"9px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
             <Store size={15} color={C.muted}/>
-            <span style={{fontSize:13,color:C.sub,flex:1}}>Placeholder Store</span>
+            <span style={{fontSize:13,color:C.sub,flex:1}}>{storeName}</span>
             <div style={{display:"flex",alignItems:"center",gap:5}}>
               <div style={{width:7,height:7,borderRadius:"50%",background:C.teal}}/>
               <span style={{fontSize:11.5,fontWeight:700,color:C.teal}}>Live</span>
