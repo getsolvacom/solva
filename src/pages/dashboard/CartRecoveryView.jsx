@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2, Search, XCircle, MousePointer } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
+import { supabase } from "../../lib/supabase";
 
 const CARTS = [
   {
@@ -162,8 +163,64 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
 
   const [aiEmail, setAiEmail] = useState(null);
   const [aiEmailLoading, setAiEmailLoading] = useState(false);
+  const [realCarts, setRealCarts] = useState(null);
+  const [cartsLoading, setCartsLoading] = useState(true);
 
-  const filtered = CARTS.filter(c => {
+  useEffect(() => {
+    const fetchCarts = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setCartsLoading(false); return; }
+        const { data: storeData } = await supabase
+          .from('stores').select('id')
+          .eq('user_id', user.id).eq('is_active', true).maybeSingle();
+        if (!storeData) { setCartsLoading(false); return; }
+        const { data: carts } = await supabase
+          .from('carts').select('*')
+          .eq('store_id', storeData.id)
+          .order('created_at', { ascending: false });
+        if (carts && carts.length > 0) {
+          const mapped = carts.map((c, idx) => ({
+            id: c.id,
+            name: c.customer_name || c.customer_email || 'Unknown',
+            email: c.customer_email || '',
+            avatar: (c.customer_name || 'UN').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
+            avatarColor: [C.coral, C.blue, C.teal, C.amber][idx % 4],
+            value: parseFloat(c.cart_value || 0),
+            timeAgo: c.created_at ? new Date(c.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
+            status: c.status || 'in_sequence',
+            step: c.recovery_sequence_step || 1,
+            products: c.cart_items ? [{
+              name: c.cart_items,
+              variant: '',
+              qty: 1,
+              price: parseFloat(c.cart_value || 0),
+              emoji: '🛒',
+            }] : [],
+            sequence: [
+              { step:1, label:"First Reminder",  sentAt:"", status: c.recovery_sequence_step >= 1 ? "sent" : "scheduled", subject:"Cart reminder", preview: c.ai_recovery_email || "AI recovery email", opens:0, clicks:0 },
+              { step:2, label:"Value Reminder",  sentAt:"", status: c.recovery_sequence_step >= 2 ? "sent" : "scheduled", subject:"Value reminder", preview:"Follow-up with discount", opens:0, clicks:0 },
+              { step:3, label:"Final Follow-up", sentAt:"", status: c.recovery_sequence_step >= 3 ? "sent" : "scheduled", subject:"Final reminder", preview:"Last chance reminder", opens:0, clicks:0 },
+            ],
+            recoveredAt: c.recovered_at ? new Date(c.recovered_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
+            recoveredValue: parseFloat(c.cart_value || 0),
+          }));
+          setRealCarts(mapped);
+        } else {
+          setRealCarts([]);
+        }
+      } catch (err) {
+        console.error('Carts fetch error:', err);
+        setRealCarts([]);
+      } finally {
+        setCartsLoading(false);
+      }
+    };
+    fetchCarts();
+  }, []);
+
+  const cartSource = realCarts && realCarts.length > 0 ? realCarts : CARTS;
+  const filtered = cartSource.filter(c => {
     const mf =
       filter==="All"          ? true :
       filter==="In Sequence"  ? c.status==="in_sequence" :
@@ -172,13 +229,13 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
     return mf && (c.name.toLowerCase().includes(search.toLowerCase()) || c.id.toLowerCase().includes(search.toLowerCase()));
   });
 
-  const selected       = CARTS.find(c => c.id === selectedId);
-  const totalRecovered = CARTS.filter(c=>c.status==="recovered").reduce((s,c)=>s+c.value,0);
+  const selected       = cartSource.find(c => c.id === selectedId);
+  const totalRecovered = cartSource.filter(c=>c.status==="recovered").reduce((s,c)=>s+c.value,0);
   const counts         = {
-    "All":           CARTS.length,
-    "In Sequence":   CARTS.filter(c=>c.status==="in_sequence").length,
-    "Recovered":     CARTS.filter(c=>c.status==="recovered").length,
-    "Not Recovered": CARTS.filter(c=>c.status==="failed").length,
+    "All":           cartSource.length,
+    "In Sequence":   cartSource.filter(c=>c.status==="in_sequence").length,
+    "Recovered":     cartSource.filter(c=>c.status==="recovered").length,
+    "Not Recovered": cartSource.filter(c=>c.status==="failed").length,
   };
 
   function handleCartSelect(id) {
@@ -279,6 +336,14 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
             ))}
           </div>
 
+          {realCarts && realCarts.length === 0 && (
+            <div style={{padding:"32px 16px",textAlign:"center"}}>
+              <div style={{fontSize:32,marginBottom:12,opacity:.4}}>🛒</div>
+              <div style={{fontSize:14,fontWeight:600,color:C.sub,marginBottom:6}}>No abandoned carts yet</div>
+              <div style={{fontSize:12.5,color:C.muted,lineHeight:1.6}}>When customers abandon carts in your store, they'll appear here automatically.</div>
+            </div>
+          )}
+
           <div style={{flex:1,overflowY:"auto"}}>
             {filtered.map(c=>{
               const s = STATUS_C[c.status];
@@ -310,7 +375,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
           <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,background:C.card,flexShrink:0}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
               <span style={{fontSize:12,color:C.muted}}>Total abandoned value</span>
-              <span style={{fontSize:13,fontWeight:700,color:C.text}}>${CARTS.reduce((s,c)=>s+c.value,0).toFixed(2)}</span>
+              <span style={{fontSize:13,fontWeight:700,color:C.text}}>${cartSource.reduce((s,c)=>s+c.value,0).toFixed(2)}</span>
             </div>
             <div style={{display:"flex",justifyContent:"space-between"}}>
               <span style={{fontSize:12,color:C.muted}}>Recovered so far</span>
