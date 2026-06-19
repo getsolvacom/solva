@@ -6,6 +6,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
+import { useDashboardStats } from '../../hooks/useDashboardStats';
 
 const ANALYTICS_DATA = {
   "7D": [
@@ -70,11 +71,6 @@ const DOW_DATA = [
   {day:"Thu",tickets:74},{day:"Fri",tickets:91},{day:"Sat",tickets:55},{day:"Sun",tickets:43},
 ];
 
-const AUTOMATIONS = [
-  {name:"AI Support Agent", icon:<Bot size={16} strokeWidth={2}/>,         color:C.teal,  triggers:"1,247",rate:"87%",  rateVal:87,  impact:"+$14,200 cost saved", trend:"+18%"},
-  {name:"Cart Recovery",    icon:<ShoppingCart size={16} strokeWidth={2}/>, color:C.blue,  triggers:"312",  rate:"19.5%",rateVal:19.5,impact:"+$8,420 recovered",   trend:"+24%"},
-  {name:"Return Deflection",icon:<RotateCcw size={16} strokeWidth={2}/>,    color:C.amber, triggers:"247",  rate:"28%",  rateVal:28,  impact:"+$2,840 saved",       trend:"+12%"},
-];
 
 const METRIC_CFG = {
   revenue: {label:"Revenue Recovered", color:C.teal,  prefix:"$"},
@@ -144,9 +140,54 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
   const [metric,        setMetric]        = useState("revenue");
   const [donutHover,    setDonutHover]    = useState(null);
   const [activePeakDay, setActivePeakDay] = useState(null);
+  const { stats, loading } = useDashboardStats();
 
-  const chartData      = ANALYTICS_DATA[range];
-  const kpis           = KPI_DATA[range];
+  const chartData = ANALYTICS_DATA[range];
+  const kpis = KPI_DATA[range].map((k, i) => {
+    if (range !== "7D") return k;
+    const realValues = [
+      stats ? `$${stats.revenueRecovered.toFixed(2)}` : "—",
+      stats ? stats.ticketsResolved.toLocaleString() : "—",
+      stats ? stats.returnsDeflected.toString() : "—",
+      stats ? `${(stats.ticketsResolved * 0.5).toFixed(1)}h` : "—",
+      "<45s",
+      "98.3%",
+    ];
+    return { ...k, value: realValues[i] };
+  });
+
+  const automations = [
+    {
+      name:"AI Support Agent",
+      icon:<Bot size={16} strokeWidth={2}/>,
+      color:C.teal,
+      triggers: stats ? stats.ticketsResolved.toLocaleString() : "0",
+      rate: stats && stats.totalTickets > 0 ? `${Math.round((stats.ticketsResolved/stats.totalTickets)*100)}%` : "0%",
+      rateVal: stats && stats.totalTickets > 0 ? Math.round((stats.ticketsResolved/stats.totalTickets)*100) : 0,
+      impact: stats ? `+$${(stats.ticketsResolved * 11.4).toFixed(0)} cost saved` : "+$0 cost saved",
+      trend:"+18%"
+    },
+    {
+      name:"Cart Recovery",
+      icon:<ShoppingCart size={16} strokeWidth={2}/>,
+      color:C.blue,
+      triggers: stats ? stats.totalCarts.toLocaleString() : "0",
+      rate: stats ? `${stats.recoveryRate}%` : "0%",
+      rateVal: stats ? parseFloat(stats.recoveryRate) : 0,
+      impact: stats ? `+$${stats.revenueRecovered.toFixed(0)} recovered` : "+$0 recovered",
+      trend:"+24%"
+    },
+    {
+      name:"Return Deflection",
+      icon:<RotateCcw size={16} strokeWidth={2}/>,
+      color:C.amber,
+      triggers: stats ? stats.totalReturns.toLocaleString() : "0",
+      rate: stats ? `${stats.deflectionRate}%` : "0%",
+      rateVal: stats ? stats.deflectionRate : 0,
+      impact: stats ? `+$${stats.totalMarginSaved.toFixed(0)} saved` : "+$0 saved",
+      trend:"+12%"
+    },
+  ];
   const mc             = METRIC_CFG[metric];
   const defaultPeakDay = DOW_DATA.reduce((max,d) => d.tickets > max.tickets ? d : max, DOW_DATA[0]);
   const peakDay        = activePeakDay || defaultPeakDay;
@@ -321,7 +362,7 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
                 <div key={i} style={{fontSize:10.5,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase",textAlign:i>0?"center":"left"}}>{h}</div>
               ))}
             </div>
-            {AUTOMATIONS.map((a,i)=>(
+            {automations.map((a,i)=>(
               <div key={i} className="perf-row" style={{padding:"12px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none",borderRadius:6}}>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 72px 64px",alignItems:"center",marginBottom:8}}>
                   <div style={{display:"flex",alignItems:"center",gap:9}}>
