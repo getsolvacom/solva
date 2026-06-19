@@ -7,24 +7,7 @@ import {
 } from "recharts";
 import { DollarSign, Inbox, RotateCcw, Clock, TrendingUp, Bot, BarChart3, Zap, UserPlus } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
-
-const weekData = [
-  { day:"Mon", tickets:45,  revenue:1200 },
-  { day:"Tue", tickets:62,  revenue:1850 },
-  { day:"Wed", tickets:38,  revenue:940  },
-  { day:"Thu", tickets:74,  revenue:2380 },
-  { day:"Fri", tickets:91,  revenue:3150 },
-  { day:"Sat", tickets:55,  revenue:1620 },
-  { day:"Sun", tickets:43,  revenue:1290 },
-];
-
-const liveActivity = [
-  { icon:"✓", label:"Order status inquiry — Auto-resolved",   time:"2m ago",  color:"#3ECFB2", tag:"Ticket"   },
-  { icon:"$", label:"Abandoned cart recovered — $127.00",     time:"8m ago",  color:"#5BADFF", tag:"Recovery" },
-  { icon:"⟳", label:"Return deflected — Exchange offered",    time:"15m ago", color:"#F0A04B", tag:"Return"   },
-  { icon:"✓", label:"Shipping inquiry — Auto-resolved",       time:"23m ago", color:"#3ECFB2", tag:"Ticket"   },
-  { icon:"$", label:"Abandoned cart recovered — $89.50",      time:"31m ago", color:"#5BADFF", tag:"Recovery" },
-];
+import { useDashboardStats } from '../../hooks/useDashboardStats';
 
 function GlobalStyles() {
   return (
@@ -75,17 +58,40 @@ function GlobalStyles() {
 export default function OverviewView({ setView, isLandscape, isMobile }) {
   const navigate = useNavigate();
   const [activeChart, setActiveChart] = useState("revenue");
+  const { stats, loading } = useDashboardStats();
+
+  const weekData = stats?.weekData || [
+    { day:"Mon", tickets:0, revenue:0 },
+    { day:"Tue", tickets:0, revenue:0 },
+    { day:"Wed", tickets:0, revenue:0 },
+    { day:"Thu", tickets:0, revenue:0 },
+    { day:"Fri", tickets:0, revenue:0 },
+    { day:"Sat", tickets:0, revenue:0 },
+    { day:"Sun", tickets:0, revenue:0 },
+  ];
+
+  const liveActivity = stats?.recentActivity || [];
 
   const kpis = [
-    { label:"Tickets Resolved",  value:"1,247", change:"+18%", color:C.teal,    bar:68, icon:<Inbox size={18} strokeWidth={2}/> },
-    { label:"Revenue Recovered", value:"$8,420",change:"+24%", color:C.coral,   bar:74, icon:<DollarSign size={18} strokeWidth={2}/> },
-    { label:"Returns Deflected", value:"89",    change:"+12%", color:C.amber,   bar:52, icon:<RotateCcw size={18} strokeWidth={2}/> },
-    { label:"Hours Saved",       value:"47.5h", change:"+31%", color:C.magenta, bar:80, icon:<Clock size={18} strokeWidth={2}/> },
+    { label:"Tickets Resolved",  value: stats ? stats.ticketsResolved.toLocaleString() : "—", change:"+18%", color:C.teal,    bar:68, icon:<Inbox size={18} strokeWidth={2}/> },
+    { label:"Revenue Recovered", value: stats ? `$${stats.revenueRecovered.toFixed(2)}` : "—", change:"+24%", color:C.coral,   bar:74, icon:<DollarSign size={18} strokeWidth={2}/> },
+    { label:"Returns Deflected", value: stats ? stats.returnsDeflected.toString() : "—", change:"+12%", color:C.amber,   bar:52, icon:<RotateCcw size={18} strokeWidth={2}/> },
+    { label:"Hours Saved",       value: stats ? `${(stats.ticketsResolved * 0.5).toFixed(1)}h` : "—", change:"+31%", color:C.magenta, bar:80, icon:<Clock size={18} strokeWidth={2}/> },
   ];
 
   return (
     <div className="ov-view" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
       <GlobalStyles/>
+
+      {!loading && stats && stats.totalTickets === 0 && stats.totalCarts === 0 && stats.totalReturns === 0 && (
+        <div style={{margin:'16px 24px',padding:'18px 20px',borderRadius:14,background:'rgba(229,82,102,.06)',border:'1px solid rgba(229,82,102,.18)',display:'flex',alignItems:'center',gap:14}}>
+          <Zap size={20} strokeWidth={2} style={{color:C.coral,flexShrink:0}}/>
+          <div>
+            <div style={{fontSize:14,fontWeight:700,color:C.coral,marginBottom:3}}>SOLVA is ready — waiting for your first automation</div>
+            <div style={{fontSize:12.5,color:C.sub}}>When Shopify sends tickets, abandoned carts, or returns, they'll appear here automatically.</div>
+          </div>
+        </div>
+      )}
 
       {/* Top bar */}
       <div className="ov-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
