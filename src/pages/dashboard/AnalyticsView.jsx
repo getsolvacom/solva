@@ -285,36 +285,38 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
                 <div style={{fontSize:12.5,color:C.muted,textAlign:"center",lineHeight:1.6}}>Ticket type breakdown will appear here once your first tickets come in.</div>
               </div>
             ) : (
-            <div style={{position:"relative",display:"flex",justifyContent:"center",marginBottom:16}}>
-              <ResponsiveContainer width="100%" height={150}>
-                <PieChart>
-                  <Pie data={DONUT_DATA} cx="50%" cy="50%" innerRadius={44} outerRadius={68} paddingAngle={3} dataKey="value"
-                    onMouseEnter={(_,i)=>setDonutHover(i)} onMouseLeave={()=>setDonutHover(null)}>
-                    {DONUT_DATA.map((d,i)=>(
-                      <Cell key={i} fill={d.color} opacity={donutHover===null||donutHover===i?1:.4} stroke="none"/>
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none"}}>
-                <div style={{fontSize:18,fontWeight:800,color:donutHover!==null?DONUT_DATA[donutHover].color:C.text}}>
-                  {donutHover!==null?`${DONUT_DATA[donutHover].value}%`:"100%"}
+              <div style={{flex:1,display:"flex",flexDirection:"column"}}>
+                <div style={{position:"relative",display:"flex",justifyContent:"center",marginBottom:16}}>
+                  <ResponsiveContainer width="100%" height={150}>
+                    <PieChart>
+                      <Pie data={DONUT_DATA} cx="50%" cy="50%" innerRadius={44} outerRadius={68} paddingAngle={3} dataKey="value"
+                        onMouseEnter={(_,i)=>setDonutHover(i)} onMouseLeave={()=>setDonutHover(null)}>
+                        {DONUT_DATA.map((d,i)=>(
+                          <Cell key={i} fill={d.color} opacity={donutHover===null||donutHover===i?1:.4} stroke="none"/>
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none"}}>
+                    <div style={{fontSize:18,fontWeight:800,color:donutHover!==null?DONUT_DATA[donutHover].color:C.text}}>
+                      {donutHover!==null?`${DONUT_DATA[donutHover].value}%`:"100%"}
+                    </div>
+                    <div style={{fontSize:9.5,color:C.muted}}>
+                      {donutHover!==null?DONUT_DATA[donutHover].name:"All tickets"}
+                    </div>
+                  </div>
                 </div>
-                <div style={{fontSize:9.5,color:C.muted}}>
-                  {donutHover!==null?DONUT_DATA[donutHover].name:"All tickets"}
+                <div style={{display:"flex",flexDirection:"column",gap:7,flex:1}}>
+                  {DONUT_DATA.map((d,i)=>(
+                    <div key={i} onMouseEnter={()=>setDonutHover(i)} onMouseLeave={()=>setDonutHover(null)}
+                      style={{display:"flex",alignItems:"center",gap:8,cursor:"default",opacity:donutHover===null||donutHover===i?1:.45,transition:"opacity .15s"}}>
+                      <div style={{width:8,height:8,borderRadius:2,background:d.color,flexShrink:0}}/>
+                      <span style={{flex:1,fontSize:11.5,color:C.sub}}>{d.name}</span>
+                      <span style={{fontSize:12,fontWeight:700,color:d.color}}>{d.value}%</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-            <div style={{display:"flex",flexDirection:"column",gap:7,flex:1}}>
-              {DONUT_DATA.map((d,i)=>(
-                <div key={i} onMouseEnter={()=>setDonutHover(i)} onMouseLeave={()=>setDonutHover(null)}
-                  style={{display:"flex",alignItems:"center",gap:8,cursor:"default",opacity:donutHover===null||donutHover===i?1:.45,transition:"opacity .15s"}}>
-                  <div style={{width:8,height:8,borderRadius:2,background:d.color,flexShrink:0}}/>
-                  <span style={{flex:1,fontSize:11.5,color:C.sub}}>{d.name}</span>
-                  <span style={{fontSize:12,fontWeight:700,color:d.color}}>{d.value}%</span>
-                </div>
-              ))}
-            </div>
             )}
           </div>
         </div>
