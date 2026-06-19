@@ -329,44 +329,32 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
             <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Busiest Days</h3>
             <p style={{fontSize:11.5,color:C.muted,marginBottom:18}}>Tickets resolved by day of week</p>
             {stats && stats.totalTickets === 0 ? (
-              <div style={{height:160,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
+              <div style={{height:200,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
                 <div style={{fontSize:28,opacity:.3}}>📊</div>
                 <div style={{fontSize:12.5,color:C.muted,textAlign:"center",lineHeight:1.6}}>Busiest days chart will populate once tickets start coming in from your store.</div>
               </div>
             ) : (
-            <ResponsiveContainer width="100%" height={160}>
-              <BarChart
-                data={DOW_DATA}
-                margin={{top:0,right:4,bottom:0,left:-24}}
-                barSize={28}
-                onMouseLeave={()=>setActivePeakDay(null)}
-              >
-                <defs>
-                  <linearGradient id="barG" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stopColor="#E55266" stopOpacity={1}/>
-                    <stop offset="100%" stopColor="#4E0269" stopOpacity={.7}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={C.dim} vertical={false}/>
-                <XAxis dataKey="day" tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
-                <Tooltip
-                  contentStyle={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,color:C.text}}
-                  cursor={{ fill:"rgba(255,255,255,0.04)" }}
-                />
-                <Bar
-                  dataKey="tickets"
-                  fill="url(#barG)"
-                  radius={[6,6,0,0]}
-                  onMouseEnter={(entry) => setActivePeakDay({day:entry.day, tickets:entry.tickets})}
-                  onClick={(entry) => setActivePeakDay({day:entry.day, tickets:entry.tickets})}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-            <div style={{marginTop:14,padding:"9px 14px",borderRadius:9,background:"rgba(229,82,102,.07)",border:"1px solid rgba(229,82,102,.16)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:12.5,color:C.sub,display:"inline-flex",alignItems:"center",gap:6}}><Calendar size={16} strokeWidth={2}/>Peak day — <span style={{color:C.coral,fontWeight:700}}>{peakDay.day}</span></span>
-              <span style={{fontSize:12.5,fontWeight:700,color:C.coral}}>{peakDay.tickets} tickets</span>
-            </div>
+              <div>
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={DOW_DATA} margin={{top:0,right:4,bottom:0,left:-24}} barSize={28} onMouseLeave={()=>setActivePeakDay(null)}>
+                    <defs>
+                      <linearGradient id="barG" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#E55266" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#4E0269" stopOpacity={.7}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={C.dim} vertical={false}/>
+                    <XAxis dataKey="day" tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
+                    <YAxis tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
+                    <Tooltip contentStyle={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,color:C.text}} cursor={{fill:"rgba(255,255,255,0.04)"}}/>
+                    <Bar dataKey="tickets" fill="url(#barG)" radius={[6,6,0,0]} onMouseEnter={(entry)=>setActivePeakDay({day:entry.day,tickets:entry.tickets})} onClick={(entry)=>setActivePeakDay({day:entry.day,tickets:entry.tickets})}/>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={{marginTop:14,padding:"9px 14px",borderRadius:9,background:"rgba(229,82,102,.07)",border:"1px solid rgba(229,82,102,.16)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:12.5,color:C.sub,display:"inline-flex",alignItems:"center",gap:6}}><Calendar size={16} strokeWidth={2}/>Peak day — <span style={{color:C.coral,fontWeight:700}}>{peakDay.day}</span></span>
+                  <span style={{fontSize:12.5,fontWeight:700,color:C.coral}}>{peakDay.tickets} tickets</span>
+                </div>
+              </div>
             )}
           </div>
 
