@@ -142,9 +142,8 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
   const [activePeakDay, setActivePeakDay] = useState(null);
   const { stats, loading } = useDashboardStats();
 
-  const chartData = ANALYTICS_DATA[range];
+  const chartData = stats?.weekData || ANALYTICS_DATA[range];
   const kpis = KPI_DATA[range].map((k, i) => {
-    if (range !== "7D") return k;
     const realValues = [
       stats ? `$${stats.revenueRecovered.toFixed(2)}` : "—",
       stats ? stats.ticketsResolved.toLocaleString() : "—",
