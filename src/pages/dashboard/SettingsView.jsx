@@ -321,11 +321,56 @@ function AIConfigSection() {
   const [tone,           setTone]           = useState("friendly");
   const [lang,           setLang]           = useState("English");
   const [autoReplyLimit, setAutoReplyLimit] = useState("5");
-  const [escEmail,       setEscEmail]       = useState("support@yourstore.com");
+  const [escEmail,       setEscEmail]       = useState("");
   const [sig,            setSig]            = useState("Warm regards,\nThe Support Team");
   const [conds,          setConds]          = useState({angry:true,refund:true,legal:false,repeat:true});
   const [saved,          setSaved]          = useState(false);
-  const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
+
+  useEffect(() => {
+    function onLoad(e) {
+      const s = e.detail;
+      if (s.ai_tone) setTone(s.ai_tone);
+      if (s.ai_language) setLang(s.ai_language);
+      if (s.ai_auto_reply_limit) setAutoReplyLimit(s.ai_auto_reply_limit);
+      if (s.ai_escalation_email) setEscEmail(s.ai_escalation_email);
+      if (s.ai_signature) setSig(s.ai_signature);
+      if (window.__solvaSettings) {
+        const s2 = window.__solvaSettings;
+        if (s2.ai_tone) setTone(s2.ai_tone);
+        if (s2.ai_language) setLang(s2.ai_language);
+        if (s2.ai_auto_reply_limit) setAutoReplyLimit(s2.ai_auto_reply_limit);
+        if (s2.ai_escalation_email) setEscEmail(s2.ai_escalation_email);
+        if (s2.ai_signature) setSig(s2.ai_signature);
+      }
+    }
+    window.addEventListener('solva-settings-loaded', onLoad);
+    onLoad({ detail: window.__solvaSettings || {} });
+    return () => window.removeEventListener('solva-settings-loaded', onLoad);
+  }, []);
+
+  const save = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: storeData } = await supabase
+        .from('stores').select('id')
+        .eq('user_id', user.id).eq('is_active', true).maybeSingle();
+      if (!storeData) return;
+      await supabase.from('store_settings').upsert({
+        store_id: storeData.id,
+        ai_tone: tone,
+        ai_language: lang,
+        ai_auto_reply_limit: autoReplyLimit,
+        ai_escalation_email: escEmail,
+        ai_signature: sig,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'store_id' });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      console.error('Save AI config error:', err);
+    }
+  };
 
   const tones = [
     {key:"professional", icon:<Briefcase size={20} strokeWidth={2}/>, label:"Professional", desc:"Formal, precise. Best for B2B or high-ticket."},
@@ -429,7 +474,43 @@ function AutomationsSection() {
   const [respDelay,    setRespDelay]    = useState("Instant");
   const [respWindow,   setRespWindow]   = useState("24 hours");
   const [saved,        setSaved]        = useState(false);
-  const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
+
+  useEffect(() => {
+    function onLoad(e) {
+      const s = e.detail || window.__solvaSettings;
+      if (!s) return;
+      if (s.automation_support !== undefined) setSupport(s.automation_support);
+      if (s.automation_returns !== undefined) setReturns(s.automation_returns);
+      if (s.automation_cart !== undefined) setCart(s.automation_cart);
+      if (s.cart_discount_code) setCartCode(s.cart_discount_code);
+    }
+    window.addEventListener('solva-settings-loaded', onLoad);
+    onLoad({ detail: window.__solvaSettings || {} });
+    return () => window.removeEventListener('solva-settings-loaded', onLoad);
+  }, []);
+
+  const save = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: storeData } = await supabase
+        .from('stores').select('id')
+        .eq('user_id', user.id).eq('is_active', true).maybeSingle();
+      if (!storeData) return;
+      await supabase.from('store_settings').upsert({
+        store_id: storeData.id,
+        automation_support: support,
+        automation_returns: returns,
+        automation_cart: cart,
+        cart_discount_code: cartCode,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'store_id' });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      console.error('Save automations error:', err);
+    }
+  };
 
   const [winBack,         setWinBack]         = useState(false);
   const [winBackDays,     setWinBackDays]     = useState(60);
@@ -621,7 +702,50 @@ function NotificationsSection() {
   const [prefs,     setPrefs]     = useState({weeklyReport:true,escalation:true,cartRecovered:false,returnDeflected:false,newTicket:false,dailySummary:true});
   const [aiDigest,  setAiDigest]  = useState(false);
   const [saved,     setSaved]     = useState(false);
-  const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2500); };
+
+  useEffect(() => {
+    function onLoad(e) {
+      const s = e.detail || window.__solvaSettings;
+      if (!s) return;
+      setPrefs(prev => ({
+        ...prev,
+        weeklyReport:    s.notif_weekly_report    ?? prev.weeklyReport,
+        dailySummary:    s.notif_daily_summary    ?? prev.dailySummary,
+        escalation:      s.notif_escalation       ?? prev.escalation,
+        cartRecovered:   s.notif_cart_recovered   ?? prev.cartRecovered,
+        returnDeflected: s.notif_return_deflected ?? prev.returnDeflected,
+        newTicket:       s.notif_new_ticket       ?? prev.newTicket,
+      }));
+    }
+    window.addEventListener('solva-settings-loaded', onLoad);
+    onLoad({ detail: window.__solvaSettings || {} });
+    return () => window.removeEventListener('solva-settings-loaded', onLoad);
+  }, []);
+
+  const save = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: storeData } = await supabase
+        .from('stores').select('id')
+        .eq('user_id', user.id).eq('is_active', true).maybeSingle();
+      if (!storeData) return;
+      await supabase.from('store_settings').upsert({
+        store_id: storeData.id,
+        notif_weekly_report:    prefs.weeklyReport,
+        notif_daily_summary:    prefs.dailySummary,
+        notif_escalation:       prefs.escalation,
+        notif_cart_recovered:   prefs.cartRecovered,
+        notif_return_deflected: prefs.returnDeflected,
+        notif_new_ticket:       prefs.newTicket,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'store_id' });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      console.error('Save notifications error:', err);
+    }
+  };
 
   const notifs = [
     {key:"weeklyReport",    label:"Weekly Performance Report", desc:"Summary of tickets, revenue, and deflections every week.", rec:false},
@@ -1271,6 +1395,7 @@ export default function SettingsView({ isLandscape, isMobile }) {
   const [storeName,   setStoreName]   = useState('');
   const [userEmail,   setUserEmail]   = useState('');
   const [lsNavOpen,   setLsNavOpen]   = useState(false);
+  const [settingsId,  setSettingsId]  = useState(null);
 
   useEffect(() => {
     if (store) setStoreName(store.shop_name || store.shop_domain || '');
@@ -1280,6 +1405,30 @@ export default function SettingsView({ isLandscape, isMobile }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUserEmail(session?.user?.email || '');
     });
+  }, []);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: storeData } = await supabase
+          .from('stores').select('id')
+          .eq('user_id', user.id).eq('is_active', true).maybeSingle();
+        if (!storeData) return;
+        const { data: settings } = await supabase
+          .from('store_settings').select('*')
+          .eq('store_id', storeData.id).maybeSingle();
+        if (settings) {
+          setSettingsId(settings.id);
+          window.__solvaSettings = settings;
+          window.dispatchEvent(new CustomEvent('solva-settings-loaded', { detail: settings }));
+        }
+      } catch (err) {
+        console.error('Load settings error:', err);
+      }
+    };
+    loadSettings();
   }, []);
 
   const lsMob = isLandscape && isMobile;
