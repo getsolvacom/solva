@@ -7,6 +7,7 @@ import {
   Smile, Bold, Italic, ChevronUp, Clock, Calendar,
 } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
+import { useStore } from "../../hooks/useStore";
 
 const RETURNS = [
   {
@@ -133,6 +134,7 @@ function GlobalStyles() {
       @keyframes saveShine{0%{background-position:-200% center;}100%{background-position:200% center;}}
       @keyframes toastSlideIn{from{opacity:0;transform:translateX(70px);}to{opacity:1;transform:translateX(0);}}
       @keyframes toastFadeOut{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(70px);}}
+      @keyframes spin{to{transform:rotate(360deg)}}
       .fu{animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both;}
       .sr{animation:slideRight .5s cubic-bezier(.16,1,.3,1) both;}
       .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;}
@@ -244,6 +246,11 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   const [pickMin,   setPickMin]   = useState(0);
   const [pickAmpm,  setPickAmpm]  = useState("AM");
 
+  const { store } = useStore();
+
+  const [aiDeflection, setAiDeflection] = useState(null);
+  const [aiDeflectionLoading, setAiDeflectionLoading] = useState(false);
+
   const textareaRef   = useRef(null);
   const emojiRef      = useRef(null);
   const schedRef      = useRef(null);
@@ -304,6 +311,34 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     setTimeout(() => setOverrideToastFading(true), 2700);
     setTimeout(() => { setOverrideToast(false); setOverrideToastFading(false); }, 3000);
   }
+
+  const generateAIDeflection = async () => {
+    if (!selected) return;
+    setAiDeflectionLoading(true);
+    setAiDeflection(null);
+    try {
+      const response = await fetch('/api/ai/return-deflect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          returnReason: selected.reasonLabel + ': ' + selected.conversation[selected.conversation.length - 1].text,
+          productName: selected.product,
+          customerName: selected.name.split(' ')[0],
+          storeName: store?.shop_name || 'our store',
+          brandTone: 'friendly',
+          maxDiscount: '15%',
+        }),
+      });
+      const data = await response.json();
+      if (data.response) {
+        setAiDeflection(data.response);
+      }
+    } catch (error) {
+      console.error('Return deflection AI error:', error);
+    } finally {
+      setAiDeflectionLoading(false);
+    }
+  };
 
   function handleSend() {
     if (!chatInput.trim()) return;
@@ -508,6 +543,34 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Returns
               </button>
+              {selected.status === "pending" && (
+                <button
+                  className="btn-ghost"
+                  onClick={generateAIDeflection}
+                  disabled={aiDeflectionLoading}
+                  style={{
+                    padding: "7px 14px",
+                    borderRadius: 8,
+                    border: `1px solid ${C.coral}`,
+                    color: C.coral,
+                    fontSize: 13,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    opacity: aiDeflectionLoading ? 0.6 : 1,
+                    marginRight: 8,
+                  }}
+                >
+                  {aiDeflectionLoading ? (
+                    <>
+                      <div style={{width:12,height:12,borderRadius:'50%',border:`2px solid rgba(229,82,102,.3)`,borderTopColor:C.coral,animation:'spin .7s linear infinite',flexShrink:0}}/>
+                      Generating…
+                    </>
+                  ) : (
+                    <><Zap size={13} strokeWidth={2}/>Generate AI Response</>
+                  )}
+                </button>
+              )}
               {selected.status==="pending" && (
                 <button className="btn-primary" disabled={statusOverrides[selectedId]==="manual_override"} onClick={handleOverride}
                   style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:statusOverrides[selectedId]==="manual_override"?.75:1,cursor:statusOverrides[selectedId]==="manual_override"?"not-allowed":"pointer",display:"flex",alignItems:"center"}}>
@@ -600,6 +663,17 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>AI Deflection Conversation</h3>
                 {allMessages.map((msg,i)=><Bubble key={i} msg={msg} idx={i}/>)}
               </div>
+
+              {aiDeflection && (
+                <div style={{padding:18,borderRadius:14,background:"rgba(229,82,102,.06)",border:"1px solid rgba(229,82,102,.22)"}}>
+                  <h3 style={{fontSize:11,fontWeight:700,color:C.coral,letterSpacing:".08em",textTransform:"uppercase",marginBottom:14,display:"flex",alignItems:"center",gap:6}}>
+                    <Zap size={13} strokeWidth={2}/>AI Generated Deflection Response
+                  </h3>
+                  <div style={{whiteSpace:"pre-wrap",fontSize:13.5,color:C.sub,lineHeight:1.75,fontFamily:"'Outfit',sans-serif"}}>
+                    {aiDeflection}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Reply box */}
