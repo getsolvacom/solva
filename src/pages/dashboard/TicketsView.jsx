@@ -7,6 +7,8 @@ import {
   Smile, Bold, Italic, ChevronUp, Clock, Calendar,
 } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
+import { useStore } from "../../hooks/useStore";
+import { supabase } from "../../lib/supabase";
 
 const TICKETS = [
   {
@@ -109,6 +111,7 @@ function GlobalStyles() {
       @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:.15;}}
       @keyframes typingDot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+      @keyframes spin{to{transform:rotate(360deg)}}
       .fu{animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both;}
       .sr{animation:slideRight .5s cubic-bezier(.16,1,.3,1) both;}
       .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;}
@@ -248,6 +251,15 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [pickMin,   setPickMin]   = useState(0);
   const [pickAmpm,  setPickAmpm]  = useState("AM");
 
+  const { store } = useStore();
+
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState([
+    "I've checked your order and…",
+    "A replacement has been arranged…",
+    "Your refund is being processed…",
+  ]);
+
   const textareaRef   = useRef(null);
   const emojiRef      = useRef(null);
   const schedRef      = useRef(null);
@@ -315,6 +327,56 @@ export default function TicketsView({ isLandscape, isMobile }) {
     }));
     setReply("");
   }
+
+  const generateAIReply = async (ticketText) => {
+    setAiLoading(true);
+    try {
+      const response = await fetch('/api/ai/ticket-resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticket: ticketText,
+          storeName: store?.shop_name || 'our store',
+          brandTone: 'friendly',
+        }),
+      });
+      const data = await response.json();
+      if (data.response) {
+        const time = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+        setExtraMessages(prev => ({
+          ...prev,
+          [selectedId]: [...(prev[selectedId] || []), { from: "ai", text: data.response, time }],
+        }));
+        setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
+        await generateAISuggestions(ticketText);
+      }
+    } catch (error) {
+      console.error('AI reply error:', error);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const generateAISuggestions = async (ticketText) => {
+    try {
+      const response = await fetch('/api/ai/ticket-resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticket: `Generate 3 very short reply starters (under 8 words each) for this ticket. Return only the 3 starters separated by | with no numbering or explanation: ${ticketText}`,
+          storeName: store?.shop_name || 'our store',
+          brandTone: 'friendly',
+        }),
+      });
+      const data = await response.json();
+      if (data.response) {
+        const suggestions = data.response.split('|').map(s => s.trim()).filter(Boolean).slice(0, 3);
+        if (suggestions.length > 0) setAiSuggestions(suggestions);
+      }
+    } catch (error) {
+      console.error('AI suggestions error:', error);
+    }
+  };
 
   function handleAttachment() {
     setShowAttachHint(true);
@@ -515,6 +577,36 @@ export default function TicketsView({ isLandscape, isMobile }) {
                 :effectiveStatus==="escalated" ? "AI attempted resolution twice. Escalated — requires manual follow-up."
                 : "AI has responded and is awaiting customer reply."}
               </span>
+              <button
+                onClick={() => {
+                  const lastCustomerMsg = [...effectiveMsgs].reverse().find(m => m.from === 'customer');
+                  if (lastCustomerMsg) generateAIReply(lastCustomerMsg.text);
+                }}
+                disabled={aiLoading || effectiveStatus === 'resolved' || effectiveStatus === 'escalated'}
+                className="btn-primary"
+                style={{
+                  marginLeft: 'auto',
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  flexShrink: 0,
+                  opacity: (aiLoading || effectiveStatus === 'resolved' || effectiveStatus === 'escalated') ? 0.5 : 1,
+                }}
+              >
+                {aiLoading ? (
+                  <>
+                    <div style={{width:12,height:12,borderRadius:'50%',border:`2px solid rgba(255,255,255,.3)`,borderTopColor:'#fff',animation:'spin .7s linear infinite',flexShrink:0}}/>
+                    Generating…
+                  </>
+                ) : (
+                  <><Zap size={12} strokeWidth={2}/>Generate AI Reply</>
+                )}
+              </button>
             </div>
 
             {/* Messages — flex:1, minHeight:0 ensures independent scroll */}
@@ -540,8 +632,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
               <div className={`tv-suggestions-chips${!suggestionsOpen?" tv-suggestions-chips-hidden":""}`}
                 style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}>
                 <span style={{fontSize:11,color:C.muted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",display:"flex",alignItems:"center",flexShrink:0}}>AI Suggestions:</span>
-                {["I've checked your order and…","A replacement has been arranged…","Your refund is being processed…"].map((s,i)=>(
-                  <button key={i} onClick={()=>setReply(s)} className="btn-ghost"
+                {aiSuggestions.map((s, i) => (
+                  <button key={i} onClick={() => setReply(s)} className="btn-ghost"
                     style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,cursor:"pointer"}}>{s}</button>
                 ))}
               </div>
