@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2, Search, XCircle, MousePointer } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
+import { useStore } from "../../hooks/useStore";
 
 const CARTS = [
   {
@@ -157,6 +158,11 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   const [triggerToast,    setTriggerToast]    = useState(false);
   const [toastFading,     setToastFading]     = useState(false);
 
+  const { store } = useStore();
+
+  const [aiEmail, setAiEmail] = useState(null);
+  const [aiEmailLoading, setAiEmailLoading] = useState(false);
+
   const filtered = CARTS.filter(c => {
     const mf =
       filter==="All"          ? true :
@@ -179,16 +185,39 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
     navigate("/dashboard/cart/" + id);
   }
 
-  function handleTrigger() {
+  const handleTrigger = async () => {
+    if (!selected) return;
     setTriggerLoading(true);
-    setTimeout(() => {
+    setAiEmail(null);
+    try {
+      const cartItems = selected.products
+        .map(p => `${p.qty}x ${p.name} (${p.variant}) - $${(p.price * p.qty).toFixed(2)}`)
+        .join(', ');
+      const response = await fetch('/api/ai/cart-recovery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartItems,
+          customerName: selected.name.split(' ')[0],
+          storeName: store?.shop_name || 'our store',
+          brandTone: 'friendly',
+          discountCode: 'COMEBACK10',
+        }),
+      });
+      const data = await response.json();
+      if (data.response) {
+        setAiEmail(data.response);
+        setTriggerToast(true);
+        setToastFading(false);
+        setTimeout(() => setToastFading(true), 2700);
+        setTimeout(() => { setTriggerToast(false); setToastFading(false); }, 3000);
+      }
+    } catch (error) {
+      console.error('Cart recovery AI error:', error);
+    } finally {
       setTriggerLoading(false);
-      setTriggerToast(true);
-      setToastFading(false);
-      setTimeout(() => setToastFading(true), 2700);
-      setTimeout(() => { setTriggerToast(false); setToastFading(false); }, 3000);
-    }, 1500);
-  }
+    }
+  };
 
   return (
     <div className="cr-root" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",overflowX:"hidden",fontFamily:"'Outfit',sans-serif"}}>
@@ -462,6 +491,17 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
                   </div>
                 ))}
               </div>
+
+              {aiEmail && (
+                <div style={{padding:18,borderRadius:14,background:"rgba(229,82,102,.06)",border:"1px solid rgba(229,82,102,.22)"}}>
+                  <h3 style={{fontSize:11,fontWeight:700,color:C.coral,letterSpacing:".08em",textTransform:"uppercase",marginBottom:14,display:"flex",alignItems:"center",gap:6}}>
+                    <Zap size={13} strokeWidth={2}/>AI Generated Recovery Email
+                  </h3>
+                  <div style={{whiteSpace:"pre-wrap",fontSize:13.5,color:C.sub,lineHeight:1.75,fontFamily:"'Outfit',sans-serif"}}>
+                    {aiEmail}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
