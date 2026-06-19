@@ -149,8 +149,8 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
       stats ? stats.ticketsResolved.toLocaleString() : "—",
       stats ? stats.returnsDeflected.toString() : "—",
       stats ? `${(stats.ticketsResolved * 0.5).toFixed(1)}h` : "—",
-      "<45s",
-      "98.3%",
+      "—",
+      "—",
     ];
     const hasRealData = stats && (stats.totalTickets > 0 || stats.totalCarts > 0 || stats.totalReturns > 0);
     const change = hasRealData ? k.change : "—";
@@ -427,12 +427,12 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
                 label:"AI recommendation",
                 value: stats && stats.totalCarts > 0 && stats.cartsRecovered === 0
                   ? "Enable cart recovery sequences"
-                  : stats && stats.deflectionRate < 30
-                  ? "Improve return deflection rate"
-                  : "Increase cart recovery window",
+                  : stats && stats.totalTickets === 0 && stats.totalCarts === 0
+                  ? "Connect your store to get started"
+                  : "Keep optimizing your automations",
                 sub: stats && stats.totalCarts > 0 && stats.cartsRecovered === 0
                   ? "You have abandoned carts but no recoveries yet — activate sequences"
-                  : "Friday carts convert 2× faster — extend to 48h",
+                  : "More data needed to generate a recommendation",
               },
             ];
             return insights.map((ins,i)=>(
