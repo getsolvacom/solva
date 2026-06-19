@@ -152,7 +152,9 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
       "<45s",
       "98.3%",
     ];
-    return { ...k, value: realValues[i] };
+    const hasRealData = stats && (stats.totalTickets > 0 || stats.totalCarts > 0 || stats.totalReturns > 0);
+    const change = hasRealData ? k.change : "—";
+    return { ...k, value: realValues[i], change };
   });
 
   const automations = [
@@ -277,6 +279,12 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
           <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22,display:"flex",flexDirection:"column"}}>
             <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Ticket Types</h3>
             <p style={{fontSize:11.5,color:C.muted,marginBottom:14}}>Breakdown by category</p>
+            {stats && stats.totalTickets === 0 ? (
+              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,padding:"20px 0"}}>
+                <div style={{fontSize:28,opacity:.3}}>🍩</div>
+                <div style={{fontSize:12.5,color:C.muted,textAlign:"center",lineHeight:1.6}}>Ticket type breakdown will appear here once your first tickets come in.</div>
+              </div>
+            ) : (
             <div style={{position:"relative",display:"flex",justifyContent:"center",marginBottom:16}}>
               <ResponsiveContainer width="100%" height={150}>
                 <PieChart>
@@ -307,6 +315,7 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
                 </div>
               ))}
             </div>
+            )}
           </div>
         </div>
 
@@ -317,6 +326,12 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
           <div className="av-chart-wrap" style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22}}>
             <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Busiest Days</h3>
             <p style={{fontSize:11.5,color:C.muted,marginBottom:18}}>Tickets resolved by day of week</p>
+            {stats && stats.totalTickets === 0 ? (
+              <div style={{height:160,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
+                <div style={{fontSize:28,opacity:.3}}>📊</div>
+                <div style={{fontSize:12.5,color:C.muted,textAlign:"center",lineHeight:1.6}}>Busiest days chart will populate once tickets start coming in from your store.</div>
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height={160}>
               <BarChart
                 data={DOW_DATA}
@@ -350,6 +365,7 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
               <span style={{fontSize:12.5,color:C.sub,display:"inline-flex",alignItems:"center",gap:6}}><Calendar size={16} strokeWidth={2}/>Peak day — <span style={{color:C.coral,fontWeight:700}}>{peakDay.day}</span></span>
               <span style={{fontSize:12.5,fontWeight:700,color:C.coral}}>{peakDay.tickets} tickets</span>
             </div>
+            )}
           </div>
 
           {/* Performance table */}
@@ -384,18 +400,52 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
             ))}
             <div style={{marginTop:14,padding:"10px 14px",borderRadius:10,background:"rgba(62,207,178,.07)",border:"1px solid rgba(62,207,178,.18)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <span style={{fontSize:12.5,color:C.sub,fontWeight:500}}>Total AI-generated impact</span>
-              <span style={{fontSize:14,fontWeight:800,color:C.teal}}>+$25,460</span>
+              <span style={{fontSize:14,fontWeight:800,color:C.teal}}>{stats ? `+$${(stats.revenueRecovered + stats.totalMarginSaved).toFixed(2)}` : "+$0.00"}</span>
             </div>
           </div>
         </div>
 
         {/* Insight strip */}
         <div className="av-insights-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,paddingBottom:8}}>
-          {[
-            {icon:<Trophy size={18} strokeWidth={2}/>,    color:C.coral, label:"Best performing automation", value:"AI Support Agent",             sub:"87% auto-resolution rate this period"},
-            {icon:<TrendingUp size={18} strokeWidth={2}/>,color:C.teal,  label:"Fastest growing metric",     value:"Hours Saved",                  sub:"+31% vs last period · 47.5h this week"},
-            {icon:<Lightbulb size={18} strokeWidth={2}/>, color:C.amber, label:"AI recommendation",           value:"Increase cart recovery window", sub:"Friday carts convert 2× faster — extend to 48h"},
-          ].map((ins,i)=>(
+          {(()=>{
+            const insights = [
+              {
+                icon:<Trophy size={18} strokeWidth={2}/>,
+                color:C.coral,
+                label:"Best performing automation",
+                value: stats && stats.ticketsResolved >= stats.cartsRecovered && stats.ticketsResolved >= stats.returnsDeflected
+                  ? "AI Support Agent"
+                  : stats && stats.cartsRecovered >= stats.returnsDeflected
+                  ? "Cart Recovery"
+                  : "Return Deflection",
+                sub: stats && stats.totalTickets > 0
+                  ? `${Math.round((stats.ticketsResolved/stats.totalTickets)*100)}% auto-resolution rate this period`
+                  : "Waiting for first automation to run",
+              },
+              {
+                icon:<TrendingUp size={18} strokeWidth={2}/>,
+                color:C.teal,
+                label:"Fastest growing metric",
+                value: stats && stats.revenueRecovered > 0 ? "Revenue Recovered" : "No data yet",
+                sub: stats && stats.revenueRecovered > 0
+                  ? `$${stats.revenueRecovered.toFixed(2)} recovered so far`
+                  : "Connect your Shopify store and start automating",
+              },
+              {
+                icon:<Lightbulb size={18} strokeWidth={2}/>,
+                color:C.amber,
+                label:"AI recommendation",
+                value: stats && stats.totalCarts > 0 && stats.cartsRecovered === 0
+                  ? "Enable cart recovery sequences"
+                  : stats && stats.deflectionRate < 30
+                  ? "Improve return deflection rate"
+                  : "Increase cart recovery window",
+                sub: stats && stats.totalCarts > 0 && stats.cartsRecovered === 0
+                  ? "You have abandoned carts but no recoveries yet — activate sequences"
+                  : "Friday carts convert 2× faster — extend to 48h",
+              },
+            ];
+            return insights.map((ins,i)=>(
             <div key={i} style={{padding:"16px 18px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`,display:"flex",gap:13,alignItems:"flex-start"}}>
               <div style={{width:38,height:38,borderRadius:10,flexShrink:0,background:`${ins.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,color:ins.color}}>{ins.icon}</div>
               <div>
@@ -404,7 +454,8 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
                 <div style={{fontSize:12,color:C.sub,lineHeight:1.55}}>{ins.sub}</div>
               </div>
             </div>
-          ))}
+          ));
+          })()}
         </div>
 
       </div>
