@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
+import { supabase } from "../../lib/supabase";
 
 const RETURNS = [
   {
@@ -250,6 +251,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
 
   const [aiDeflection, setAiDeflection] = useState(null);
   const [aiDeflectionLoading, setAiDeflectionLoading] = useState(false);
+  const [realReturns, setRealReturns] = useState(null);
+  const [returnsLoading, setReturnsLoading] = useState(true);
 
   const textareaRef   = useRef(null);
   const emojiRef      = useRef(null);
@@ -273,7 +276,64 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     return () => document.removeEventListener("mousedown", h);
   }, [schedMenuOpen, schedPickOpen, customPickOpen]);
 
-  const filtered = RETURNS.filter(r => {
+  useEffect(() => {
+    const fetchReturns = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setReturnsLoading(false); return; }
+        const { data: storeData } = await supabase
+          .from('stores').select('id')
+          .eq('user_id', user.id).eq('is_active', true).maybeSingle();
+        if (!storeData) { setReturnsLoading(false); return; }
+        const { data: returns } = await supabase
+          .from('returns').select('*')
+          .eq('store_id', storeData.id)
+          .order('created_at', { ascending: false });
+        if (returns && returns.length > 0) {
+          const mapped = returns.map((r, idx) => ({
+            id: r.id,
+            name: r.customer_name || r.customer_email || 'Unknown',
+            email: r.customer_email || '',
+            avatar: (r.customer_name || 'UN').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
+            avatarColor: [C.teal, C.amber, C.blue, C.magenta][idx % 4],
+            product: r.product_name || 'Product',
+            productEmoji: '📦',
+            variant: '',
+            orderRef: r.order_id || '—',
+            orderValue: parseFloat(r.order_value || 0),
+            reason: r.reason || 'changed_mind',
+            reasonLabel: r.reason || 'Return Request',
+            status: r.deflected ? 'deflected' : r.status || 'pending',
+            timeAgo: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
+            marginSaved: r.deflected ? parseFloat(r.order_value || 0) : 0,
+            offer: {
+              type: r.deflected_offer || 'Exchange Offered',
+              detail: r.ai_deflection_response || 'AI deflection response generated',
+              icon: r.deflected ? '🔄' : '⏳',
+            },
+            conversation: r.ai_deflection_response ? [
+              { from:'customer', text: r.return_reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' },
+              { from:'ai', text: r.ai_deflection_response, time: r.updated_at ? new Date(r.updated_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' },
+            ] : [
+              { from:'customer', text: r.return_reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' },
+            ],
+          }));
+          setRealReturns(mapped);
+        } else {
+          setRealReturns([]);
+        }
+      } catch (err) {
+        console.error('Returns fetch error:', err);
+        setRealReturns([]);
+      } finally {
+        setReturnsLoading(false);
+      }
+    };
+    fetchReturns();
+  }, []);
+
+  const returnSource = realReturns && realReturns.length > 0 ? realReturns : RETURNS;
+  const filtered = returnSource.filter(r => {
     const mf =
       filter==="All"       ? true :
       filter==="Deflected" ? r.status==="deflected" :
@@ -282,14 +342,14 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     return mf && (r.name.toLowerCase().includes(search.toLowerCase()) || r.product.toLowerCase().includes(search.toLowerCase()));
   });
 
-  const selected      = RETURNS.find(r => r.id === selectedId);
-  const totalSaved    = RETURNS.filter(r=>r.status==="deflected").reduce((s,r)=>s+r.marginSaved,0);
-  const deflectRate   = Math.round((RETURNS.filter(r=>r.status==="deflected").length / RETURNS.length) * 100);
+  const selected      = returnSource.find(r => r.id === selectedId);
+  const totalSaved    = returnSource.filter(r=>r.status==="deflected").reduce((s,r)=>s+r.marginSaved,0);
+  const deflectRate   = returnSource.length > 0 ? Math.round((returnSource.filter(r=>r.status==="deflected").length / returnSource.length) * 100) : 0;
   const counts        = {
-    All:       RETURNS.length,
-    Pending:   RETURNS.filter(r=>r.status==="pending").length,
-    Deflected: RETURNS.filter(r=>r.status==="deflected").length,
-    Processed: RETURNS.filter(r=>r.status==="processed").length,
+    All:       returnSource.length,
+    Pending:   returnSource.filter(r=>r.status==="pending").length,
+    Deflected: returnSource.filter(r=>r.status==="deflected").length,
+    Processed: returnSource.filter(r=>r.status==="processed").length,
   };
 
   const effectiveStatus = selected && statusOverrides[selected.id] === "manual_override"
@@ -439,7 +499,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
         {[
           {label:"Margin Saved",      value:`$${totalSaved.toFixed(2)}`,                              color:C.teal,  icon:<DollarSign size={18} strokeWidth={2}/>},
           {label:"Deflection Rate",   value:`${deflectRate}%`,                                        color:C.coral, icon:<Shield size={18} strokeWidth={2}/>},
-          {label:"Total at Risk",     value:`$${RETURNS.reduce((s,r)=>s+r.orderValue,0).toFixed(2)}`, color:C.amber, icon:<AlertTriangle size={18} strokeWidth={2}/>},
+          {label:"Total at Risk",     value:`$${returnSource.reduce((s,r)=>s+r.orderValue,0).toFixed(2)}`, color:C.amber, icon:<AlertTriangle size={18} strokeWidth={2}/>},
           {label:"Deflected Returns", value:"24/47",                                                   color:C.blue,  icon:<CheckCircle2 size={18} strokeWidth={2}/>},
         ].map((k,i)=>(
           <div key={i} className="rv-kpi-card kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
@@ -475,6 +535,14 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             ))}
           </div>
 
+          {realReturns && realReturns.length === 0 && (
+            <div style={{padding:"32px 16px",textAlign:"center"}}>
+              <div style={{fontSize:32,marginBottom:12,opacity:.4}}>↩️</div>
+              <div style={{fontSize:14,fontWeight:600,color:C.sub,marginBottom:6}}>No returns yet</div>
+              <div style={{fontSize:12.5,color:C.muted,lineHeight:1.6}}>When customers request returns from your store, they'll appear here automatically.</div>
+            </div>
+          )}
+
           <div style={{flex:1,overflowY:"auto"}}>
             {filtered.map(r=>{
               const s  = STATUS_R[r.status];
@@ -504,7 +572,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
           <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,background:C.card}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
               <span style={{fontSize:12,color:C.muted}}>Total refund risk</span>
-              <span style={{fontSize:13,fontWeight:700,color:C.text}}>${RETURNS.reduce((s,r)=>s+r.orderValue,0).toFixed(2)}</span>
+              <span style={{fontSize:13,fontWeight:700,color:C.text}}>${returnSource.reduce((s,r)=>s+r.orderValue,0).toFixed(2)}</span>
             </div>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
               <span style={{fontSize:12,color:C.muted}}>Margin protected</span>
