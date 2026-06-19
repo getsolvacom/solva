@@ -252,6 +252,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [pickAmpm,  setPickAmpm]  = useState("AM");
 
   const { store } = useStore();
+  const [realTickets, setRealTickets] = useState(null);
+  const [ticketsLoading, setTicketsLoading] = useState(true);
 
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState([
@@ -282,23 +284,71 @@ export default function TicketsView({ isLandscape, isMobile }) {
     return () => document.removeEventListener("mousedown", h);
   }, [schedMenuOpen, schedPickOpen, customPickOpen]);
 
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setTicketsLoading(false); return; }
+        const { data: storeData } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle();
+        if (!storeData) { setTicketsLoading(false); return; }
+        const { data: rows } = await supabase
+          .from('tickets')
+          .select('*')
+          .eq('store_id', storeData.id)
+          .order('created_at', { ascending: false });
+        if (rows && rows.length > 0) {
+          const mapped = rows.map(r => ({
+            id: r.id,
+            name: r.customer_name || 'Customer',
+            avatar: (r.customer_name || 'C').slice(0, 2).toUpperCase(),
+            avatarColor: '#5BADFF',
+            subject: r.subject || 'Support request',
+            preview: r.preview || (r.subject || '').slice(0, 60),
+            time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
+            status: r.status || 'pending',
+            unread: r.status === 'pending',
+            messages: Array.isArray(r.messages) ? r.messages : [
+              { from: 'customer', text: r.subject || 'Support request', time: '' },
+            ],
+            tags: r.tags || [],
+          }));
+          setRealTickets(mapped);
+        } else {
+          setRealTickets([]);
+        }
+      } catch (err) {
+        console.error('TicketsView fetch error:', err);
+        setRealTickets([]);
+      } finally {
+        setTicketsLoading(false);
+      }
+    };
+    fetchTickets();
+  }, []);
+
   const getStatus = (id, def) => statusOverrides[id] || def;
 
-  const filtered = TICKETS.filter(t => {
+  const ticketSource = realTickets && realTickets.length > 0 ? realTickets : TICKETS;
+  const filtered = ticketSource.filter(t => {
     const mf = filter === "All" || getStatus(t.id, t.status) === filter.toLowerCase();
     const ms = t.name.toLowerCase().includes(search.toLowerCase()) || t.subject.toLowerCase().includes(search.toLowerCase());
     return mf && ms;
   });
 
-  const selected        = TICKETS.find(t => t.id === selectedId);
+  const selected        = ticketSource.find(t => t.id === selectedId);
   const effectiveStatus = selected ? getStatus(selectedId, selected.status) : null;
-  const effectiveMsgs   = selected ? [...selected.messages, ...(extraMessages[selectedId] || [])] : [];
+  const effectiveMsgs   = selected ? [...(Array.isArray(selected.messages) ? selected.messages : []), ...(extraMessages[selectedId] || [])] : [];
 
   const counts = {
-    All:       TICKETS.length,
-    Pending:   TICKETS.filter(t => getStatus(t.id, t.status) === "pending").length,
-    Resolved:  TICKETS.filter(t => getStatus(t.id, t.status) === "resolved").length,
-    Escalated: TICKETS.filter(t => getStatus(t.id, t.status) === "escalated").length,
+    All:       ticketSource.length,
+    Pending:   ticketSource.filter(t => getStatus(t.id, t.status) === "pending").length,
+    Resolved:  ticketSource.filter(t => getStatus(t.id, t.status) === "resolved").length,
+    Escalated: ticketSource.filter(t => getStatus(t.id, t.status) === "escalated").length,
   };
 
   function fireToast(message, color, bg) {
@@ -490,6 +540,14 @@ export default function TicketsView({ isLandscape, isMobile }) {
               </button>
             ))}
           </div>
+
+          {realTickets !== null && realTickets.length === 0 && (
+            <div style={{margin:"0 14px 10px",padding:"14px 12px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`,textAlign:"center"}}>
+              <div style={{fontSize:20,marginBottom:6}}>🎫</div>
+              <div style={{fontSize:12.5,fontWeight:600,color:C.text,marginBottom:4}}>No tickets yet</div>
+              <div style={{fontSize:11.5,color:C.muted}}>Tickets from your Shopify store will appear here once connected.</div>
+            </div>
+          )}
 
           <div style={{display:"flex",margin:"0 14px 12px",borderRadius:10,overflow:"hidden",border:`1px solid ${C.border}`}}>
             {[{label:"Auto-resolved",value:"87%",color:C.teal},{label:"Avg response",value:"<1m",color:C.blue},{label:"Escalated",value:"3%",color:"#FF5272"}].map((s,i)=>(
