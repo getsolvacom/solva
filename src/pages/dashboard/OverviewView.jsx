@@ -72,11 +72,17 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
 
   const liveActivity = stats?.recentActivity || [];
 
+  const today = new Date();
+  const weekAgo = new Date();
+  weekAgo.setDate(today.getDate() - 6);
+  const dateRange = `${weekAgo.toLocaleDateString('en-US', { month:'short', day:'numeric' })} – ${today.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}`;
+
+  const hasRealData = stats && (stats.totalTickets > 0 || stats.totalCarts > 0 || stats.totalReturns > 0);
   const kpis = [
-    { label:"Tickets Resolved",  value: stats ? stats.ticketsResolved.toLocaleString() : "—", change:"+18%", color:C.teal,    bar:68, icon:<Inbox size={18} strokeWidth={2}/> },
-    { label:"Revenue Recovered", value: stats ? `$${stats.revenueRecovered.toFixed(2)}` : "—", change:"+24%", color:C.coral,   bar:74, icon:<DollarSign size={18} strokeWidth={2}/> },
-    { label:"Returns Deflected", value: stats ? stats.returnsDeflected.toString() : "—", change:"+12%", color:C.amber,   bar:52, icon:<RotateCcw size={18} strokeWidth={2}/> },
-    { label:"Hours Saved",       value: stats ? `${(stats.ticketsResolved * 0.5).toFixed(1)}h` : "—", change:"+31%", color:C.magenta, bar:80, icon:<Clock size={18} strokeWidth={2}/> },
+    { label:"Tickets Resolved",  value: stats ? stats.ticketsResolved.toLocaleString() : "—", change: hasRealData ? "+18%" : "—", color:C.teal,    bar:68, icon:<Inbox size={18} strokeWidth={2}/> },
+    { label:"Revenue Recovered", value: stats ? `$${stats.revenueRecovered.toFixed(2)}` : "—", change: hasRealData ? "+24%" : "—", color:C.coral,   bar:74, icon:<DollarSign size={18} strokeWidth={2}/> },
+    { label:"Returns Deflected", value: stats ? stats.returnsDeflected.toString() : "—", change: hasRealData ? "+12%" : "—", color:C.amber,   bar:52, icon:<RotateCcw size={18} strokeWidth={2}/> },
+    { label:"Hours Saved",       value: stats ? `${(stats.ticketsResolved * 0.5).toFixed(1)}h` : "—", change: hasRealData ? "+31%" : "—", color:C.magenta, bar:80, icon:<Clock size={18} strokeWidth={2}/> },
   ];
 
   return (
@@ -97,7 +103,7 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
       <div className="ov-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
         <div>
           <h1 style={{fontFamily:"'Outfit',sans-serif",fontSize:17,fontWeight:700,color:C.text}}>Overview</h1>
-          <p style={{fontSize:11.5,color:C.muted}}>May 19 – May 26, 2026</p>
+          <p style={{fontSize:11.5,color:C.muted}}>{dateRange}</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{display:"flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:8,background:"rgba(229,82,102,.09)",border:"1px solid rgba(229,82,102,.22)"}}>
