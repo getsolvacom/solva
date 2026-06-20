@@ -319,7 +319,7 @@ function GeneralSection({ storeName, onSaveStoreName, store, userEmail }) {
 }
 
 function AIConfigSection() {
-  const [tone,           setTone]           = useState("friendly");
+  const [tone,           setTone]           = useState(null);
   const [lang,           setLang]           = useState("English");
   const [autoReplyLimit, setAutoReplyLimit] = useState("5");
   const [escEmail,       setEscEmail]       = useState("");
@@ -413,29 +413,36 @@ function AIConfigSection() {
       )}
       {settingsLoaded && (
         <>
-          <div className="section-card fu">
-            <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Brand Tone</p>
-            <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-              {tones.map(t=>(
-                <div key={t.key} className="tone-card" onClick={()=>setTone(t.key)}
-                  style={{
-                    padding:"16px 14px",
-                    background: tone===t.key?"rgba(229,82,102,.08)":C.surface,
-                    border:`1px solid ${tone===t.key?C.coral:C.border}`,
-                    boxShadow: tone===t.key?`0 0 0 2px rgba(229,82,102,.22),0 0 22px rgba(229,82,102,.14)`:"none",
-                    transition:"all .18s ease",
-                  }}>
-                  <div style={{marginBottom:10,color:tone===t.key?C.coral:C.sub,display:"flex"}}>{t.icon}</div>
-                  <div style={{fontSize:13.5,fontWeight:700,color:tone===t.key?C.coral:C.text,marginBottom:5}}>{t.label}</div>
-                  <div style={{fontSize:12,color:C.muted,lineHeight:1.55,marginBottom:10}}>{t.desc}</div>
-                  <div style={{display:"flex",alignItems:"center",gap:5,opacity:tone===t.key?1:0,transition:"opacity .18s"}}>
-                    <span style={{width:7,height:7,borderRadius:"50%",background:C.teal,display:"inline-block",flexShrink:0}}/>
-                    <span style={{fontSize:11,color:C.teal,fontWeight:700}}>Active</span>
-                  </div>
-                </div>
-              ))}
+          {tone === null && (
+            <div className="section-card fu" style={{marginBottom:22}}>
+              <div style={{height:120,borderRadius:10,background:C.dim,opacity:.5}}/>
             </div>
-          </div>
+          )}
+          {tone !== null && (
+            <div className="section-card fu">
+              <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Brand Tone</p>
+              <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+                {tones.map(t=>(
+                  <div key={t.key} className="tone-card" onClick={()=>setTone(t.key)}
+                    style={{
+                      padding:"16px 14px",
+                      background: tone===t.key?"rgba(229,82,102,.08)":C.surface,
+                      border:`1px solid ${tone===t.key?C.coral:C.border}`,
+                      boxShadow: tone===t.key?`0 0 0 2px rgba(229,82,102,.22),0 0 22px rgba(229,82,102,.14)`:"none",
+                      transition:"all .18s ease",
+                    }}>
+                    <div style={{marginBottom:10,color:tone===t.key?C.coral:C.sub,display:"flex"}}>{t.icon}</div>
+                    <div style={{fontSize:13.5,fontWeight:700,color:tone===t.key?C.coral:C.text,marginBottom:5}}>{t.label}</div>
+                    <div style={{fontSize:12,color:C.muted,lineHeight:1.55,marginBottom:10}}>{t.desc}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:5,opacity:tone===t.key?1:0,transition:"opacity .18s"}}>
+                      <span style={{width:7,height:7,borderRadius:"50%",background:C.teal,display:"inline-block",flexShrink:0}}/>
+                      <span style={{fontSize:11,color:C.teal,fontWeight:700}}>Active</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="section-card fu fu1">
             <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Response Settings</p>
             <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
