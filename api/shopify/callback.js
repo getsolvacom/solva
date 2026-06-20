@@ -20,15 +20,15 @@ const registerWebhooks = async (shop, accessToken) => {
     },
     {
       topic: 'customers/data_request',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/customers-data-request'
+      address: 'https://solva-sigma.vercel.app/api/webhooks/gdpr'
     },
     {
       topic: 'customers/redact',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/customers-redact'
+      address: 'https://solva-sigma.vercel.app/api/webhooks/gdpr'
     },
     {
       topic: 'shop/redact',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/shop-redact'
+      address: 'https://solva-sigma.vercel.app/api/webhooks/gdpr'
     }
   ];
 
