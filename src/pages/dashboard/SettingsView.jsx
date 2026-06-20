@@ -356,15 +356,29 @@ function AIConfigSection() {
         .from('stores').select('id')
         .eq('user_id', user.id).eq('is_active', true).maybeSingle();
       if (!storeData) return;
-      await supabase.from('store_settings').upsert({
-        store_id: storeData.id,
-        ai_tone: tone,
-        ai_language: lang,
-        ai_auto_reply_limit: autoReplyLimit,
-        ai_escalation_email: escEmail,
-        ai_signature: sig,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'store_id' });
+      const { data: existing } = await supabase
+        .from('store_settings').select('id')
+        .eq('store_id', storeData.id).maybeSingle();
+
+      if (existing) {
+        await supabase.from('store_settings').update({
+          ai_tone: tone,
+          ai_language: lang,
+          ai_auto_reply_limit: autoReplyLimit,
+          ai_escalation_email: escEmail,
+          ai_signature: sig,
+          updated_at: new Date().toISOString(),
+        }).eq('store_id', storeData.id);
+      } else {
+        await supabase.from('store_settings').insert({
+          store_id: storeData.id,
+          ai_tone: tone,
+          ai_language: lang,
+          ai_auto_reply_limit: autoReplyLimit,
+          ai_escalation_email: escEmail,
+          ai_signature: sig,
+        });
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
@@ -497,14 +511,27 @@ function AutomationsSection() {
         .from('stores').select('id')
         .eq('user_id', user.id).eq('is_active', true).maybeSingle();
       if (!storeData) return;
-      await supabase.from('store_settings').upsert({
-        store_id: storeData.id,
-        automation_support: support,
-        automation_returns: returns,
-        automation_cart: cart,
-        cart_discount_code: cartCode,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'store_id' });
+      const { data: existing } = await supabase
+        .from('store_settings').select('id')
+        .eq('store_id', storeData.id).maybeSingle();
+
+      if (existing) {
+        await supabase.from('store_settings').update({
+          automation_support: support,
+          automation_returns: returns,
+          automation_cart: cart,
+          cart_discount_code: cartCode,
+          updated_at: new Date().toISOString(),
+        }).eq('store_id', storeData.id);
+      } else {
+        await supabase.from('store_settings').insert({
+          store_id: storeData.id,
+          automation_support: support,
+          automation_returns: returns,
+          automation_cart: cart,
+          cart_discount_code: cartCode,
+        });
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
@@ -730,16 +757,31 @@ function NotificationsSection() {
         .from('stores').select('id')
         .eq('user_id', user.id).eq('is_active', true).maybeSingle();
       if (!storeData) return;
-      await supabase.from('store_settings').upsert({
-        store_id: storeData.id,
-        notif_weekly_report:    prefs.weeklyReport,
-        notif_daily_summary:    prefs.dailySummary,
-        notif_escalation:       prefs.escalation,
-        notif_cart_recovered:   prefs.cartRecovered,
-        notif_return_deflected: prefs.returnDeflected,
-        notif_new_ticket:       prefs.newTicket,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'store_id' });
+      const { data: existing } = await supabase
+        .from('store_settings').select('id')
+        .eq('store_id', storeData.id).maybeSingle();
+
+      if (existing) {
+        await supabase.from('store_settings').update({
+          notif_weekly_report:    prefs.weeklyReport,
+          notif_daily_summary:    prefs.dailySummary,
+          notif_escalation:       prefs.escalation,
+          notif_cart_recovered:   prefs.cartRecovered,
+          notif_return_deflected: prefs.returnDeflected,
+          notif_new_ticket:       prefs.newTicket,
+          updated_at: new Date().toISOString(),
+        }).eq('store_id', storeData.id);
+      } else {
+        await supabase.from('store_settings').insert({
+          store_id: storeData.id,
+          notif_weekly_report:    prefs.weeklyReport,
+          notif_daily_summary:    prefs.dailySummary,
+          notif_escalation:       prefs.escalation,
+          notif_cart_recovered:   prefs.cartRecovered,
+          notif_return_deflected: prefs.returnDeflected,
+          notif_new_ticket:       prefs.newTicket,
+        });
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
