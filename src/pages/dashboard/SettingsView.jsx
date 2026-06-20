@@ -57,6 +57,7 @@ function GlobalStyles() {
       @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:.15;}}
       @keyframes savedPop{0%{opacity:0;transform:scale(.9);}60%{transform:scale(1.04);}100%{opacity:1;transform:scale(1);}}
+      @keyframes spin{to{transform:rotate(360deg);}}
       @keyframes toastSlideIn{from{opacity:0;transform:translateX(70px);}to{opacity:1;transform:translateX(0);}}
       @keyframes toastFadeOut{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(70px);}}
       .sv-toast-in{animation:toastSlideIn .35s cubic-bezier(.16,1,.3,1) both;}
@@ -325,6 +326,7 @@ function AIConfigSection() {
   const [sig,            setSig]            = useState("Warm regards,\nThe Support Team");
   const [conds,          setConds]          = useState({angry:true,refund:true,legal:false,repeat:true});
   const [saved,          setSaved]          = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   useEffect(() => {
     function onLoad(e) {
@@ -334,6 +336,7 @@ function AIConfigSection() {
       if (s.ai_auto_reply_limit) setAutoReplyLimit(s.ai_auto_reply_limit);
       if (s.ai_escalation_email) setEscEmail(s.ai_escalation_email);
       if (s.ai_signature) setSig(s.ai_signature);
+      setSettingsLoaded(true);
       if (window.__solvaSettings) {
         const s2 = window.__solvaSettings;
         if (s2.ai_tone) setTone(s2.ai_tone);
@@ -341,8 +344,10 @@ function AIConfigSection() {
         if (s2.ai_auto_reply_limit) setAutoReplyLimit(s2.ai_auto_reply_limit);
         if (s2.ai_escalation_email) setEscEmail(s2.ai_escalation_email);
         if (s2.ai_signature) setSig(s2.ai_signature);
+        setSettingsLoaded(true);
       }
     }
+    if (!window.__solvaSettings) setSettingsLoaded(true);
     window.addEventListener('solva-settings-loaded', onLoad);
     onLoad({ detail: window.__solvaSettings || {} });
     return () => window.removeEventListener('solva-settings-loaded', onLoad);
@@ -400,70 +405,80 @@ function AIConfigSection() {
   return (
     <div>
       <SectionTitle sub="Control how Solva AI communicates with your customers.">AI Configuration</SectionTitle>
-      <div className="section-card fu">
-        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Brand Tone</p>
-        <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-          {tones.map(t=>(
-            <div key={t.key} className="tone-card" onClick={()=>setTone(t.key)}
-              style={{
-                padding:"16px 14px",
-                background: tone===t.key?"rgba(229,82,102,.08)":C.surface,
-                border:`1px solid ${tone===t.key?C.coral:C.border}`,
-                boxShadow: tone===t.key?`0 0 0 2px rgba(229,82,102,.22),0 0 22px rgba(229,82,102,.14)`:"none",
-                transition:"all .18s ease",
-              }}>
-              <div style={{marginBottom:10,color:tone===t.key?C.coral:C.sub,display:"flex"}}>{t.icon}</div>
-              <div style={{fontSize:13.5,fontWeight:700,color:tone===t.key?C.coral:C.text,marginBottom:5}}>{t.label}</div>
-              <div style={{fontSize:12,color:C.muted,lineHeight:1.55,marginBottom:10}}>{t.desc}</div>
-              <div style={{display:"flex",alignItems:"center",gap:5,opacity:tone===t.key?1:0,transition:"opacity .18s"}}>
-                <span style={{width:7,height:7,borderRadius:"50%",background:C.teal,display:"inline-block",flexShrink:0}}/>
-                <span style={{fontSize:11,color:C.teal,fontWeight:700}}>Active</span>
+      {!settingsLoaded && (
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"20px 0",color:C.muted,fontSize:13.5}}>
+          <div style={{width:14,height:14,borderRadius:"50%",border:`2px solid ${C.dim}`,borderTopColor:C.coral,animation:"spin .7s linear infinite",flexShrink:0}}/>
+          Loading your AI settings…
+        </div>
+      )}
+      {settingsLoaded && (
+        <>
+          <div className="section-card fu">
+            <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Brand Tone</p>
+            <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+              {tones.map(t=>(
+                <div key={t.key} className="tone-card" onClick={()=>setTone(t.key)}
+                  style={{
+                    padding:"16px 14px",
+                    background: tone===t.key?"rgba(229,82,102,.08)":C.surface,
+                    border:`1px solid ${tone===t.key?C.coral:C.border}`,
+                    boxShadow: tone===t.key?`0 0 0 2px rgba(229,82,102,.22),0 0 22px rgba(229,82,102,.14)`:"none",
+                    transition:"all .18s ease",
+                  }}>
+                  <div style={{marginBottom:10,color:tone===t.key?C.coral:C.sub,display:"flex"}}>{t.icon}</div>
+                  <div style={{fontSize:13.5,fontWeight:700,color:tone===t.key?C.coral:C.text,marginBottom:5}}>{t.label}</div>
+                  <div style={{fontSize:12,color:C.muted,lineHeight:1.55,marginBottom:10}}>{t.desc}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:5,opacity:tone===t.key?1:0,transition:"opacity .18s"}}>
+                    <span style={{width:7,height:7,borderRadius:"50%",background:C.teal,display:"inline-block",flexShrink:0}}/>
+                    <span style={{fontSize:11,color:C.teal,fontWeight:700}}>Active</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="section-card fu fu1">
+            <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Response Settings</p>
+            <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
+              <div>
+                <FieldLabel hint="Language used in all AI-generated replies.">Response Language</FieldLabel>
+                <SelectInput value={lang} onChange={e=>setLang(e.target.value)} options={LANGUAGES}/>
+              </div>
+              <div>
+                <FieldLabel hint="Max consecutive AI replies before escalating.">Auto-Reply Limit</FieldLabel>
+                <SelectInput value={autoReplyLimit} onChange={e=>setAutoReplyLimit(e.target.value)} options={["3","5","7","10","Unlimited"]}/>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-      <div className="section-card fu fu1">
-        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Response Settings</p>
-        <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
-          <div>
-            <FieldLabel hint="Language used in all AI-generated replies.">Response Language</FieldLabel>
-            <SelectInput value={lang} onChange={e=>setLang(e.target.value)} options={LANGUAGES}/>
-          </div>
-          <div>
-            <FieldLabel hint="Max consecutive AI replies before escalating.">Auto-Reply Limit</FieldLabel>
-            <SelectInput value={autoReplyLimit} onChange={e=>setAutoReplyLimit(e.target.value)} options={["3","5","7","10","Unlimited"]}/>
-          </div>
-        </div>
-        <div>
-          <FieldLabel hint="Appended to every AI-generated email.">Email Signature</FieldLabel>
-          <textarea value={sig} onChange={e=>setSig(e.target.value)} rows={3}
-            style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,lineHeight:1.65}}/>
-        </div>
-      </div>
-      <div className="section-card fu fu2">
-        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Escalation Rules</p>
-        <div style={{marginBottom:18}}>
-          <FieldLabel hint="Complex tickets forwarded here.">Escalation Email</FieldLabel>
-          <TextInput value={escEmail} onChange={e=>setEscEmail(e.target.value)} placeholder="support@yourstore.com"/>
-        </div>
-        <p style={{fontSize:12,fontWeight:700,color:C.sub,marginBottom:12}}>Escalate automatically when:</p>
-        {[
-          {key:"angry",  label:"Customer uses angry or threatening language"},
-          {key:"refund", label:"Customer requests a refund > $200"},
-          {key:"legal",  label:"Legal or compliance language detected"},
-          {key:"repeat", label:"Same customer contacts more than 3× in 24h"},
-        ].map(c=>(
-          <div key={c.key} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:`1px solid ${C.dim}`}}>
-            <div onClick={()=>setConds(p=>({...p,[c.key]:!p[c.key]}))}
-              style={{width:18,height:18,borderRadius:5,flexShrink:0,cursor:"pointer",border:`1.5px solid ${conds[c.key]?C.coral:C.border}`,background:conds[c.key]?C.coral:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
-              {conds[c.key]&&<Check size={14} strokeWidth={2} style={{color:"#fff"}}/>}
+            <div>
+              <FieldLabel hint="Appended to every AI-generated email.">Email Signature</FieldLabel>
+              <textarea value={sig} onChange={e=>setSig(e.target.value)} rows={3}
+                style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,lineHeight:1.65}}/>
             </div>
-            <span style={{fontSize:13.5,color:C.sub}}>{c.label}</span>
           </div>
-        ))}
-      </div>
-      <SaveBar onSave={save} saved={saved}/>
+          <div className="section-card fu fu2">
+            <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Escalation Rules</p>
+            <div style={{marginBottom:18}}>
+              <FieldLabel hint="Complex tickets forwarded here.">Escalation Email</FieldLabel>
+              <TextInput value={escEmail} onChange={e=>setEscEmail(e.target.value)} placeholder="support@yourstore.com"/>
+            </div>
+            <p style={{fontSize:12,fontWeight:700,color:C.sub,marginBottom:12}}>Escalate automatically when:</p>
+            {[
+              {key:"angry",  label:"Customer uses angry or threatening language"},
+              {key:"refund", label:"Customer requests a refund > $200"},
+              {key:"legal",  label:"Legal or compliance language detected"},
+              {key:"repeat", label:"Same customer contacts more than 3× in 24h"},
+            ].map(c=>(
+              <div key={c.key} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:`1px solid ${C.dim}`}}>
+                <div onClick={()=>setConds(p=>({...p,[c.key]:!p[c.key]}))}
+                  style={{width:18,height:18,borderRadius:5,flexShrink:0,cursor:"pointer",border:`1.5px solid ${conds[c.key]?C.coral:C.border}`,background:conds[c.key]?C.coral:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
+                  {conds[c.key]&&<Check size={14} strokeWidth={2} style={{color:"#fff"}}/>}
+                </div>
+                <span style={{fontSize:13.5,color:C.sub}}>{c.label}</span>
+              </div>
+            ))}
+          </div>
+          <SaveBar onSave={save} saved={saved}/>
+        </>
+      )}
     </div>
   );
 }
