@@ -949,11 +949,9 @@ const INVOICES = [
 ];
 
 function BillingSection({ isLandscape = false, isMobile = false }) {
-  const [planModal,      setPlanModal]      = useState(null);
-  const [planToast,      setPlanToast]      = useState(false);
-  const [planToastFade,  setPlanToastFade]  = useState(false);
-  const [dlToast,        setDlToast]        = useState(false);
-  const [dlToastFade,    setDlToastFade]    = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(null);
+  const [dlToast,         setDlToast]         = useState(false);
+  const [dlToastFade,     setDlToastFade]     = useState(false);
   const lsMob = isLandscape && isMobile;
 
   const usage = [
@@ -964,17 +962,35 @@ function BillingSection({ isLandscape = false, isMobile = false }) {
 
   const curIdx = PLANS.findIndex(p=>p.name===CURRENT_PLAN);
 
-  function handlePlanClick(p, i) {
-    if (p.name === CURRENT_PLAN) return;
-    setPlanModal({ name:p.name, direction: i > curIdx ? "upgrade" : "downgrade" });
-  }
+  const handlePlanCheckout = async (variantId, planName) => {
+    setCheckoutLoading(planName);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-  function handleConfirm() {
-    setPlanModal(null);
-    setPlanToast(true); setPlanToastFade(false);
-    setTimeout(()=>setPlanToastFade(true), 2700);
-    setTimeout(()=>{ setPlanToast(false); setPlanToastFade(false); }, 3000);
-  }
+      const response = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          variantId,
+          email: user.email,
+          userId: user.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        console.error('No checkout URL returned:', data);
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
 
   function handleDownload() {
     setDlToast(true); setDlToastFade(false);
@@ -986,33 +1002,7 @@ function BillingSection({ isLandscape = false, isMobile = false }) {
     <div>
       <SectionTitle sub="Manage your plan, usage, and payment details.">Billing & Plan</SectionTitle>
 
-      {/* Plan change modal */}
-      {planModal && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.74)",zIndex:10001,display:"flex",alignItems:"center",justifyContent:"center",padding:lsMob?8:20}}>
-          <div className="fu modal-inner" style={{background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:16,padding:lsMob?18:28,maxWidth:lsMob?"92vw":420,width:"100%",maxHeight:lsMob?"88vh":undefined,overflowY:lsMob?"auto":undefined}}>
-            <h3 style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:10}}>Confirm Plan Change</h3>
-            <p style={{fontSize:14,color:C.sub,lineHeight:1.7,marginBottom:24}}>
-              Are you sure you want to change your plan to{" "}
-              <strong style={{color:C.coral}}>{planModal.name}</strong>?
-              {planModal.direction==="downgrade" && " Some features may become unavailable immediately."}
-            </p>
-            <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
-              <button className="btn-ghost" onClick={()=>setPlanModal(null)}
-                style={{padding:"10px 20px",borderRadius:10,border:`1px solid ${C.border}`,color:C.sub,fontSize:13,fontWeight:600}}>Cancel</button>
-              <button className="btn-primary" onClick={handleConfirm}
-                style={{padding:"10px 22px",borderRadius:10,color:"#fff",fontSize:13,fontWeight:700}}>Confirm</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Toasts */}
-      {planToast && (
-        <div className={planToastFade?"sv-toast-out":"sv-toast-in"}
-          style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.teal,color:"#082018",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:10,fontWeight:700,fontSize:13,fontFamily:"'Outfit',sans-serif",boxShadow:"0 6px 32px rgba(0,0,0,.4)"}}>
-          ✓ Plan change requested successfully!
-        </div>
-      )}
       {dlToast && (
         <div className={dlToastFade?"sv-toast-out":"sv-toast-in"}
           style={{position:"fixed",top:20,right:20,zIndex:9999,background:C.blue,color:"#fff",padding:"12px 20px",borderRadius:10,display:"flex",alignItems:"center",gap:10,fontWeight:700,fontSize:13,fontFamily:"'Outfit',sans-serif",boxShadow:"0 6px 32px rgba(0,0,0,.4)"}}>
@@ -1040,7 +1030,15 @@ function BillingSection({ isLandscape = false, isMobile = false }) {
                 {p.features.map((f,j)=><div key={j} style={{display:"flex",gap:7,marginBottom:7}}><span style={{color:C.coral,fontSize:12,marginTop:1,flexShrink:0}}>✓</span><span style={{fontSize:12.5,color:C.sub}}>{f}</span></div>)}
                 <button
                   disabled={isCurrent}
-                  onClick={()=>handlePlanClick(p,i)}
+                  onClick={() => {
+                    if (isCurrent) return;
+                    const variantIds = {
+                      'Starter': '1816146',
+                      'Growth':  '1816190',
+                      'Scale':   '1816290',
+                    };
+                    handlePlanCheckout(variantIds[p.name], p.name);
+                  }}
                   className={isUpgrade&&!isCurrent?"btn-primary":""}
                   style={{
                     marginTop:14,width:"100%",padding:"9px",borderRadius:9,
@@ -1050,7 +1048,13 @@ function BillingSection({ isLandscape = false, isMobile = false }) {
                     color:isCurrent?C.coral:!isUpgrade?C.muted:"#fff",
                     fontWeight:600,fontSize:13,fontFamily:"'Outfit',sans-serif",
                   }}>
-                  {isCurrent?"● Current Plan":isUpgrade?"Upgrade →":"Downgrade"}
+                  {isCurrent
+                    ? "● Current Plan"
+                    : checkoutLoading === p.name
+                    ? "Redirecting…"
+                    : isUpgrade
+                    ? "Upgrade →"
+                    : "Downgrade"}
                 </button>
               </div>
             );
