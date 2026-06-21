@@ -102,6 +102,30 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(null);
+
+  const VARIANT_IDS = { Starter: '1816146', Growth: '1816190', Scale: '1816290' };
+
+  const handleCheckout = async (planName) => {
+    setCheckoutLoading(planName);
+    try {
+      const response = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variantId: VARIANT_IDS[planName], userId: null, email: null }),
+      });
+      const data = await response.json();
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        alert('Something went wrong. Please try again.');
+      }
+    } catch {
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
 
   const scrollTo = (label) => {
     const id = NAV_IDS[label];
@@ -263,7 +287,13 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{width:"100%",padding:"11px",borderRadius:9,color:"#fff",fontWeight:600,fontSize:13.5}}>Get Started →</button>
+              <button
+                className="btn-primary"
+                disabled={checkoutLoading === plan.name}
+                onClick={() => handleCheckout(plan.name)}
+                style={{width:"100%",padding:"11px",borderRadius:9,color:"#fff",fontWeight:600,fontSize:13.5,opacity:checkoutLoading===plan.name?.65:1}}>
+                {checkoutLoading === plan.name ? "Loading..." : "Get Started →"}
+              </button>
             </div>
           ))}
         </div>

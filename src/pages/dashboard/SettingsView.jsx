@@ -952,7 +952,20 @@ function BillingSection({ isLandscape = false, isMobile = false }) {
   const [checkoutLoading, setCheckoutLoading] = useState(null);
   const [dlToast,         setDlToast]         = useState(false);
   const [dlToastFade,     setDlToastFade]     = useState(false);
+  const [planInfo,        setPlanInfo]        = useState({ plan: null, plan_status: null });
   const lsMob = isLandscape && isMobile;
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase.from('profiles').select('plan, plan_status').eq('id', user.id).single();
+        if (data) setPlanInfo({ plan: data.plan, plan_status: data.plan_status });
+      } catch {}
+    };
+    load();
+  }, []);
 
   const usage = [
     {label:"Tickets Resolved", used:1247, limit:5000, color:C.coral},
@@ -960,7 +973,7 @@ function BillingSection({ isLandscape = false, isMobile = false }) {
     {label:"Returns Deflected",used:69,   limit:200,  color:C.amber},
   ];
 
-  const curIdx = PLANS.findIndex(p=>p.name===CURRENT_PLAN);
+  const curIdx = PLANS.findIndex(p => p.name.toLowerCase() === (planInfo.plan || '').toLowerCase());
 
   const handlePlanCheckout = async (variantId, planName) => {
     setCheckoutLoading(planName);
@@ -1012,10 +1025,25 @@ function BillingSection({ isLandscape = false, isMobile = false }) {
 
       {/* Plan cards */}
       <div className="section-card fu">
-        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Current Plan</p>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+          <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase"}}>Current Plan</p>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:13.5,fontWeight:700,color:C.text}}>
+              {planInfo.plan ? planInfo.plan.charAt(0).toUpperCase() + planInfo.plan.slice(1) : '—'}
+            </span>
+            <span style={{
+              display:"inline-flex",alignItems:"center",padding:"2px 9px",borderRadius:100,
+              fontSize:10.5,fontWeight:600,
+              color:(planInfo.plan_status==='active'||planInfo.plan_status==='on_trial')?C.teal:C.amber,
+              background:(planInfo.plan_status==='active'||planInfo.plan_status==='on_trial')?'rgba(62,207,178,.10)':'rgba(240,160,75,.10)',
+            }}>
+              {planInfo.plan_status || 'inactive'}
+            </span>
+          </div>
+        </div>
         <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
           {PLANS.map((p,i)=>{
-            const isCurrent  = p.name === CURRENT_PLAN;
+            const isCurrent  = p.name.toLowerCase() === (planInfo.plan || '').toLowerCase();
             const isUpgrade  = i > curIdx;
             return (
               <div key={i} className="plan-card" style={{
