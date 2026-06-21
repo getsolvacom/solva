@@ -73,7 +73,7 @@ function SolvaLogo({ size=15 }) {
 }
 
 function StepBar({ current }) {
-  const steps = ["Create Account","Connect Store","Configure","Go Live"];
+  const steps = ["Create Account","Tell Us More","Connect Store","Configure","Go Live"];
   return (
     <div className="stepbar" style={{display:"flex",alignItems:"center",marginBottom:46}}>
       {steps.map((s,i) => {
@@ -314,6 +314,60 @@ function Step1({ onNext, onLogin }) {
           {loading?"Creating account…":"Create My Account →"}
         </button>
         <p style={{textAlign:"center",fontSize:13,color:C.muted}}>Already have an account? <span onClick={onLogin} style={{color:C.coral,cursor:"pointer"}}>Sign in</span></p>
+      </div>
+    </CardShell>
+  );
+}
+
+// ── STEP 1b ──
+function Step1b({ onNext, onBack }) {
+  const [q1, setQ1] = useState(null);
+  const [q2, setQ2] = useState(null);
+  const [q3, setQ3] = useState(null);
+
+  const allAnswered = q1 !== null && q2 !== null && q3 !== null;
+
+  const q1Opts = ["Resolve support tickets faster","Deflect returns & save margin","Recover abandoned carts","All three — full autopilot"];
+  const q2Opts = ["Less than 100","100 – 500","500 – 2,000","2,000+"];
+  const q3Opts = ["Just me","2 – 3 people","4 – 10 people","More than 10"];
+
+  const renderGrid = (opts, selected, onSelect) => (
+    <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+      {opts.map((opt,i) => (
+        <div key={i} className="tone-card" onClick={()=>onSelect(i)}
+          style={{padding:"14px 12px",background:selected===i?"rgba(229,82,102,.09)":C.card,border:`1px solid ${selected===i?C.coral:C.border}`}}>
+          <div style={{fontSize:13.5,color:selected===i?C.coral:C.text,fontWeight:selected===i?600:400,lineHeight:1.4}}>{opt}</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <CardShell maxWidth={520}>
+      <h1 className="fu" style={{fontFamily:"'Outfit',sans-serif",fontSize:24,fontWeight:800,letterSpacing:"-.02em",marginBottom:8}}>Quick setup questions</h1>
+      <p className="fu" style={{fontSize:13.5,color:C.sub,lineHeight:1.7,marginBottom:28}}>Help us personalise your Solva experience. Takes 30 seconds.</p>
+
+      <div className="fu fu1" style={{marginBottom:22}}>
+        <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:10}}>What's your main goal with Solva?</label>
+        {renderGrid(q1Opts, q1, setQ1)}
+      </div>
+
+      <div className="fu fu2" style={{marginBottom:22}}>
+        <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:10}}>How many orders does your store get per month?</label>
+        {renderGrid(q2Opts, q2, setQ2)}
+      </div>
+
+      <div className="fu fu3" style={{marginBottom:28}}>
+        <label style={{fontSize:11.5,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase",display:"block",marginBottom:10}}>How big is your support team?</label>
+        {renderGrid(q3Opts, q3, setQ3)}
+      </div>
+
+      <div className="fu fu4">
+        <button className="btn-primary" onClick={allAnswered?onNext:undefined}
+          style={{width:"100%",padding:"14px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15,marginBottom:12,opacity:allAnswered?1:0.5,cursor:allAnswered?"pointer":"default"}}>
+          Next →
+        </button>
+        <button className="btn-ghost" onClick={onBack} style={{width:"100%",padding:"11px",borderRadius:10,border:`1px solid ${C.border}`,color:C.sub,fontSize:14}}>← Back</button>
       </div>
     </CardShell>
   );
@@ -560,12 +614,13 @@ export default function OnboardingPage() {
       <div style={{width:"100%",maxWidth:520,position:"relative",zIndex:1}}>
         {mode === "login"  && <LoginForm onSignup={()=>setMode("signup")} goDash={goDash}/>}
         {mode === "signup" && step===1 && <Step1 onNext={()=>setStep(2)} onLogin={()=>navigate("/login")}/>}
-        {mode === "signup" && step===2 && <Step2 onNext={()=>setStep(3)} onBack={()=>setStep(1)}/>}
-        {mode === "signup" && step===3 && <Step3 onNext={()=>setStep(4)} onBack={()=>setStep(2)}/>}
-        {mode === "signup" && step===4 && <Step4 goDash={goDash}/>}
+        {mode === "signup" && step===2 && <Step1b onNext={()=>setStep(3)} onBack={()=>setStep(1)}/>}
+        {mode === "signup" && step===3 && <Step2 onNext={()=>setStep(4)} onBack={()=>setStep(2)}/>}
+        {mode === "signup" && step===4 && <Step3 onNext={()=>setStep(5)} onBack={()=>setStep(3)}/>}
+        {mode === "signup" && step===5 && <Step4 goDash={goDash}/>}
       </div>
 
-      {(mode === "login" || step < 4) && (
+      {(mode === "login" || step < 5) && (
         <button onClick={goBack} className="btn-ghost" style={{marginTop:22,background:"none",border:"none",color:C.muted,fontSize:13.5,cursor:"pointer"}}>
           ← Back to home
         </button>
