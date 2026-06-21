@@ -5,11 +5,24 @@ export default async function handler(req, res) {
 
   const { variantId, email, userId } = req.body;
 
-  if (!variantId || !email) {
+  if (!variantId) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
+    const attributes = {
+      product_options: {
+        redirect_url: 'https://solva-sigma.vercel.app/dashboard',
+        receipt_link_url: 'https://solva-sigma.vercel.app/dashboard',
+      },
+    };
+
+    if (email || userId) {
+      attributes.checkout_data = {};
+      if (email) attributes.checkout_data.email = email;
+      if (userId) attributes.checkout_data.custom = { user_id: userId };
+    }
+
     const response = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
       method: 'POST',
       headers: {
@@ -20,18 +33,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         data: {
           type: 'checkouts',
-          attributes: {
-            checkout_data: {
-              email: email,
-              custom: {
-                user_id: userId,
-              },
-            },
-            product_options: {
-              redirect_url: 'https://solva-sigma.vercel.app/dashboard',
-              receipt_link_url: 'https://solva-sigma.vercel.app/dashboard',
-            },
-          },
+          attributes,
           relationships: {
             store: {
               data: {

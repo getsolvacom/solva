@@ -112,7 +112,7 @@ export default function LandingPage() {
       const response = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ variantId: VARIANT_IDS[planName], userId: null, email: null }),
+        body: JSON.stringify({ variantId: VARIANT_IDS[planName] }),
       });
       const data = await response.json();
       if (data.checkoutUrl) {
