@@ -7,6 +7,8 @@ import OnboardingPage    from "./pages/OnboardingPage";
 import DashboardShell    from "./pages/dashboard/DashboardShell";
 import ShopifyCallback   from "./pages/ShopifyCallback";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import PrivacyPage       from "./pages/PrivacyPage";
+import TermsPage         from "./pages/TermsPage";
 
 export default function App() {
   const navigate = useNavigate();
@@ -109,6 +111,8 @@ export default function App() {
         !hasStore ? <Navigate to="/onboarding" replace /> :
         <DashboardShell />
       } />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
       <Route path="/auth/shopify/callback" element={<ShopifyCallback />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />

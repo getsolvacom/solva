@@ -310,6 +310,20 @@ export default function LandingPage() {
           Connect Your Store — It's Free →
         </button>
       </div>
+
+      {/* Footer links */}
+      <div style={{textAlign:"center",padding:"0 24px 48px",display:"flex",justifyContent:"center",gap:28}}>
+        <span onClick={()=>navigate("/privacy")} style={{fontSize:13,color:C.muted,cursor:"pointer",textDecoration:"none"}}
+          onMouseEnter={e=>e.currentTarget.style.textDecoration="underline"}
+          onMouseLeave={e=>e.currentTarget.style.textDecoration="none"}>
+          Privacy Policy
+        </span>
+        <span onClick={()=>navigate("/terms")} style={{fontSize:13,color:C.muted,cursor:"pointer",textDecoration:"none"}}
+          onMouseEnter={e=>e.currentTarget.style.textDecoration="underline"}
+          onMouseLeave={e=>e.currentTarget.style.textDecoration="none"}>
+          Terms of Service
+        </span>
+      </div>
     </div>
   );
 }
