@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
-import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, Menu } from "lucide-react";
+import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, Menu, Users } from "lucide-react";
 import AppSidebar       from "./AppSidebar";
 import { useStore }     from "../../hooks/useStore";
 import OverviewView     from "./OverviewView";
@@ -10,12 +10,14 @@ import CartRecoveryView from "./CartRecoveryView";
 import ReturnsView      from "./ReturnsView";
 import AnalyticsView    from "./AnalyticsView";
 import SettingsView     from "./SettingsView";
+import CustomersView   from "./CustomersView";
 
 const NAV_ITEMS = [
   {key:"overview",  label:"Overview",      icon:<LayoutDashboard size={18} strokeWidth={2}/>},
   {key:"tickets",   label:"AI Tickets",    icon:<Ticket size={18} strokeWidth={2}/>,        badge:"12"},
   {key:"cart",      label:"Cart Recovery", icon:<ShoppingCart size={18} strokeWidth={2}/>,  badge:"24"},
   {key:"returns",   label:"Returns",       icon:<RotateCcw size={18} strokeWidth={2}/>,     badge:"8"},
+  {key:"customers", label:"Customers",     icon:<Users size={18} strokeWidth={2}/>},
   {key:"analytics", label:"Analytics",     icon:<BarChart3 size={18} strokeWidth={2}/>},
   {key:"settings",  label:"Settings",      icon:<Settings size={18} strokeWidth={2}/>},
 ];
@@ -163,6 +165,7 @@ export default function DashboardShell({ fixedView }) {
         {view === "tickets"   && <TicketsView isLandscape={isLandscape} isMobile={isMobile}/>}
         {view === "cart"      && <CartRecoveryView isLandscape={isLandscape} isMobile={isMobile}/>}
         {view === "returns"   && <ReturnsView isLandscape={isLandscape} isMobile={isMobile}/>}
+        {view === "customers" && <CustomersView isLandscape={isLandscape} isMobile={isMobile}/>}
         {view === "analytics" && <AnalyticsView isLandscape={isLandscape} isMobile={isMobile}/>}
         {view === "settings"  && <SettingsView isLandscape={isLandscape} isMobile={isMobile}/>}
       </div>

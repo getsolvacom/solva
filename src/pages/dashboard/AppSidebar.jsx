@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { useStore } from "../../hooks/useStore";
-import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, LogOut, Store } from "lucide-react";
+import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, LogOut, Store, Users } from "lucide-react";
 
 function SolvaLogo({ size=15 }) {
   return (
@@ -34,6 +34,7 @@ export default function AppSidebar() {
     {key:"tickets",   label:"AI Tickets",    icon:<Ticket size={18} strokeWidth={2}/>,        badge:"12"},
     {key:"cart",      label:"Cart Recovery", icon:<ShoppingCart size={18} strokeWidth={2}/>,  badge:"24"},
     {key:"returns",   label:"Returns",       icon:<RotateCcw size={18} strokeWidth={2}/>,     badge:"8"},
+    {key:"customers", label:"Customers",     icon:<Users size={18} strokeWidth={2}/>},
     {key:"analytics", label:"Analytics",     icon:<BarChart3 size={18} strokeWidth={2}/>},
     {key:"settings",  label:"Settings",      icon:<Settings size={18} strokeWidth={2}/>},
   ];
