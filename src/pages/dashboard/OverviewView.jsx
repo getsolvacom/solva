@@ -90,28 +90,6 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
     <div className="ov-view" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",fontFamily:"'Outfit',sans-serif"}}>
       <GlobalStyles/>
 
-      {!loading && stats && stats.totalTickets === 0 && stats.totalCarts === 0 && stats.totalReturns === 0 && (
-        <div style={{padding:20,borderRadius:14,background:C.card,border:`1px solid ${C.border}`,margin:"16px 24px 0"}}>
-          <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:4}}>Get set up</div>
-          <div style={{fontSize:12,color:C.muted,marginBottom:16}}>Complete these steps to start automating your store</div>
-          {[
-            {title:"Connect your Shopify store",subtitle:"Link your store to start receiving automations",badge:"2 min",badgeBg:"rgba(62,207,178,.12)",badgeColor:C.teal,path:"/dashboard/settings/general"},
-            {title:"Configure your AI tone",subtitle:"Set how SOLVA communicates with your customers",badge:"1 min",badgeBg:"rgba(229,82,102,.12)",badgeColor:C.coral,path:"/dashboard/settings/ai"},
-            {title:"Enable automations",subtitle:"Turn on ticket resolution, cart recovery, and returns",badge:"1 min",badgeBg:"rgba(240,160,75,.12)",badgeColor:C.amber,path:"/dashboard/settings/automations"},
-          ].map((item,i)=>(
-            <div key={i} onClick={()=>navigate(item.path)} onMouseEnter={()=>setHoveredRow(i)} onMouseLeave={()=>setHoveredRow(null)}
-              style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none",cursor:"pointer"}}>
-              <div style={{width:22,height:22,borderRadius:"50%",border:`1.5px solid ${C.border}`,flexShrink:0}}/>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13.5,fontWeight:600,color:hoveredRow===i?C.coral:C.text}}>{item.title}</div>
-                <div style={{fontSize:12,color:C.muted}}>{item.subtitle}</div>
-              </div>
-              <span style={{fontSize:11,fontWeight:600,padding:"3px 9px",borderRadius:100,background:item.badgeBg,color:item.badgeColor,flexShrink:0}}>{item.badge}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Top bar */}
       <div className="ov-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
         <div>
@@ -129,6 +107,29 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
 
       {/* Scrollable content */}
       <div className="ov-content" style={{flex:1,overflowY:"auto",padding:"22px 24px",display:"flex",flexDirection:"column",gap:16,background:C.bg}}>
+
+        {/* Setup checklist */}
+        {!loading && stats && stats.totalTickets === 0 && stats.totalCarts === 0 && stats.totalReturns === 0 && (
+          <div style={{padding:20,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
+            <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:4}}>Get set up</div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:16}}>Complete these steps to start automating your store</div>
+            {[
+              {title:"Connect your Shopify store",subtitle:"Link your store to start receiving automations",badge:"2 min",badgeBg:"rgba(62,207,178,.12)",badgeColor:C.teal,path:"/dashboard/settings/general"},
+              {title:"Configure your AI tone",subtitle:"Set how SOLVA communicates with your customers",badge:"1 min",badgeBg:"rgba(229,82,102,.12)",badgeColor:C.coral,path:"/dashboard/settings/ai"},
+              {title:"Enable automations",subtitle:"Turn on ticket resolution, cart recovery, and returns",badge:"1 min",badgeBg:"rgba(240,160,75,.12)",badgeColor:C.amber,path:"/dashboard/settings/automations"},
+            ].map((item,i)=>(
+              <div key={i} onClick={()=>navigate(item.path)} onMouseEnter={()=>setHoveredRow(i)} onMouseLeave={()=>setHoveredRow(null)}
+                style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none",cursor:"pointer"}}>
+                <div style={{width:22,height:22,borderRadius:"50%",border:`1.5px solid ${C.border}`,flexShrink:0}}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13.5,fontWeight:600,color:hoveredRow===i?C.coral:C.text}}>{item.title}</div>
+                  <div style={{fontSize:12,color:C.muted}}>{item.subtitle}</div>
+                </div>
+                <span style={{fontSize:11,fontWeight:600,padding:"3px 9px",borderRadius:100,background:item.badgeBg,color:item.badgeColor,flexShrink:0}}>{item.badge}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* KPI Cards */}
         <div className="kpi-row" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
