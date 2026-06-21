@@ -19,6 +19,7 @@ function GlobalStyles() {
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+      html, body { background: var(--bg, #060008) !important; }
       ::-webkit-scrollbar{width:3px;}
       ::-webkit-scrollbar-thumb{background:#3D0050;border-radius:2px;}
       @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}

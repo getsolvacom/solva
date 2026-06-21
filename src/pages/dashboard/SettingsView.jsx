@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
+import { useTheme } from '../../hooks/useTheme';
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../hooks/useStore";
 import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Gift, MessageSquare, GitBranch, Ticket, X } from "lucide-react";
@@ -1262,6 +1263,7 @@ const BRIGHTNESS_PRESETS = [
 ];
 
 function AppearanceSection() {
+  const { theme, toggleTheme } = useTheme();
   const [brightness, setBrightness] = useState(() => {
     const saved = localStorage.getItem(BRIGHTNESS_KEY);
     return saved ? parseFloat(saved) : 1.0;
@@ -1280,6 +1282,47 @@ function AppearanceSection() {
   return (
     <div>
       <SectionTitle sub="Personalise how the interface looks on your screen.">Appearance</SectionTitle>
+
+      <div className="section-card fu" style={{marginBottom:16}}>
+        <p style={{fontSize:11,fontWeight:700,color:"var(--muted)",letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Color Theme</p>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
+          <div>
+            <div style={{fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:5}}>
+              {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+            </div>
+            <div style={{fontSize:12.5,color:"var(--muted)"}}>
+              {theme === 'dark'
+                ? 'Easy on the eyes. Perfect for focus sessions.'
+                : 'Clean and crisp. Great for bright environments.'}
+            </div>
+          </div>
+          <button
+            onClick={toggleTheme}
+            style={{display:"flex",alignItems:"center",gap:8,padding:"10px 20px",borderRadius:100,border:`1px solid ${theme === 'dark' ? '#3D0050' : 'rgba(78,2,105,.25)'}`,background:theme === 'dark' ? '#1A0020' : '#FFE8EF',color:theme === 'dark' ? '#F5EAF2' : '#1A0010',fontSize:13.5,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .2s ease",flexShrink:0}}>
+            {theme === 'dark'
+              ? <><span style={{fontSize:16}}>☀️</span> Switch to Light</>
+              : <><span style={{fontSize:16}}>🌙</span> Switch to Dark</>}
+          </button>
+        </div>
+        <div style={{display:"flex",gap:10,marginTop:16}}>
+          {[
+            {key:'dark',  label:'Dark',  preview:['#060008','#110014','#E55266']},
+            {key:'light', label:'Light', preview:['#FFF5F8','#FFF0F5','#E55266']},
+          ].map(t => (
+            <div key={t.key} onClick={()=>{ if (theme !== t.key) toggleTheme(); }}
+              style={{flex:1,padding:14,borderRadius:12,border:`1.5px solid ${theme === t.key ? '#E55266' : 'var(--border)'}`,background:theme === t.key ? 'rgba(229,82,102,.08)' : 'var(--surface)',cursor:"pointer",transition:"all .2s ease"}}>
+              <div style={{display:"flex",gap:5,marginBottom:10}}>
+                {t.preview.map((color,i) => (
+                  <div key={i} style={{flex:1,height:20,borderRadius:5,background:color,border:"1px solid rgba(255,255,255,.1)"}}/>
+                ))}
+              </div>
+              <div style={{fontSize:13,fontWeight:theme===t.key?700:400,color:theme===t.key?'#E55266':'var(--muted)'}}>
+                {t.label}{theme === t.key && <span style={{marginLeft:6,fontSize:10}}>✓ Active</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="section-card fu">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:8}}>Display Brightness</p>
