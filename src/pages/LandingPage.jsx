@@ -4,9 +4,9 @@ import { C } from "../tokens";
 import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight } from "lucide-react";
 
 const PLANS = [
-  { name:"Starter", price:"$299", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
-  { name:"Growth",  price:"$599", popular:true,  features:["Everything in Starter","5,000 tickets/mo","Advanced cart recovery","Return deflection","Priority support"] },
-  { name:"Scale",   price:"$1,199", popular:false, features:["Everything in Growth","Unlimited tickets","Custom AI training","Dedicated manager","SLA guarantee"] },
+  { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
+  { name:"Growth",  price:"$69", popular:true,  features:["Everything in Starter","5,000 tickets/mo","Advanced cart recovery","Return deflection","Priority support"] },
+  { name:"Scale",   price:"$169", popular:false, features:["Everything in Growth","Unlimited tickets","Custom AI training","Dedicated manager","SLA guarantee"] },
 ];
 
 function GlobalStyles() {
