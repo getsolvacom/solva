@@ -243,6 +243,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [schedMenuOpen,   setSchedMenuOpen]   = useState(false);
   const [schedPickOpen,   setSchedPickOpen]   = useState(false);
   const [activeFormat,    setActiveFormat]    = useState(null);
+  const [csatRatings,    setCsatRatings]    = useState({});
+  const [csatHover,      setCsatHover]      = useState(null);
   const [customPickOpen, setCustomPickOpen] = useState(false);
   const [pickDay,   setPickDay]   = useState(new Date().getDate());
   const [pickMonth, setPickMonth] = useState(new Date().getMonth() + 1);
@@ -485,6 +487,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
   const escalateDisabled = !!(ticketEscalated[selectedId] || ticketClosed[selectedId]);
   const closeDisabled    = !!ticketClosed[selectedId];
+  const csatVals = Object.values(csatRatings).filter(v => v > 0);
+  const avgCsat  = csatVals.length > 0 ? (csatVals.reduce((a,b)=>a+b,0)/csatVals.length).toFixed(1) : "—";
 
   const popupBase = {
     position:"absolute", zIndex:500, right:0, bottom:"calc(100% + 8px)",
@@ -550,8 +554,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
           )}
 
           <div style={{display:"flex",margin:"0 14px 12px",borderRadius:10,overflow:"hidden",border:`1px solid ${C.border}`}}>
-            {[{label:"Auto-resolved",value:"87%",color:C.teal},{label:"Avg response",value:"<1m",color:C.blue},{label:"Escalated",value:"3%",color:"#FF5272"}].map((s,i)=>(
-              <div key={i} style={{flex:1,padding:"9px 6px",textAlign:"center",background:C.card,borderRight:i<2?`1px solid ${C.border}`:"none"}}>
+            {[{label:"Auto-resolved",value:"87%",color:C.teal},{label:"Avg response",value:"<1m",color:C.blue},{label:"Escalated",value:"3%",color:"#FF5272"},{label:"Satisfaction",value:avgCsat,color:C.amber}].map((s,i)=>(
+              <div key={i} style={{flex:1,padding:"9px 6px",textAlign:"center",background:C.card,borderRight:i<3?`1px solid ${C.border}`:"none"}}>
                 <div style={{fontSize:13.5,fontWeight:800,color:s.color}}>{s.value}</div>
                 <div style={{fontSize:9.5,color:C.muted,marginTop:2}}>{s.label}</div>
               </div>
@@ -574,7 +578,12 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       <div style={{fontSize:12.5,fontWeight:t.unread?600:400,color:t.unread?C.text:C.sub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:5}}>{t.subject}</div>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                         <span style={{fontSize:11.5,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:150}}>{t.preview}</span>
-                        <span className="tag" style={{color:st.color,background:st.bg,marginLeft:6,gap:4}}>{st.icon}{st.label}</span>
+                        <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+                          <span className="tag" style={{color:st.color,background:st.bg,marginLeft:6,gap:4}}>{st.icon}{st.label}</span>
+                          {csatRatings[t.id] !== undefined && csatRatings[t.id] > 0 && (
+                            <span style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10.5,padding:"2px 7px",borderRadius:100,background:"rgba(240,160,75,.10)",color:C.amber,marginLeft:4}}>★ {csatRatings[t.id]}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     {t.unread && <div style={{width:7,height:7,borderRadius:"50%",background:C.coral,flexShrink:0,marginTop:4}}/>}
@@ -676,6 +685,41 @@ export default function TicketsView({ isLandscape, isMobile }) {
                     {[0,1,2].map(i=><div key={i} className="typing-dot" style={{animationDelay:`${i*.18}s`}}/>)}
                     <span style={{fontSize:11.5,color:C.muted,marginLeft:6}}>Solva AI is composing a reply…</span>
                   </div>
+                </div>
+              )}
+              {ticketClosed[selectedId] && csatRatings[selectedId] === undefined && (
+                <div style={{padding:"18px 22px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`,textAlign:"center",maxWidth:360,margin:"20px auto 0"}}>
+                  <div style={{fontSize:24,marginBottom:10}}>✅</div>
+                  <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:6}}>Rate this resolution</div>
+                  <div style={{fontSize:12,color:C.muted,marginBottom:16}}>How satisfied was the customer with this response?</div>
+                  <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:14}}>
+                    {[1,2,3,4,5].map(star=>(
+                      <button key={star}
+                        onClick={()=>setCsatRatings(prev=>({...prev,[selectedId]:star}))}
+                        onMouseEnter={()=>setCsatHover(star)}
+                        onMouseLeave={()=>setCsatHover(null)}
+                        style={{fontSize:28,color:star<=(csatHover||csatRatings[selectedId]||0)?C.amber:C.dim,cursor:"pointer",background:"transparent",border:"none",transition:"color .1s",fontFamily:"'Outfit',sans-serif"}}>
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:10.5,color:C.muted,paddingLeft:4,paddingRight:4,marginBottom:12}}>
+                    <span>Very Dissatisfied</span><span>Very Satisfied</span>
+                  </div>
+                  <button onClick={()=>setCsatRatings(prev=>({...prev,[selectedId]:0}))}
+                    style={{fontSize:12,color:C.muted,cursor:"pointer",background:"transparent",border:"none",fontFamily:"'Outfit',sans-serif"}}>
+                    Skip
+                  </button>
+                </div>
+              )}
+              {ticketClosed[selectedId] && csatRatings[selectedId] !== undefined && csatRatings[selectedId] > 0 && (
+                <div style={{padding:"18px 22px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`,textAlign:"center",maxWidth:360,margin:"20px auto 0"}}>
+                  <div style={{display:"flex",gap:4,justifyContent:"center",marginBottom:10}}>
+                    {[1,2,3,4,5].map(star=>(
+                      <span key={star} style={{fontSize:24,color:star<=csatRatings[selectedId]?C.amber:C.dim}}>★</span>
+                    ))}
+                  </div>
+                  <div style={{fontSize:14,fontWeight:700,color:C.teal}}>Thank you for the feedback!</div>
                 </div>
               )}
             </div>
