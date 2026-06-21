@@ -210,7 +210,7 @@ export default function LandingPage() {
 
         {/* Stats bar */}
         <div className="fu fu4" style={{display:"flex",maxWidth:560,margin:"0 auto",borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`}}>
-          {[["1.2M+","Tickets Resolved"],["$4.8M","Revenue Recovered"],["98.3%","Satisfaction Rate"]].map(([v,l],i)=>(
+          {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"]].map(([v,l],i)=>(
             <div key={i} className={i<2?"stats-cell stats-divider":"stats-cell"} style={{flex:1,padding:"20px 14px",background:C.surface,textAlign:"center",borderRight:i<2?`1px solid ${C.border}`:"none"}}>
               <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
               <div className="stats-label" style={{fontSize:11.5,color:C.muted,fontWeight:500}}>{l}</div>
@@ -227,9 +227,9 @@ export default function LandingPage() {
         </div>
         <div className="features-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
           {[
-            {icon:<Bot size={28} strokeWidth={2}/>,         title:"AI Support Agent",  color:C.teal,  stat:"87% auto-resolution",desc:"Handles order inquiries, shipping questions, and FAQs automatically. Only escalates what truly needs a human."},
-            {icon:<RotateCcw size={28} strokeWidth={2}/>,   title:"Return Deflection",  color:C.amber, stat:"28% deflection rate", desc:"Before a return is processed, our AI offers smart alternatives — exchanges, discounts, troubleshooting."},
-            {icon:<ShoppingCart size={28} strokeWidth={2}/>,title:"Cart Recovery",      color:C.blue,  stat:"19% average recovery",desc:"A 3-touch AI sequence — email, SMS, and a personalised follow-up — written dynamically based on cart contents."},
+            {icon:<Bot size={28} strokeWidth={2}/>,         title:"AI Support Agent",  color:C.teal,  stat:"Resolves tickets instantly",desc:"Handles order inquiries, shipping questions, and FAQs automatically. Only escalates what truly needs a human."},
+            {icon:<RotateCcw size={28} strokeWidth={2}/>,   title:"Return Deflection",  color:C.amber, stat:"Deflects before refunds", desc:"Before a return is processed, our AI offers smart alternatives — exchanges, discounts, troubleshooting."},
+            {icon:<ShoppingCart size={28} strokeWidth={2}/>,title:"Cart Recovery",      color:C.blue,  stat:"3-touch recovery sequence",desc:"A 3-touch AI sequence — email, SMS, and a personalised follow-up — written dynamically based on cart contents."},
           ].map((f,i)=>(
             <div key={i} className="card-hover feat-card" style={{padding:28,borderRadius:16,background:C.card,border:`1px solid ${C.border}`,display:"flex",flexDirection:"column"}}>
               <div className="feat-icon" style={{width:48,height:48,borderRadius:13,marginBottom:18,background:`${f.color}14`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{f.icon}</div>
@@ -305,7 +305,7 @@ export default function LandingPage() {
         <h2 className="cta-heading" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(28px,4.5vw,50px)",fontWeight:800,letterSpacing:"-.025em",marginBottom:14,position:"relative"}}>
           Ready to solve everything<br/>on autopilot?
         </h2>
-        <p className="cta-sub" style={{color:C.sub,fontSize:15.5,marginBottom:32,position:"relative"}}>Join 800+ Shopify stores already solving on autopilot with Solva.</p>
+        <p className="cta-sub" style={{color:C.sub,fontSize:15.5,marginBottom:32,position:"relative"}}>Built for Shopify stores that want to automate support, returns, and cart recovery — all in one place.</p>
         <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"16px 36px",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15.5,position:"relative"}}>
           Connect Your Store — It's Free →
         </button>
