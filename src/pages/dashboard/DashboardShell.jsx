@@ -97,6 +97,8 @@ export default function DashboardShell({ fixedView }) {
   return (
     <div className={`dash-root${isMobile && isLandscape ? " ls-mob" : ""}`} style={{display:"flex",height:"100dvh",background:C.bg,overflow:"hidden",overflowX:"hidden",filter:brightnessFilter}}>
       <style>{`
+        body{background:#060008!important;margin:0;padding:0;}
+        html{background:#060008!important;}
         @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
         .mob-header{display:none;align-items:center;justify-content:space-between;padding:0 16px;background:${C.surface};border-bottom:1px solid ${C.border};flex-shrink:0;}
         .mob-ham{cursor:pointer;background:transparent;border:1px solid ${C.border};border-radius:8px;display:flex;align-items:center;justify-content:center;color:${C.text};font-family:'Outfit',sans-serif;transition:border-color .14s,color .14s;}
