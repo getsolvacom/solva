@@ -120,7 +120,7 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
             ].map((item,i)=>(
               <div key={i} onClick={()=>navigate(item.path)} onMouseEnter={()=>setHoveredRow(i)} onMouseLeave={()=>setHoveredRow(null)}
                 style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none",cursor:"pointer"}}>
-                <div style={{width:22,height:22,borderRadius:"50%",border:`1.5px solid ${C.border}`,flexShrink:0}}/>
+                <div style={{width:22,height:22,borderRadius:"50%",border:`1.5px solid ${C.border}`,flexShrink:0,marginRight:4}}/>
                 <div style={{flex:1}}>
                   <div style={{fontSize:13.5,fontWeight:600,color:hoveredRow===i?C.coral:C.text}}>{item.title}</div>
                   <div style={{fontSize:12,color:C.muted}}>{item.subtitle}</div>
