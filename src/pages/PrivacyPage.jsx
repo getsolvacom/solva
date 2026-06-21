@@ -51,7 +51,7 @@ export default function PrivacyPage() {
 
         {/* Intro */}
         <div style={{marginBottom:40,fontSize:14.5,color:C.sub,lineHeight:1.78}}>
-          SOLVA ("we", "us", or "our") is operated by SOLVA (Nigeria). This Privacy Policy explains how we collect, use, store, and protect your information when you use our platform at solva-sigma.vercel.app.
+          SOLVA ("we", "us", or "our") is operated by SOLVA (Nigeria). This Privacy Policy explains how we collect, use, store, and protect your information when you use our platform at getsolva.app.
         </div>
 
         {/* Sections */}
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
             <li>Customer data deletion — we delete customer data upon receiving a deletion request</li>
             <li>Shop data deletion — we delete all store data when an app is uninstalled</li>
           </ul>
-          <p style={{marginTop:10}}>To make a data request, email us at <a href="mailto:getsolva@gmail.com" className="legal-link">getsolva@gmail.com</a>.</p>
+          <p style={{marginTop:10}}>To make a data request, email us at <a href="mailto:support@getsolva.app" className="legal-link">support@getsolva.app</a>.</p>
         </Section>
 
         <Section title="7. Data Security">
@@ -127,7 +127,7 @@ export default function PrivacyPage() {
 
         <Section title="10. Contact Us">
           <p>For privacy-related questions or data requests:</p>
-          <p style={{marginTop:8}}>Email: <a href="mailto:getsolva@gmail.com" className="legal-link">getsolva@gmail.com</a></p>
+          <p style={{marginTop:8}}>Email: <a href="mailto:support@getsolva.app" className="legal-link">support@getsolva.app</a></p>
         </Section>
 
         {/* Back link */}

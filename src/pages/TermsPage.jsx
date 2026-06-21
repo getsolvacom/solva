@@ -143,7 +143,7 @@ export default function TermsPage() {
 
         <Section title="14. Contact Us">
           <p>For questions about these Terms:</p>
-          <p style={{marginTop:8}}>Email: <a href="mailto:getsolva@gmail.com" className="legal-link">getsolva@gmail.com</a></p>
+          <p style={{marginTop:8}}>Email: <a href="mailto:support@getsolva.app" className="legal-link">support@getsolva.app</a></p>
         </Section>
 
         {/* Back link */}
