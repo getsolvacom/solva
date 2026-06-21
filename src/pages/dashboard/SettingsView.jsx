@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../hooks/useStore";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Gift, MessageSquare } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Gift, MessageSquare, GitBranch, Ticket, X } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
@@ -1469,11 +1469,175 @@ function WidgetSection() {
   );
 }
 
+// ── WORKFLOWS ──
+function WorkflowsSection() {
+  const [rules, setRules] = useState([
+    {id:1,name:"Escalate angry customers",enabled:true,trigger:"ticket_sentiment",triggerLabel:"Customer sentiment is",triggerValue:"Angry or threatening",action:"escalate",actionLabel:"Escalate to human agent",category:"support",isTemplate:true},
+    {id:2,name:"Flag high-value returns",enabled:true,trigger:"return_value",triggerLabel:"Return value is greater than",triggerValue:"$200",action:"notify",actionLabel:"Send escalation alert",category:"returns",isTemplate:true},
+    {id:3,name:"VIP cart recovery boost",enabled:false,trigger:"cart_value",triggerLabel:"Abandoned cart value is greater than",triggerValue:"$500",action:"priority_recovery",actionLabel:"Send priority recovery sequence",category:"cart",isTemplate:true},
+  ]);
+  const [showBuilder,    setShowBuilder]    = useState(false);
+  const [editingRule,    setEditingRule]    = useState(null);
+  const [saved,          setSaved]          = useState(false);
+  const [customTrigger,  setCustomTrigger]  = useState("");
+  const [customAction,   setCustomAction]   = useState("");
+  const [hoveredTpl,     setHoveredTpl]     = useState(null);
+
+  const TEMPLATES = [
+    {name:"Escalate angry customers",    trigger:"Customer sentiment is Angry",         action:"Escalate to human agent",         category:"support", color:C.red  },
+    {name:"Auto-close resolved tickets", trigger:"Customer replies with thank you",     action:"Mark ticket as resolved",         category:"support", color:C.teal },
+    {name:"Flag VIP customers",          trigger:"Customer total spend exceeds $1,000", action:"Tag as VIP and notify",           category:"support", color:C.amber},
+    {name:"High-value return alert",     trigger:"Return value exceeds $200",           action:"Send escalation notification",    category:"returns", color:C.amber},
+    {name:"Exchange nudge",              trigger:"Return reason is Wrong size",         action:"Offer exchange before refund",    category:"returns", color:C.coral},
+    {name:"VIP cart priority",           trigger:"Abandoned cart value exceeds $500",   action:"Send priority recovery sequence", category:"cart",    color:C.blue },
+    {name:"Repeat abandoner discount",   trigger:"Customer abandoned cart 2+ times",   action:"Include 15% discount in email 1", category:"cart",    color:C.blue },
+  ];
+
+  const catColor = (cat) => cat === "support" ? C.coral : cat === "returns" ? C.amber : C.blue;
+  const toggleRule = (id) => setRules(prev => prev.map(r => r.id === id ? {...r, enabled: !r.enabled} : r));
+  const deleteRule = (id) => setRules(prev => prev.filter(r => r.id !== id));
+
+  const addFromTemplate = (tpl) => {
+    setRules(prev => [...prev, {
+      id: Date.now(), name: tpl.name, enabled: true,
+      trigger: tpl.name, triggerLabel: "IF", triggerValue: tpl.trigger,
+      action: tpl.name, actionLabel: tpl.action,
+      category: tpl.category, isTemplate: true,
+    }]);
+    setShowBuilder(false);
+  };
+
+  const addCustom = () => {
+    if (!customTrigger || !customAction) return;
+    setRules(prev => [...prev, {
+      id: Date.now(), name: customTrigger, enabled: true,
+      trigger: "custom", triggerLabel: "IF", triggerValue: customTrigger,
+      action: "custom", actionLabel: customAction,
+      category: "support", isTemplate: false,
+    }]);
+    setCustomTrigger(""); setCustomAction(""); setShowBuilder(false);
+  };
+
+  const activeCount  = rules.filter(r => r.enabled).length;
+  const supportCount = rules.filter(r => r.category === "support").length;
+  const commerceCount = rules.filter(r => r.category === "cart" || r.category === "returns").length;
+
+  return (
+    <div>
+      <SectionTitle sub="Automate actions based on smart triggers. Rules run in order — drag to reprioritize.">Workflows</SectionTitle>
+
+      {/* Stats row */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:20}}>
+        {[
+          {icon:<Zap size={16} strokeWidth={2}/>,         value:activeCount,   label:"Active Rules",    color:C.teal },
+          {icon:<Ticket size={16} strokeWidth={2}/>,       value:supportCount,  label:"Support Rules",   color:C.coral},
+          {icon:<ShoppingCart size={16} strokeWidth={2}/>, value:commerceCount, label:"Commerce Rules",  color:C.blue },
+        ].map((s,i) => (
+          <div key={i} style={{padding:"14px 16px",borderRadius:12,background:C.card,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:34,height:34,borderRadius:10,background:s.color+"14",display:"flex",alignItems:"center",justifyContent:"center",color:s.color,flexShrink:0}}>{s.icon}</div>
+            <div>
+              <div style={{fontSize:20,fontWeight:800,color:s.color,fontFamily:"'Outfit',sans-serif"}}>{s.value}</div>
+              <div style={{fontSize:11.5,color:C.muted}}>{s.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Rules list header */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+        <span style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase"}}>Active Rules</span>
+        <button onClick={()=>setShowBuilder(true)}
+          style={{padding:"7px 16px",borderRadius:8,background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",color:"#fff",fontWeight:700,fontSize:13,border:"none",cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>
+          + Add Rule
+        </button>
+      </div>
+
+      {/* Rules list */}
+      {rules.length === 0 ? (
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 20px",gap:10}}>
+          <GitBranch size={32} style={{color:C.muted}}/>
+          <div style={{fontSize:14,fontWeight:600,color:C.muted}}>No rules yet</div>
+          <div style={{fontSize:12,color:C.muted}}>Add your first rule to start automating actions</div>
+        </div>
+      ) : rules.map(rule => (
+        <div key={rule.id} style={{padding:"16px 18px",borderRadius:12,background:C.card,border:`1px solid ${rule.enabled?C.borderHi:C.border}`,marginBottom:8,display:"flex",alignItems:"flex-start",gap:12}}>
+          <div style={{width:8,height:8,borderRadius:"50%",background:catColor(rule.category),flexShrink:0,marginTop:6}}/>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:14,fontWeight:600,color:rule.enabled?C.text:C.muted,marginBottom:6}}>{rule.name}</div>
+            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+              <span style={{fontSize:11,padding:"3px 8px",borderRadius:6,background:"rgba(91,173,255,.10)",color:C.blue,fontWeight:600}}>IF</span>
+              <span style={{fontSize:12,color:C.sub}}>{rule.triggerLabel} {rule.triggerValue}</span>
+              <span style={{fontSize:11,padding:"3px 8px",borderRadius:6,background:"rgba(62,207,178,.10)",color:C.teal,fontWeight:600}}>THEN</span>
+              <span style={{fontSize:12,color:C.sub}}>{rule.actionLabel}</span>
+            </div>
+            {rule.isTemplate && (
+              <div style={{fontSize:10,padding:"2px 7px",borderRadius:100,background:C.dim,color:C.muted,marginTop:6,width:"fit-content"}}>Template</div>
+            )}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+            <Toggle on={rule.enabled} onToggle={()=>toggleRule(rule.id)}/>
+            <button onClick={()=>deleteRule(rule.id)}
+              style={{padding:"6px 8px",borderRadius:7,border:`1px solid ${C.border}`,background:"transparent",color:C.muted,cursor:"pointer",display:"flex",alignItems:"center"}}>
+              <Trash2 size={14} strokeWidth={2}/>
+            </button>
+          </div>
+        </div>
+      ))}
+
+      {/* Add Rule Modal */}
+      {showBuilder && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.80)",zIndex:10001,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+          <div style={{background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:16,padding:28,maxWidth:540,width:"100%",maxHeight:"85vh",overflowY:"auto"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+              <div style={{fontSize:17,fontWeight:700,color:C.text}}>Add Workflow Rule</div>
+              <button onClick={()=>{setShowBuilder(false);setEditingRule(null);}}
+                style={{background:"transparent",border:"none",cursor:"pointer",color:C.muted,display:"flex",alignItems:"center",padding:4}}>
+                <X size={18} strokeWidth={2}/>
+              </button>
+            </div>
+            <div style={{fontSize:13,color:C.muted,marginBottom:20}}>Choose a template or build from scratch</div>
+
+            {/* Templates grid */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
+              {TEMPLATES.map((tpl,i) => (
+                <div key={i} onClick={()=>addFromTemplate(tpl)}
+                  onMouseEnter={()=>setHoveredTpl(i)} onMouseLeave={()=>setHoveredTpl(null)}
+                  style={{padding:14,borderRadius:10,background:C.surface,border:`1px solid ${hoveredTpl===i?tpl.color+"60":C.border}`,cursor:"pointer",transition:"all .15s"}}>
+                  <div style={{width:8,height:8,borderRadius:"50%",background:tpl.color,marginBottom:8}}/>
+                  <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:6}}>{tpl.name}</div>
+                  <div style={{fontSize:11.5,color:C.muted,lineHeight:1.5}}>IF {tpl.trigger}</div>
+                  <div style={{fontSize:11.5,color:tpl.color}}>→ THEN {tpl.action}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Custom rule */}
+            <div style={{fontSize:12,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:".06em",marginBottom:10}}>Custom Rule</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+              <input value={customTrigger} onChange={e=>setCustomTrigger(e.target.value)}
+                placeholder="e.g. Customer mentions refund"
+                style={{padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none",width:"100%",boxSizing:"border-box"}}/>
+              <input value={customAction} onChange={e=>setCustomAction(e.target.value)}
+                placeholder="e.g. Escalate to human"
+                style={{padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none",width:"100%",boxSizing:"border-box"}}/>
+            </div>
+            <button className="btn-primary" onClick={addCustom}
+              style={{width:"100%",padding:"11px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14}}>
+              Create Rule
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── MAIN EXPORT ──
 const SECTIONS = [
   {key:"general",       label:"General",       icon:<Store size={15} strokeWidth={2}/>},
   {key:"ai",            label:"AI Config",     icon:<Bot size={16} strokeWidth={2}/>},
   {key:"automations",   label:"Automations",   icon:<Zap size={16} strokeWidth={2}/>},
+  {key:"workflows",     label:"Workflows",     icon:<GitBranch size={16} strokeWidth={2}/>},
   {key:"notifications", label:"Notifications", icon:<Bell size={15} strokeWidth={2}/>},
   {key:"team",          label:"Team",          icon:<Users size={16} strokeWidth={2}/>},
   {key:"billing",       label:"Billing",       icon:<CreditCard size={16} strokeWidth={2}/>},
@@ -1626,6 +1790,7 @@ export default function SettingsView({ isLandscape, isMobile }) {
           {section==="general"       && <GeneralSection storeName={storeName} onSaveStoreName={setStoreName} store={store} userEmail={userEmail}/>}
           {section==="ai"            && <AIConfigSection/>}
           {section==="automations"   && <AutomationsSection/>}
+          {section==="workflows"     && <WorkflowsSection/>}
           {section==="notifications" && <NotificationsSection/>}
           {section==="team"          && <TeamSection/>}
           {section==="billing"       && <BillingSection isLandscape={isLandscape} isMobile={isMobile}/>}
