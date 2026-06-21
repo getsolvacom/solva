@@ -58,6 +58,7 @@ function GlobalStyles() {
 export default function OverviewView({ setView, isLandscape, isMobile }) {
   const navigate = useNavigate();
   const [activeChart, setActiveChart] = useState("revenue");
+  const [hoveredRow, setHoveredRow] = useState(null);
   const { stats, loading } = useDashboardStats();
 
   const weekData = stats?.weekData || [
@@ -90,12 +91,24 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
       <GlobalStyles/>
 
       {!loading && stats && stats.totalTickets === 0 && stats.totalCarts === 0 && stats.totalReturns === 0 && (
-        <div style={{margin:'16px 24px',padding:'18px 20px',borderRadius:14,background:'rgba(229,82,102,.06)',border:'1px solid rgba(229,82,102,.18)',display:'flex',alignItems:'center',gap:14}}>
-          <Zap size={20} strokeWidth={2} style={{color:C.coral,flexShrink:0}}/>
-          <div>
-            <div style={{fontSize:14,fontWeight:700,color:C.coral,marginBottom:3}}>SOLVA is ready — waiting for your first automation</div>
-            <div style={{fontSize:12.5,color:C.sub}}>When Shopify sends tickets, abandoned carts, or returns, they'll appear here automatically.</div>
-          </div>
+        <div style={{padding:20,borderRadius:14,background:C.card,border:`1px solid ${C.border}`,margin:"16px 24px 0"}}>
+          <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:4}}>Get set up</div>
+          <div style={{fontSize:12,color:C.muted,marginBottom:16}}>Complete these steps to start automating your store</div>
+          {[
+            {title:"Connect your Shopify store",subtitle:"Link your store to start receiving automations",badge:"2 min",badgeBg:"rgba(62,207,178,.12)",badgeColor:C.teal,path:"/dashboard/settings/general"},
+            {title:"Configure your AI tone",subtitle:"Set how SOLVA communicates with your customers",badge:"1 min",badgeBg:"rgba(229,82,102,.12)",badgeColor:C.coral,path:"/dashboard/settings/ai"},
+            {title:"Enable automations",subtitle:"Turn on ticket resolution, cart recovery, and returns",badge:"1 min",badgeBg:"rgba(240,160,75,.12)",badgeColor:C.amber,path:"/dashboard/settings/automations"},
+          ].map((item,i)=>(
+            <div key={i} onClick={()=>navigate(item.path)} onMouseEnter={()=>setHoveredRow(i)} onMouseLeave={()=>setHoveredRow(null)}
+              style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none",cursor:"pointer"}}>
+              <div style={{width:22,height:22,borderRadius:"50%",border:`1.5px solid ${C.border}`,flexShrink:0}}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13.5,fontWeight:600,color:hoveredRow===i?C.coral:C.text}}>{item.title}</div>
+                <div style={{fontSize:12,color:C.muted}}>{item.subtitle}</div>
+              </div>
+              <span style={{fontSize:11,fontWeight:600,padding:"3px 9px",borderRadius:100,background:item.badgeBg,color:item.badgeColor,flexShrink:0}}>{item.badge}</span>
+            </div>
+          ))}
         </div>
       )}
 
@@ -180,7 +193,13 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
             <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Live Activity</h3>
             <p style={{fontSize:11.5,color:C.muted,marginBottom:14}}>Real-time automation feed</p>
             <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,overflowY:"auto"}}>
-              {liveActivity.map((a,i)=>(
+              {liveActivity.length === 0 ? (
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:20}}>
+                  <Bot size={28} style={{color:C.muted}}/>
+                  <div style={{fontSize:13,fontWeight:600,color:C.muted,marginTop:10}}>No activity yet</div>
+                  <div style={{fontSize:11.5,color:C.muted,marginTop:4,textAlign:"center"}}>Automations will appear here in real time</div>
+                </div>
+              ) : liveActivity.map((a,i)=>(
                 <div key={i} style={{display:"flex",gap:10,padding:"9px 7px",borderRadius:8}}>
                   <div style={{width:28,height:28,borderRadius:8,flexShrink:0,background:`${a.color}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:a.color,fontWeight:700}}>{a.icon}</div>
                   <div style={{flex:1,minWidth:0}}>
