@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { C } from "../../tokens";
 import { supabase } from "../../lib/supabase";
-import { Search, Users, Ticket, ShoppingCart, RotateCcw, TrendingUp, Mail, Clock, ChevronRight, X } from "lucide-react";
+import { Search, Users, Ticket, ShoppingCart, RotateCcw, TrendingUp, Mail, Clock, ChevronRight, X, Menu } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 function relativeTime(dateStr) {
@@ -132,6 +132,11 @@ export default function CustomersView({ isLandscape, isMobile }) {
 
       {/* Top bar */}
       <div className="cv-topbar" style={{ padding: "0 24px", height: 60, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.border}`, background: C.surface }}>
+        {isMobile && (
+          <button onClick={() => window.dispatchEvent(new CustomEvent("solva-open-sidebar"))} style={{ background: "none", border: "none", padding: 4, display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <Menu size={22} strokeWidth={2} style={{ color: C.text }} />
+          </button>
+        )}
         <div>
           <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 17, fontWeight: 700, color: C.text }}>Customers</h1>
           <p style={{ fontSize: 11.5, color: C.muted }}>{customers.length} unique customer{customers.length !== 1 ? "s" : ""} across all automations</p>

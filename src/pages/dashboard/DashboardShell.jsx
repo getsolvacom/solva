@@ -88,6 +88,12 @@ export default function DashboardShell({ fixedView }) {
     return () => window.removeEventListener(BRIGHTNESS_EVENT, onBrightnessChange);
   }, []);
 
+  useEffect(() => {
+    function onOpenSidebar() { setDrawerOpen(true); }
+    window.addEventListener("solva-open-sidebar", onOpenSidebar);
+    return () => window.removeEventListener("solva-open-sidebar", onOpenSidebar);
+  }, []);
+
   const { isLandscape, isMobile } = useOrientation();
   const headerHeight = isMobile ? (isLandscape ? 44 : 60) : 0;
   const brightnessFilter = brightness !== 1.0
