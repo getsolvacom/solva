@@ -118,6 +118,8 @@ export default function DashboardShell({ fixedView }) {
         @media(max-width:767px){
           .dash-sidebar{display:none!important;}
           .dash-root{height:auto!important;min-height:100dvh!important;overflow:visible!important;overflow-x:hidden!important;}
+          .mob-header{box-sizing:border-box!important;max-width:100vw!important;}
+          .mob-ham{flex-shrink:0!important;}
           .dash-main-col{overflow:visible!important;height:auto!important;padding-top:var(--mob-h,60px)!important;}
           .mob-header{display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--mob-h,60px)!important;z-index:9999!important;background:${C.surface}!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-bottom:1px solid ${C.border}!important;}
         }
