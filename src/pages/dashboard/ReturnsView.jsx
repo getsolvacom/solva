@@ -803,9 +803,9 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                         <Send size={14} strokeWidth={2}/>Send
                       </button>
                       <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
-                      <button className="btn-primary" onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
-                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:"rgba(255,255,255,.12)"}}>
-                        <ChevronUp size={16} strokeWidth={2.5} style={{color:"#fff"}}/>
+                      <button onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
+                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:C.surface,border:`1px solid ${C.border}`}}>
+                        <ChevronUp size={16} strokeWidth={2.5} style={{color:C.text}}/>
                       </button>
                     </div>
 
