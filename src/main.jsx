@@ -49,6 +49,25 @@ function injectThemeVars() {
 
 injectThemeVars();
 
+const systemThemeWatcher = window.matchMedia("(prefers-color-scheme: dark)");
+
+function handleSystemThemeChange(e) {
+  const saved = localStorage.getItem("solva-theme");
+  if (!saved || saved === "system") {
+    if (e.matches) {
+      document.documentElement.classList.remove("light");
+    } else {
+      document.documentElement.classList.add("light");
+    }
+  }
+}
+
+if (systemThemeWatcher.addEventListener) {
+  systemThemeWatcher.addEventListener("change", handleSystemThemeChange);
+} else {
+  systemThemeWatcher.addListener(handleSystemThemeChange);
+}
+
 Sentry.init({
   dsn: "https://d6153b9f9fe01dd4e83e24a200ecdbfc0b4511604278891088.ingest.de.sentry.io/4511604313555824",
   integrations: [
