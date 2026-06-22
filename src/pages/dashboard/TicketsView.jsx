@@ -105,7 +105,7 @@ function GlobalStyles() {
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       ::-webkit-scrollbar{width:3px;}
-      ::-webkit-scrollbar-thumb{background:#3D0050;border-radius:2px;}
+      ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
       @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
       @keyframes slideRight{from{opacity:0;transform:translateX(18px);}to{opacity:1;transform:translateX(0);}}
       @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
@@ -132,13 +132,13 @@ function GlobalStyles() {
       .fmt-btn:hover{background:rgba(229,82,102,.09);}
       .emoji-btn{cursor:pointer;border:none;background:none;font-size:20px;padding:6px;border-radius:6px;line-height:1;transition:background .1s;display:flex;align-items:center;justify-content:center;}
       .emoji-btn:hover{background:rgba(229,82,102,.13);}
-      .sched-opt{display:flex;align-items:center;gap:8px;padding:11px 14px;width:100%;background:transparent;border:none;color:#D2B4C8;font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;text-align:left;transition:background .12s;min-height:44px;}
+      .sched-opt{display:flex;align-items:center;gap:8px;padding:11px 14px;width:100%;background:transparent;border:none;color:var(--sub);font-size:13px;font-family:'Outfit',sans-serif;cursor:pointer;white-space:nowrap;text-align:left;transition:background .12s;min-height:44px;}
       .sched-opt:hover{background:rgba(229,82,102,.09);color:#E55266;}
       .fmt-btn-sm{cursor:pointer;border:none;outline:none;transition:all .12s;font-family:'Outfit',sans-serif;background:transparent;width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
       .fmt-btn-sm:hover{background:rgba(229,82,102,.09);}
 
       /* ── AI Suggestions strip ── */
-      .tv-suggestions{flex-shrink:0;border-top:1px solid #200026;background:#0C000F;padding:10px 24px;}
+      .tv-suggestions{flex-shrink:0;border-top:1px solid var(--border);background:var(--surface);padding:10px 24px;}
       .tv-suggestions-toggle{display:none;}
 
       /* ── Mobile layout ── */
@@ -158,11 +158,11 @@ function GlobalStyles() {
         .tv-suggestions-toggle{display:flex!important;align-items:center;justify-content:space-between;width:100%;}
         .tv-suggestions-chips-hidden{display:none!important;}
         .tv-suggestions-chips{margin-top:7px!important;}
-        .tv-reply-box{padding:8px 12px!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:500!important;background:#0C000F!important;border-top:1px solid #3D0050!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;}
+        .tv-reply-box{padding:8px 12px!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:500!important;background:var(--surface)!important;border-top:1px solid var(--border-hi)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;}
         .msg-bubble-inner{max-width:86%!important;}
       }
       .ls-mob .tv-workspace{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
-      .ls-mob .tv-list{width:40%!important;flex:none!important;border-right:1px solid #200026!important;overflow-y:auto!important;height:100%!important;}
+      .ls-mob .tv-list{width:40%!important;flex:none!important;border-right:1px solid var(--border)!important;overflow-y:auto!important;height:100%!important;}
       .ls-mob .tv-list-hidden{display:flex!important;flex-direction:column!important;}
       .ls-mob .tv-chat{width:60%!important;flex:none!important;display:flex!important;flex-direction:column!important;height:100%!important;overflow:hidden!important;}
       .ls-mob .tv-chat-hidden{display:flex!important;flex-direction:column!important;}
@@ -736,7 +736,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                 <span style={{fontSize:11,color:C.muted,fontWeight:600,letterSpacing:".04em",textTransform:"uppercase",display:"flex",alignItems:"center",flexShrink:0}}>AI Suggestions:</span>
                 {aiSuggestions.map((s, i) => (
                   <button key={i} onClick={() => setReply(s)} className="btn-ghost"
-                    style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,color:C.sub,fontSize:12,cursor:"pointer"}}>{s}</button>
+                    style={{padding:"4px 12px",borderRadius:100,border:`1px solid ${C.border}`,background:C.card,color:C.text,fontSize:12,cursor:"pointer"}}>{s}</button>
                 ))}
               </div>
             </div>
@@ -800,9 +800,9 @@ export default function TicketsView({ isLandscape, isMobile }) {
                         <Send size={14} strokeWidth={2}/>Send
                       </button>
                       <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
-                      <button className="btn-primary" onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
-                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:"rgba(255,255,255,.12)"}}>
-                        <ChevronUp size={16} strokeWidth={2.5} style={{color:"#fff"}}/>
+                      <button onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
+                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:C.surface,border:`1px solid ${C.border}`}}>
+                        <ChevronUp size={16} strokeWidth={2.5} style={{color:C.text}}/>
                       </button>
                     </div>
 

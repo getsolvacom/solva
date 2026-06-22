@@ -16,7 +16,7 @@ function GlobalStyles() {
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       html, body { background: var(--bg, #060008) !important; }
       ::-webkit-scrollbar{width:3px;}
-      ::-webkit-scrollbar-thumb{background:#3D0050;border-radius:2px;}
+      ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
       @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
       @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
       @keyframes orbPulse{0%,100%{transform:scale(1);opacity:.40;}50%{transform:scale(1.08);opacity:.62;}}
@@ -41,19 +41,19 @@ function GlobalStyles() {
       @media(max-width:767px){
         .nav-links-desktop{display:none;}
         .nav-actions-desktop{display:none;}
-        .nav-hamburger{display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;border:1px solid #200026;border-radius:8px;width:38px;height:38px;font-size:18px;color:#F5EAF2;transition:border-color .15s,color .15s;}
+        .nav-hamburger{display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;border:1px solid var(--border);border-radius:8px;width:38px;height:38px;font-size:18px;color:var(--text);transition:border-color .15s,color .15s;}
         .nav-hamburger:hover{border-color:#E55266;color:#E55266;}
-        .nav-dropdown{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:rgba(6,0,8,.97);border-bottom:1px solid #200026;backdrop-filter:blur(20px);animation:menuSlide .22s cubic-bezier(.16,1,.3,1) both;z-index:99;padding:8px 16px 16px;}
+        .nav-dropdown{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);animation:menuSlide .22s cubic-bezier(.16,1,.3,1) both;z-index:99;padding:8px 16px 16px;}
         .features-grid{grid-template-columns:1fr!important;gap:14px!important;}
         .pricing-grid{grid-template-columns:1fr!important;gap:24px!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
         .stats-number{font-size:32px!important;}
-        .stats-label{font-size:13px!important;color:#B07898!important;}
-        .stats-divider{border-right:1px solid #3D0050!important;}
+        .stats-label{font-size:13px!important;color:var(--muted)!important;}
+        .stats-divider{border-right:1px solid var(--border-hi)!important;}
         .pricing-card{padding:36px!important;}
-        .pricing-plan-name{font-size:14.5px!important;color:#F5EAF2!important;}
+        .pricing-plan-name{font-size:14.5px!important;color:var(--text)!important;}
         .pricing-price{font-size:48px!important;}
         .pricing-features{gap:14px!important;}
         .pricing-feature-text{font-size:15px!important;}
@@ -91,7 +91,7 @@ function SolvaLogo({ size=16 }) {
         <rect x="5" y="5" width="18" height="18" rx="4" transform="rotate(45 14 14)" fill="url(#lgLand)"/>
         <path d="M10 14.2l3 3 5-5.4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
-      <span style={{color:C.text}}>SOLVA<span style={{color:C.coral,fontWeight:300}}>.AI</span></span>
+      <span style={{color:C.coral}}>SOLVA<span style={{color:C.sub,fontWeight:300}}>.AI</span></span>
     </div>
   );
 }
@@ -146,19 +146,19 @@ export default function LandingPage() {
       </div>
 
       {/* NAV */}
-      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:"rgba(6,0,8,.92)",borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
         <SolvaLogo/>
 
         {/* Desktop links */}
         <div className="nav-links-desktop">
           {["Features","How It Works","Pricing","Docs"].map(l=>(
-            <span key={l} className="nav-link" onClick={()=>scrollTo(l)} style={{fontSize:14,color:C.sub,fontWeight:500}}>{l}</span>
+            <span key={l} className="nav-link" onClick={()=>scrollTo(l)} style={{fontSize:14,color:C.text,fontWeight:500}}>{l}</span>
           ))}
         </div>
 
         {/* Desktop actions */}
         <div className="nav-actions-desktop">
-          <button className="btn-ghost" onClick={()=>navigate("/login")} style={{padding:"8px 18px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontSize:13.5}}>Sign In</button>
+          <button className="btn-ghost" onClick={()=>navigate("/login")} style={{padding:"8px 18px",borderRadius:8,border:`1px solid ${C.border}`,color:C.text,fontSize:13.5}}>Sign In</button>
           <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"9px 22px",borderRadius:8,color:"#fff",fontWeight:700,fontSize:13.5}}>Get Started →</button>
         </div>
 
@@ -172,13 +172,13 @@ export default function LandingPage() {
           <div className="nav-dropdown">
             {["Features","How It Works","Pricing","Docs"].map(l=>(
               <span key={l} className="nav-link" onClick={()=>{ closeMenu(); scrollTo(l); }}
-                style={{fontSize:15,color:C.sub,fontWeight:500,padding:"13px 8px",borderBottom:`1px solid ${C.border}`}}>
+                style={{fontSize:15,color:C.text,fontWeight:500,padding:"13px 8px",borderBottom:`1px solid ${C.border}`}}>
                 {l}
               </span>
             ))}
             <div style={{display:"flex",flexDirection:"column",gap:10,paddingTop:14}}>
               <button className="btn-ghost" onClick={()=>{closeMenu();navigate("/login");}}
-                style={{padding:"12px",borderRadius:9,border:`1px solid ${C.border}`,color:C.sub,fontSize:14,width:"100%"}}>
+                style={{padding:"12px",borderRadius:9,border:`1px solid ${C.border}`,color:C.text,fontSize:14,width:"100%"}}>
                 Sign In
               </button>
               <button className="btn-primary" onClick={()=>{closeMenu();navigate("/onboarding");}}
