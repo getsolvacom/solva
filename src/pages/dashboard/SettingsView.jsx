@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import { useTheme } from '../../hooks/useTheme';
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../hooks/useStore";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Gift, MessageSquare, GitBranch, Ticket, X } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
@@ -1254,139 +1254,66 @@ function DangerSection({ isLandscape = false, isMobile = false }) {
 }
 
 // ── APPEARANCE ──
-const BRIGHTNESS_KEY   = "solva-brightness";
-const BRIGHTNESS_EVENT = "solva-brightness-change";
-const BRIGHTNESS_PRESETS = [
-  { key:"dark",   label:"Dark",   value:1.0,  desc:"Default" },
-  { key:"dim",    label:"Dim",    value:1.2,  desc:"Slightly lighter" },
-  { key:"bright", label:"Bright", value:1.45, desc:"More visible" },
-];
-
 function AppearanceSection() {
-  const { theme, toggleTheme } = useTheme();
-  const [brightness, setBrightness] = useState(() => {
-    const saved = localStorage.getItem(BRIGHTNESS_KEY);
-    return saved ? parseFloat(saved) : 1.0;
-  });
+  const { theme, setTheme } = useTheme();
+  const [accentColor, setAccentColor] = useState('#E55266');
+  const [compactMode, setCompactMode] = useState(false);
 
-  function applyBrightness(val) {
-    const clamped = Math.round(val * 100) / 100;
-    setBrightness(clamped);
-    localStorage.setItem(BRIGHTNESS_KEY, String(clamped));
-    window.dispatchEvent(new CustomEvent(BRIGHTNESS_EVENT, { detail: clamped }));
-  }
+  const ACCENTS = ['#E55266', '#992A67', '#4E0269'];
 
-  const activePreset = BRIGHTNESS_PRESETS.find(p => Math.abs(p.value - brightness) < 0.005);
-  const fillPct = ((brightness - 1) / 0.6) * 100;
+  const themeOpts = [
+    { key:'system', label:'System', icon:<Monitor size={13} strokeWidth={2}/> },
+    { key:'light',  label:'Light',  icon:<Sun size={13} strokeWidth={2}/> },
+    { key:'dark',   label:'Dark',   icon:<Moon size={13} strokeWidth={2}/> },
+  ];
 
   return (
     <div>
       <SectionTitle sub="Personalise how the interface looks on your screen.">Appearance</SectionTitle>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:24}}>
 
-      <div className="section-card fu" style={{marginBottom:16}}>
-        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Color Theme</p>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
+        {/* Row 1 — Interface Theme */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 0",borderBottom:`1px solid ${C.border}`}}>
           <div>
-            <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:5}}>
-              {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-            </div>
-            <div style={{fontSize:12.5,color:C.sub}}>
-              {theme === 'dark'
-                ? 'Easy on the eyes. Perfect for focus sessions.'
-                : 'Clean and crisp. Great for bright environments.'}
-            </div>
+            <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:4}}>Interface Theme</div>
+            <div style={{fontSize:13,color:C.muted}}>Choose your preferred color theme or sync with your system.</div>
           </div>
-          <button
-            onClick={toggleTheme}
-            style={{display:"flex",alignItems:"center",gap:8,padding:"10px 20px",borderRadius:100,border:`1px solid ${C.border}`,background:C.surface,color:C.text,fontSize:13.5,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .2s ease",flexShrink:0}}>
-            {theme === 'dark'
-              ? <><Sun size={15}/> Switch to Light</>
-              : <><Moon size={15}/> Switch to Dark</>}
-          </button>
-        </div>
-        <div style={{display:"flex",gap:10,marginTop:16}}>
-          {[
-            {key:'dark',  label:'Dark',  preview:[C.bg,C.card,'#E55266']},
-            {key:'light', label:'Light', preview:['#FFF5F8','#FFF0F5','#E55266']},
-          ].map(t => (
-            <div key={t.key} onClick={()=>{ if (theme !== t.key) toggleTheme(); }}
-              style={{flex:1,padding:14,borderRadius:12,border:`1.5px solid ${theme === t.key ? C.coral : C.border}`,background:theme === t.key ? 'rgba(229,82,102,.08)' : C.surface,cursor:"pointer",transition:"all .2s ease"}}>
-              <div style={{display:"flex",gap:5,marginBottom:10}}>
-                {t.preview.map((color,i) => (
-                  <div key={i} style={{flex:1,height:20,borderRadius:5,background:color,border:"1px solid rgba(255,255,255,.1)"}}/>
-                ))}
-              </div>
-              <div style={{fontSize:13,fontWeight:theme===t.key?700:400,color:theme===t.key?C.coral:C.muted}}>
-                {t.label}{theme === t.key && <span style={{marginLeft:6,fontSize:10,color:C.coral}}>✓ Active</span>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="section-card fu">
-        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:8}}>Display Brightness</p>
-        <p style={{fontSize:13,color:C.muted,lineHeight:1.65,marginBottom:20}}>Adjust the interface brightness to your comfort. Useful in bright environments or for improved readability.</p>
-
-        {/* Preset buttons */}
-        <div style={{display:"flex",gap:10,marginBottom:24}}>
-          {BRIGHTNESS_PRESETS.map(p => {
-            const active = activePreset?.key === p.key;
-            return (
-              <button
-                key={p.key}
-                className="brightness-preset-btn"
-                onClick={() => applyBrightness(p.value)}
-                style={{
-                  flex:1,
-                  padding:"13px 10px",
-                  border:`1px solid ${active ? C.coral : C.border}`,
-                  background: active ? "rgba(229,82,102,.10)" : C.card,
-                  color: active ? C.coral : C.sub,
-                  fontSize:14,
-                  fontWeight: active ? 700 : 400,
-                  boxShadow: active ? "0 0 0 2px rgba(229,82,102,.20)" : "none",
-                  outline:"none",
-                }}
-              >
-                <div style={{fontSize:18,marginBottom:5,display:"flex",justifyContent:"center",color:active?C.coral:C.muted}}>
-                  <Sun size={18} strokeWidth={active?2.5:1.8} style={{opacity:p.key==="dark"?.45:p.key==="dim"?.72:1}}/>
-                </div>
-                <div>{p.label}</div>
-                <div style={{fontSize:11,color:active?C.coral:C.muted,marginTop:2,fontWeight:400}}>{p.desc}</div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Fine slider */}
-        <div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-            <label style={{fontSize:12,fontWeight:700,color:C.sub,letterSpacing:".05em",textTransform:"uppercase"}}>Fine Control</label>
-            <span style={{fontSize:12.5,color:activePreset ? C.coral : C.text,fontWeight:600,fontFamily:"'Outfit',monospace,sans-serif"}}>
-              {activePreset
-                ? activePreset.label
-                : `+${Math.round((brightness - 1) * 100)}% brightness`}
-            </span>
-          </div>
-          <input
-            type="range"
-            className="brightness-slider"
-            min={1.0}
-            max={1.6}
-            step={0.01}
-            value={brightness}
-            onChange={e => applyBrightness(parseFloat(e.target.value))}
-            style={{
-              width:"100%",
-              background:`linear-gradient(to right,${C.coral} 0%,${C.coral} ${fillPct}%,${C.dim} ${fillPct}%,${C.dim} 100%)`,
-            }}
-          />
-          <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
-            <span style={{fontSize:11,color:C.muted}}>Default</span>
-            <span style={{fontSize:11,color:C.muted}}>Maximum</span>
+          <div style={{display:"flex",gap:4,flexShrink:0,marginLeft:24}}>
+            {themeOpts.map(opt => {
+              const active = theme === opt.key;
+              return (
+                <button key={opt.key} onClick={() => setTheme(opt.key)}
+                  style={{display:"flex",alignItems:"center",gap:5,padding:"6px 16px",borderRadius:6,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"'Outfit',sans-serif",border:active?"none":`1px solid ${C.border}`,background:active?C.coral:C.surface,color:active?"#fff":C.sub,outline:"none",transition:"all .15s"}}>
+                  {opt.icon}{opt.label}
+                </button>
+              );
+            })}
           </div>
         </div>
+
+        {/* Row 2 — Accent Color */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 0",borderBottom:`1px solid ${C.border}`}}>
+          <div>
+            <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:4}}>Accent Color</div>
+            <div style={{fontSize:13,color:C.muted}}>Used for highlights, buttons, and active states.</div>
+          </div>
+          <div style={{display:"flex",gap:10,flexShrink:0,marginLeft:24}}>
+            {ACCENTS.map(color => (
+              <div key={color} onClick={() => setAccentColor(color)}
+                style={{width:22,height:22,borderRadius:"50%",background:color,cursor:"pointer",outline:accentColor===color?`2px solid ${color}`:"none",outlineOffset:2,transition:"outline .15s"}}/>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 3 — Compact Mode */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 0"}}>
+          <div>
+            <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:4}}>Compact Mode</div>
+            <div style={{fontSize:13,color:C.muted}}>Reduce spacing and padding across the dashboard.</div>
+          </div>
+          <Toggle on={compactMode} onToggle={() => setCompactMode(v => !v)}/>
+        </div>
+
       </div>
     </div>
   );
