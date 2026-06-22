@@ -30,8 +30,21 @@ function injectThemeVars() {
   `;
   document.head.appendChild(style);
 
-  const saved = localStorage.getItem('solva-theme');
-  if (saved === 'light') document.documentElement.classList.add('light');
+  (function applyInitialTheme() {
+    const saved = localStorage.getItem("solva-theme");
+    if (!saved || saved === "system") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (prefersDark) {
+        document.documentElement.classList.remove("light");
+      } else {
+        document.documentElement.classList.add("light");
+      }
+    } else if (saved === "light") {
+      document.documentElement.classList.add("light");
+    } else {
+      document.documentElement.classList.remove("light");
+    }
+  })();
 }
 
 injectThemeVars();
