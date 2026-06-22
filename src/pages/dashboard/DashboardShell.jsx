@@ -113,10 +113,10 @@ export default function DashboardShell({ fixedView }) {
           .dash-sidebar{display:none!important;}
           .dash-root{height:auto!important;min-height:100dvh!important;overflow:visible!important;overflow-x:hidden!important;}
           .dash-main-col{overflow:visible!important;height:auto!important;padding-top:var(--mob-h,60px)!important;}
-          .mob-header{display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--mob-h,60px)!important;z-index:9999!important;background:rgba(6,0,8,.92)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-bottom:1px solid ${C.borderHi}!important;}
+          .mob-header{display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--mob-h,60px)!important;z-index:9999!important;background:${C.surface}!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-bottom:1px solid ${C.border}!important;}
         }
         .ls-mob .dash-sidebar{display:none!important;}
-        .ls-mob .mob-header{display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--mob-h,44px)!important;z-index:9999!important;background:rgba(6,0,8,.92)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-bottom:1px solid ${C.borderHi}!important;}
+        .ls-mob .mob-header{display:flex!important;position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--mob-h,44px)!important;z-index:9999!important;background:${C.surface}!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-bottom:1px solid ${C.border}!important;}
         .ls-mob .mob-drawer{width:200px!important;}
         .ls-mob .mob-nav-item{padding:7px 10px!important;font-size:12.5px!important;}
         .ls-mob.dash-root{height:100dvh!important;overflow:hidden!important;}
