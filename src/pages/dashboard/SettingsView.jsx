@@ -1254,7 +1254,7 @@ function DangerSection({ isLandscape = false, isMobile = false }) {
 }
 
 // ── APPEARANCE ──
-function AppearanceSection() {
+function AppearanceSection({ isMobile = false }) {
   const { theme, setTheme } = useTheme();
   const [accentColor, setAccentColor] = useState('#E55266');
   const [compactMode, setCompactMode] = useState(false);
@@ -1273,17 +1273,17 @@ function AppearanceSection() {
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:24}}>
 
         {/* Row 1 — Interface Theme */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 0",borderBottom:`1px solid ${C.border}`}}>
+        <div style={{display:"flex",flexDirection:isMobile?"column":"row",alignItems:isMobile?"flex-start":"center",justifyContent:"space-between",padding:"20px 0",borderBottom:`1px solid ${C.border}`}}>
           <div>
             <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:4}}>Interface Theme</div>
             <div style={{fontSize:13,color:C.muted}}>Choose your preferred color theme or sync with your system.</div>
           </div>
-          <div style={{display:"flex",gap:4,flexShrink:0,marginLeft:24}}>
+          <div style={{display:"flex",gap:4,flexShrink:0,marginLeft:isMobile?0:24,marginTop:isMobile?14:0,width:isMobile?"100%":undefined}}>
             {themeOpts.map(opt => {
               const active = theme === opt.key;
               return (
                 <button key={opt.key} onClick={() => setTheme(opt.key)}
-                  style={{display:"flex",alignItems:"center",gap:5,padding:"6px 16px",borderRadius:6,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"'Outfit',sans-serif",border:active?"none":`1px solid ${C.border}`,background:active?C.coral:C.surface,color:active?"#fff":C.sub,outline:"none",transition:"all .15s"}}>
+                  style={{flex:isMobile?1:undefined,display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"6px 16px",borderRadius:6,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"'Outfit',sans-serif",border:active?"none":`1px solid ${C.border}`,background:active?C.coral:C.surface,color:active?"#fff":C.sub,outline:"none",transition:"all .15s"}}>
                   {opt.icon}{opt.label}
                 </button>
               );
@@ -1764,7 +1764,7 @@ export default function SettingsView({ isLandscape, isMobile }) {
           {section==="notifications" && <NotificationsSection/>}
           {section==="team"          && <TeamSection/>}
           {section==="billing"       && <BillingSection isLandscape={isLandscape} isMobile={isMobile}/>}
-          {section==="appearance"    && <AppearanceSection/>}
+          {section==="appearance"    && <AppearanceSection isMobile={isMobile}/>}
           {section==="widget"        && <WidgetSection/>}
           {section==="danger"        && <DangerSection isLandscape={isLandscape} isMobile={isMobile}/>}
         </div>

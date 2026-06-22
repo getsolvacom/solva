@@ -121,11 +121,17 @@ export default function CustomersView({ isLandscape, isMobile }) {
   };
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: "'Outfit',sans-serif" }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <div className="cv-root" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: "'Outfit',sans-serif" }}>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @media(max-width:767px){
+          .cv-root{overflow-x:hidden!important;height:auto!important;flex:none!important;}
+          .cv-topbar{height:auto!important;padding:10px 14px!important;}
+        }
+      `}</style>
 
       {/* Top bar */}
-      <div style={{ padding: "0 24px", height: 60, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.border}`, background: C.surface }}>
+      <div className="cv-topbar" style={{ padding: "0 24px", height: 60, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.border}`, background: C.surface }}>
         <div>
           <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 17, fontWeight: 700, color: C.text }}>Customers</h1>
           <p style={{ fontSize: 11.5, color: C.muted }}>{customers.length} unique customer{customers.length !== 1 ? "s" : ""} across all automations</p>
