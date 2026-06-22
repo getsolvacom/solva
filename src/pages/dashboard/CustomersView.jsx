@@ -126,30 +126,39 @@ export default function CustomersView({ isLandscape, isMobile }) {
         @keyframes spin{to{transform:rotate(360deg)}}
         @media(max-width:767px){
           .cv-root{overflow-x:hidden!important;height:auto!important;flex:none!important;}
-          .cv-topbar{height:auto!important;padding:10px 14px!important;}
         }
       `}</style>
 
-      {/* Top bar */}
-      <div className="cv-topbar" style={{ padding: "0 24px", height: 60, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.border}`, background: C.surface }}>
-        <div>
-          <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 17, fontWeight: 700, color: C.text }}>Customers</h1>
-          <p style={{ fontSize: 11.5, color: C.muted }}>{customers.length} unique customer{customers.length !== 1 ? "s" : ""} across all automations</p>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 14px", borderRadius: 8, background: "rgba(229,82,102,.09)", border: "1px solid rgba(229,82,102,.22)" }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.coral, animation: "blink 2.4s ease infinite" }} />
-            <span style={{ fontSize: 11.5, color: C.coral, fontWeight: 700, letterSpacing: ".04em" }}>SOLVA LIVE</span>
+      {/* Top bar — desktop only */}
+      {!isMobile && (
+        <div className="cv-topbar" style={{ padding: "0 24px", height: 60, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.border}`, background: C.surface }}>
+          <div>
+            <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 17, fontWeight: 700, color: C.text }}>Customers</h1>
+            <p style={{ fontSize: 11.5, color: C.muted }}>{customers.length} unique customer{customers.length !== 1 ? "s" : ""} across all automations</p>
           </div>
-          <AvatarMenu />
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 14px", borderRadius: 8, background: "rgba(229,82,102,.09)", border: "1px solid rgba(229,82,102,.22)" }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.coral, animation: "blink 2.4s ease infinite" }} />
+              <span style={{ fontSize: 11.5, color: C.coral, fontWeight: 700, letterSpacing: ".04em" }}>SOLVA LIVE</span>
+            </div>
+            <AvatarMenu />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Body */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {/* Left column */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflowY: "auto", padding: "20px 24px", gap: 14, background: C.bg }}>
+
+          {/* Mobile title */}
+          {isMobile && (
+            <div>
+              <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 18, fontWeight: 700, color: C.text }}>Customers</h1>
+              <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{customers.length} unique customer{customers.length !== 1 ? "s" : ""} across all automations</p>
+            </div>
+          )}
 
           {/* Search */}
           <div style={{ position: "relative" }}>
