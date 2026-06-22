@@ -152,14 +152,6 @@ export default function CustomersView({ isLandscape, isMobile }) {
         {/* Left column */}
         <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column", overflowY: isMobile ? "visible" : "auto", padding: "20px 24px", gap: 14, background: C.bg }}>
 
-          {/* Mobile title */}
-          {isMobile && (
-            <div>
-              <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 18, fontWeight: 700, color: C.text }}>Customers</h1>
-              <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{customers.length} unique customer{customers.length !== 1 ? "s" : ""} across all automations</p>
-            </div>
-          )}
-
           {/* Search */}
           <div style={{ position: "relative" }}>
             <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: C.muted, display: "flex", alignItems: "center", pointerEvents: "none" }}>
