@@ -129,22 +129,20 @@ export default function CustomersView({ isLandscape, isMobile }) {
         }
       `}</style>
 
-      {/* Top bar — desktop only */}
-      {!isMobile && (
-        <div className="cv-topbar" style={{ padding: "0 24px", height: 60, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.border}`, background: C.surface }}>
-          <div>
-            <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 17, fontWeight: 700, color: C.text }}>Customers</h1>
-            <p style={{ fontSize: 11.5, color: C.muted }}>{customers.length} unique customer{customers.length !== 1 ? "s" : ""} across all automations</p>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 14px", borderRadius: 8, background: "rgba(229,82,102,.09)", border: "1px solid rgba(229,82,102,.22)" }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.coral, animation: "blink 2.4s ease infinite" }} />
-              <span style={{ fontSize: 11.5, color: C.coral, fontWeight: 700, letterSpacing: ".04em" }}>SOLVA LIVE</span>
-            </div>
-            <AvatarMenu />
-          </div>
+      {/* Top bar */}
+      <div className="cv-topbar" style={{ padding: "0 24px", height: 60, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.border}`, background: C.surface }}>
+        <div>
+          <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 17, fontWeight: 700, color: C.text }}>Customers</h1>
+          <p style={{ fontSize: 11.5, color: C.muted }}>{customers.length} unique customer{customers.length !== 1 ? "s" : ""} across all automations</p>
         </div>
-      )}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 14px", borderRadius: 8, background: "rgba(229,82,102,.09)", border: "1px solid rgba(229,82,102,.22)" }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.coral }} />
+            <span style={{ fontSize: 11.5, color: C.coral, fontWeight: 700, letterSpacing: ".04em" }}>SOLVA LIVE</span>
+          </div>
+          <AvatarMenu />
+        </div>
+      </div>
 
       {/* Body */}
       <div style={{ flex: 1, display: "flex", overflow: isMobile ? "visible" : "hidden", minHeight: 0 }}>
