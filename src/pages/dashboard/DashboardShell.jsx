@@ -161,7 +161,23 @@ export default function DashboardShell({ fixedView }) {
       {/* Main content column */}
       <div className="dash-main-col" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0,"--mob-h":`${headerHeight}px`}}>
         {/* Mobile header */}
-        <div className="mob-header" style={{padding:isMobile&&isLandscape?"0 12px":undefined}}>
+        <div className="mob-header" style={{
+          padding: isMobile&&isLandscape ? "0 12px" : "0 16px",
+          display: isMobile ? "flex" : "none",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          width: "100%",
+          height: isMobile&&isLandscape ? 44 : 60,
+          zIndex: 9999,
+          background: C.surface,
+          borderBottom: `1px solid ${C.border}`,
+          alignItems: "center",
+          justifyContent: "space-between",
+          boxSizing: "border-box",
+          flexShrink: 0,
+        }}>
           <DrawerLogo small={isMobile&&isLandscape}/>
           <button
             className="mob-ham"
