@@ -121,11 +121,11 @@ export default function CustomersView({ isLandscape, isMobile }) {
   };
 
   return (
-    <div className="cv-root" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: "'Outfit',sans-serif" }}>
+    <div className="cv-root" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: isMobile ? "visible" : "hidden", fontFamily: "'Outfit',sans-serif", minHeight: 0 }}>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         @media(max-width:767px){
-          .cv-root{overflow-x:hidden!important;height:auto!important;flex:none!important;}
+          .cv-root{overflow:visible!important;height:auto!important;flex:none!important;min-height:0!important;}
         }
       `}</style>
 
@@ -147,10 +147,10 @@ export default function CustomersView({ isLandscape, isMobile }) {
       )}
 
       {/* Body */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", overflow: isMobile ? "visible" : "hidden", minHeight: 0 }}>
 
         {/* Left column */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflowY: "auto", padding: "20px 24px", gap: 14, background: C.bg }}>
+        <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column", overflowY: isMobile ? "visible" : "auto", padding: "20px 24px", gap: 14, background: C.bg }}>
 
           {/* Mobile title */}
           {isMobile && (
