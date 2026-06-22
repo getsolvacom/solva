@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import { useTheme } from '../../hooks/useTheme';
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../hooks/useStore";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Gift, MessageSquare, GitBranch, Ticket, X } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Gift, MessageSquare, GitBranch, Ticket, X } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
@@ -53,7 +53,7 @@ function GlobalStyles() {
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       ::-webkit-scrollbar{width:3px;}
-      ::-webkit-scrollbar-thumb{background:#3D0050;border-radius:2px;}
+      ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
       @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
       @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
       @keyframes blink{0%,100%{opacity:1;}50%{opacity:.15;}}
@@ -83,7 +83,7 @@ function GlobalStyles() {
       .toggle-thumb{border-radius:50%;background:#fff;transition:transform .22s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.3);}
       .saved-badge{animation:savedPop .4s cubic-bezier(.34,1.56,.64,1) both;}
       .blink{animation:blink 2.4s ease infinite;}
-      .section-card{border-radius:14px;background:#110014;border:1px solid #200026;padding:24px;margin-bottom:16px;}
+      .section-card{border-radius:14px;background:var(--card);border:1px solid var(--border);padding:24px;margin-bottom:16px;}
       .tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:100px;font-size:10.5px;font-weight:600;white-space:nowrap;}
       .ss-option{padding:9px 14px;font-size:13.5px;cursor:pointer;transition:background .1s;}
       .ss-option:hover{background:rgba(255,255,255,.05)!important;}
@@ -101,7 +101,7 @@ function GlobalStyles() {
         .sv-root{overflow-x:hidden!important;height:auto!important;flex:none!important;}
         .sv-topbar{height:auto!important;padding:10px 14px!important;}
         .sv-layout{flex-direction:column!important;overflow:visible!important;}
-        .sv-nav{width:100%!important;border-right:none!important;border-bottom:1px solid #200026;overflow:visible!important;height:auto!important;padding:12px 10px!important;}
+        .sv-nav{width:100%!important;border-right:none!important;border-bottom:1px solid var(--border);overflow:visible!important;height:auto!important;padding:12px 10px!important;}
         .sv-nav-hidden{display:none!important;}
         .sv-content{padding:16px 14px!important;overflow-x:hidden!important;}
         .sv-content-hidden{display:none!important;}
@@ -111,7 +111,7 @@ function GlobalStyles() {
         .section-card{padding:16px!important;}
         .sv-invite-grid{grid-template-columns:1fr!important;}
         .sv-invoice-header{display:none!important;}
-        .sv-invoice-row{display:flex!important;flex-direction:column!important;background:#110014;border:1px solid #200026;border-radius:10px;padding:12px!important;margin-bottom:8px!important;gap:8px!important;grid-template-columns:unset!important;}
+        .sv-invoice-row{display:flex!important;flex-direction:column!important;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px!important;margin-bottom:8px!important;gap:8px!important;grid-template-columns:unset!important;}
         .sv-invoice-row:last-child{margin-bottom:0!important;}
         .sv-invoice-date-id{display:flex!important;justify-content:space-between!important;align-items:center!important;}
         .sv-invoice-amount-status{display:flex!important;justify-content:space-between!important;align-items:center!important;}
@@ -167,7 +167,7 @@ function SelectInput({ value, onChange, options }) {
     <div style={{borderRadius:10,border:`1px solid ${C.border}`,background:C.surface,overflow:"hidden"}}>
       <select value={value} onChange={onChange}
         style={{width:"100%",padding:"11px 14px",background:"transparent",border:"none",color:C.text,fontSize:14,cursor:"pointer",WebkitAppearance:"none"}}>
-        {options.map(o=><option key={o} value={o} style={{background:"#110014"}}>{o}</option>)}
+        {options.map(o=><option key={o} value={o} style={{background:C.card}}>{o}</option>)}
       </select>
     </div>
   );
@@ -580,7 +580,7 @@ function AutomationsSection() {
           <div style={{borderRadius:10,border:`1px solid ${C.border}`,background:C.surface,overflow:"hidden",flexShrink:0}}>
             <select value={unit} onChange={e=>setUnit(e.target.value)}
               style={{padding:"11px 10px",background:"transparent",border:"none",color:C.text,fontSize:13,cursor:"pointer",WebkitAppearance:"none",fontFamily:"'Outfit',sans-serif"}}>
-              {["Minutes","Hours","Days"].map(u=><option key={u} value={u} style={{background:"#110014"}}>{u}</option>)}
+              {["Minutes","Hours","Days"].map(u=><option key={u} value={u} style={{background:C.card}}>{u}</option>)}
             </select>
           </div>
           <button onClick={()=>setValue(presets[0])} className="btn-ghost"
@@ -920,7 +920,7 @@ function TeamSection() {
               <div className="sv-pending-right" style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
                 <span className="sv-pending-badge-mob tag" style={{color:C.amber,background:"rgba(240,160,75,.10)"}}>Pending</span>
                 <span className="tag" style={{color:p.role==="Admin"?C.coral:p.role==="Manager"?C.blue:C.sub,background:p.role==="Admin"?"rgba(229,82,102,.10)":p.role==="Manager"?"rgba(91,173,255,.10)":C.dim}}>{p.role}</span>
-                <button onClick={()=>revoke(i)} style={{padding:"4px 12px",borderRadius:7,border:`1px solid rgba(229,82,102,.35)`,background:"rgba(229,82,102,.08)",color:C.coral,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Revoke</button>
+                <button onClick={()=>revoke(i)} style={{padding:"4px 12px",borderRadius:7,border:`1px solid ${C.border}`,background:C.surface,color:C.text,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Revoke</button>
               </div>
             </div>
           ))}
@@ -1128,7 +1128,7 @@ function BillingSection({ isLandscape = false, isMobile = false }) {
       <div className="section-card fu fu2">
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18,flexWrap:"wrap",gap:8}}>
           <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase"}}>Monthly Usage</p>
-          <span style={{fontSize:12,color:C.muted}}>Resets June 1, 2026</span>
+          <span style={{fontSize:12,color:C.text}}>Resets June 1, 2026</span>
         </div>
         {usage.map((u,i)=>{
           const pct = Math.round((u.used/u.limit)*100);
@@ -1136,7 +1136,7 @@ function BillingSection({ isLandscape = false, isMobile = false }) {
             <div key={i} style={{marginBottom:i<usage.length-1?16:0}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}>
                 <span style={{fontSize:13.5,color:C.sub}}>{u.label}</span>
-                <span style={{fontSize:13.5,fontWeight:700,color:u.color}}>{u.used.toLocaleString()} / {u.limit.toLocaleString()}</span>
+                <span style={{fontSize:13.5,fontWeight:700,color:C.text}}>{u.used.toLocaleString()} / {u.limit.toLocaleString()}</span>
               </div>
               <div style={{height:5,borderRadius:3,background:C.dim,overflow:"hidden"}}>
                 <div style={{height:"100%",borderRadius:3,background:u.color,width:`${pct}%`,opacity:.8}}/>
@@ -1284,13 +1284,13 @@ function AppearanceSection() {
       <SectionTitle sub="Personalise how the interface looks on your screen.">Appearance</SectionTitle>
 
       <div className="section-card fu" style={{marginBottom:16}}>
-        <p style={{fontSize:11,fontWeight:700,color:"var(--muted)",letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Color Theme</p>
+        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Color Theme</p>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16}}>
           <div>
-            <div style={{fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:5}}>
+            <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:5}}>
               {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
             </div>
-            <div style={{fontSize:12.5,color:"var(--muted)"}}>
+            <div style={{fontSize:12.5,color:C.sub}}>
               {theme === 'dark'
                 ? 'Easy on the eyes. Perfect for focus sessions.'
                 : 'Clean and crisp. Great for bright environments.'}
@@ -1298,26 +1298,26 @@ function AppearanceSection() {
           </div>
           <button
             onClick={toggleTheme}
-            style={{display:"flex",alignItems:"center",gap:8,padding:"10px 20px",borderRadius:100,border:`1px solid ${theme === 'dark' ? '#3D0050' : 'rgba(78,2,105,.25)'}`,background:theme === 'dark' ? '#1A0020' : '#FFE8EF',color:theme === 'dark' ? '#F5EAF2' : '#1A0010',fontSize:13.5,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .2s ease",flexShrink:0}}>
+            style={{display:"flex",alignItems:"center",gap:8,padding:"10px 20px",borderRadius:100,border:`1px solid ${C.border}`,background:C.surface,color:C.text,fontSize:13.5,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .2s ease",flexShrink:0}}>
             {theme === 'dark'
-              ? <><span style={{fontSize:16}}>☀️</span> Switch to Light</>
-              : <><span style={{fontSize:16}}>🌙</span> Switch to Dark</>}
+              ? <><Sun size={15}/> Switch to Light</>
+              : <><Moon size={15}/> Switch to Dark</>}
           </button>
         </div>
         <div style={{display:"flex",gap:10,marginTop:16}}>
           {[
-            {key:'dark',  label:'Dark',  preview:['#060008','#110014','#E55266']},
+            {key:'dark',  label:'Dark',  preview:[C.bg,C.card,'#E55266']},
             {key:'light', label:'Light', preview:['#FFF5F8','#FFF0F5','#E55266']},
           ].map(t => (
             <div key={t.key} onClick={()=>{ if (theme !== t.key) toggleTheme(); }}
-              style={{flex:1,padding:14,borderRadius:12,border:`1.5px solid ${theme === t.key ? '#E55266' : 'var(--border)'}`,background:theme === t.key ? 'rgba(229,82,102,.08)' : 'var(--surface)',cursor:"pointer",transition:"all .2s ease"}}>
+              style={{flex:1,padding:14,borderRadius:12,border:`1.5px solid ${theme === t.key ? C.coral : C.border}`,background:theme === t.key ? 'rgba(229,82,102,.08)' : C.surface,cursor:"pointer",transition:"all .2s ease"}}>
               <div style={{display:"flex",gap:5,marginBottom:10}}>
                 {t.preview.map((color,i) => (
                   <div key={i} style={{flex:1,height:20,borderRadius:5,background:color,border:"1px solid rgba(255,255,255,.1)"}}/>
                 ))}
               </div>
-              <div style={{fontSize:13,fontWeight:theme===t.key?700:400,color:theme===t.key?'#E55266':'var(--muted)'}}>
-                {t.label}{theme === t.key && <span style={{marginLeft:6,fontSize:10}}>✓ Active</span>}
+              <div style={{fontSize:13,fontWeight:theme===t.key?700:400,color:theme===t.key?C.coral:C.muted}}>
+                {t.label}{theme === t.key && <span style={{marginLeft:6,fontSize:10,color:C.coral}}>✓ Active</span>}
               </div>
             </div>
           ))}
@@ -1341,7 +1341,7 @@ function AppearanceSection() {
                   flex:1,
                   padding:"13px 10px",
                   border:`1px solid ${active ? C.coral : C.border}`,
-                  background: active ? "rgba(229,82,102,.10)" : C.surface,
+                  background: active ? "rgba(229,82,102,.10)" : C.card,
                   color: active ? C.coral : C.sub,
                   fontSize:14,
                   fontWeight: active ? 700 : 400,
