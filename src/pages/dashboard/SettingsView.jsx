@@ -1453,6 +1453,38 @@ function WorkflowsSection() {
   const [customAction,   setCustomAction]   = useState("");
   const [hoveredTpl,     setHoveredTpl]     = useState(null);
   const [tplFilter,      setTplFilter]      = useState("all");
+  const [dismissedRecs,  setDismissedRecs]  = useState(false);
+
+  const onboarding = (() => {
+    try { return JSON.parse(localStorage.getItem("solva_onboarding") || "{}"); }
+    catch { return {}; }
+  })();
+
+  const getRecommended = () => {
+    const goal = onboarding.goal;
+    const orders = onboarding.orders;
+    const results = [];
+
+    if (goal === 0 || goal === 3) {
+      results.push({ name:"Escalate angry customers",    trigger:"Customer sentiment is Angry or threatening", action:"Escalate to human agent",         category:"support", color:C.red,   reason:"Recommended for your support goal" });
+      results.push({ name:"Auto-close resolved tickets", trigger:"Customer replies with thank you",            action:"Mark ticket as resolved",         category:"support", color:C.teal,  reason:"Keep your queue clean automatically" });
+    }
+    if (goal === 1 || goal === 3) {
+      results.push({ name:"Exchange nudge",              trigger:"Return reason is Wrong size",                action:"Offer exchange before refund",    category:"returns", color:C.coral, reason:"Recommended for return deflection goal" });
+      results.push({ name:"High-value return alert",     trigger:"Return value exceeds $200",                  action:"Send escalation notification",    category:"returns", color:C.amber, reason:"Protect margin on big returns" });
+    }
+    if (goal === 2 || goal === 3) {
+      results.push({ name:"VIP cart priority",           trigger:"Abandoned cart value exceeds $500",          action:"Send priority recovery sequence", category:"cart",    color:C.blue,  reason:"Recommended for cart recovery goal" });
+    }
+    if (orders === 2 || orders === 3) {
+      results.push({ name:"Repeat abandoner discount",   trigger:"Customer abandoned cart 2+ times",           action:"Include 15% discount in email 1", category:"cart",    color:C.blue,  reason:"High order volume — convert stubborn abandoners" });
+    }
+
+    const existingNames = rules.map(r => r.name.toLowerCase());
+    return results.filter(r => !existingNames.includes(r.name.toLowerCase())).slice(0, 3);
+  };
+
+  const recommended = getRecommended();
 
   const TEMPLATES = [
     { name:"Escalate angry customers",    trigger:"Customer sentiment is Angry",         action:"Escalate to human agent",         category:"support", color:C.red,   steps:2, desc:"Protect your brand by instantly routing hostile conversations to a human." },
@@ -1513,6 +1545,51 @@ function WorkflowsSection() {
           </div>
         ))}
       </div>
+
+      {/* Recommended Workflows */}
+      {recommended.length > 0 && !dismissedRecs && (
+        <div style={{marginBottom:20,padding:18,borderRadius:14,background:"rgba(229,82,102,.05)",border:`1px solid rgba(229,82,102,.18)`}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <Zap size={15} strokeWidth={2} style={{color:C.coral}}/>
+              <span style={{fontSize:12,fontWeight:700,color:C.coral,textTransform:"uppercase",letterSpacing:".06em"}}>Recommended for You</span>
+            </div>
+            <button onClick={()=>setDismissedRecs(true)}
+              style={{background:"transparent",border:"none",cursor:"pointer",color:C.muted,display:"flex",alignItems:"center",padding:4}}>
+              <X size={15} strokeWidth={2}/>
+            </button>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {recommended.map((rec,i) => (
+              <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:rec.color,flexShrink:0}}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:3}}>{rec.name}</div>
+                  <div style={{fontSize:11.5,color:C.muted}}>{rec.reason}</div>
+                </div>
+                <button onClick={()=>{
+                  setRules(prev=>[...prev,{
+                    id:Date.now()+i,
+                    name:rec.name,
+                    enabled:true,
+                    trigger:rec.category,
+                    triggerLabel:"IF",
+                    triggerValue:rec.trigger,
+                    action:rec.category,
+                    actionLabel:rec.action,
+                    category:rec.category,
+                    isTemplate:true,
+                  }]);
+                  setDismissedRecs(prev=>recommended.filter((_,idx)=>idx!==i).length===0?true:prev);
+                }}
+                  style={{padding:"6px 14px",borderRadius:8,background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"'Outfit',sans-serif",whiteSpace:"nowrap"}}>
+                  + Add
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Rules list header */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>

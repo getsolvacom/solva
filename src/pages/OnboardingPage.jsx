@@ -343,6 +343,15 @@ function Step1b({ onNext, onBack }) {
     </div>
   );
 
+  function handleNext() {
+    localStorage.setItem("solva_onboarding", JSON.stringify({
+      goal: q1,
+      orders: q2,
+      teamSize: q3,
+    }));
+    onNext();
+  }
+
   return (
     <CardShell maxWidth={520}>
       <h1 className="fu" style={{fontFamily:"'Outfit',sans-serif",fontSize:24,fontWeight:800,letterSpacing:"-.02em",marginBottom:8}}>Quick setup questions</h1>
@@ -364,7 +373,7 @@ function Step1b({ onNext, onBack }) {
       </div>
 
       <div className="fu fu4">
-        <button className="btn-primary" onClick={allAnswered?onNext:undefined}
+        <button className="btn-primary" onClick={allAnswered?handleNext:undefined}
           style={{width:"100%",padding:"14px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15,marginBottom:12,opacity:allAnswered?1:0.5,cursor:allAnswered?"pointer":"default"}}>
           Next →
         </button>
