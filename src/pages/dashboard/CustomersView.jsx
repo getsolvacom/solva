@@ -89,21 +89,76 @@ export default function CustomersView({ isLandscape, isMobile }) {
     load();
   }, []);
 
+  const segments = [
+    {
+      key: "all",
+      label: "All",
+      color: C.coral,
+      count: customers.length,
+    },
+    {
+      key: "churn_risk",
+      label: "Churn Risk",
+      color: C.red,
+      count: customers.filter(c => {
+        if (!c.lastContact) return false;
+        const daysSince = (Date.now() - new Date(c.lastContact).getTime()) / (1000 * 60 * 60 * 24);
+        return daysSince > 30;
+      }).length,
+    },
+    {
+      key: "vip",
+      label: "VIP",
+      color: C.amber,
+      count: customers.filter(c => c.isVIP).length,
+    },
+    {
+      key: "at_risk",
+      label: "At Risk",
+      color: C.red,
+      count: customers.filter(c => c.isAtRisk).length,
+    },
+    {
+      key: "repeat_buyers",
+      label: "Repeat Buyers",
+      color: C.teal,
+      count: customers.filter(c => c.cartCount >= 2).length,
+    },
+    {
+      key: "win_back",
+      label: "Win-Back",
+      color: C.blue,
+      count: customers.filter(c => {
+        if (!c.lastContact) return false;
+        const daysSince = (Date.now() - new Date(c.lastContact).getTime()) / (1000 * 60 * 60 * 24);
+        return daysSince > 14 && daysSince <= 30;
+      }).length,
+    },
+  ];
+
   const filtered = customers.filter(c => {
     const q = search.toLowerCase();
     const matchSearch = !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
-    const matchFilter =
-      activeFilter === "all" ? true :
-      activeFilter === "vip" ? c.isVIP :
-      activeFilter === "at_risk" ? c.isAtRisk : true;
+    let matchFilter = true;
+    if (activeFilter === "vip") matchFilter = c.isVIP;
+    else if (activeFilter === "at_risk") matchFilter = c.isAtRisk;
+    else if (activeFilter === "churn_risk") {
+      if (!c.lastContact) { matchFilter = false; }
+      else {
+        const daysSince = (Date.now() - new Date(c.lastContact).getTime()) / (1000 * 60 * 60 * 24);
+        matchFilter = daysSince > 30;
+      }
+    }
+    else if (activeFilter === "repeat_buyers") matchFilter = c.cartCount >= 2;
+    else if (activeFilter === "win_back") {
+      if (!c.lastContact) { matchFilter = false; }
+      else {
+        const daysSince = (Date.now() - new Date(c.lastContact).getTime()) / (1000 * 60 * 60 * 24);
+        matchFilter = daysSince > 14 && daysSince <= 30;
+      }
+    }
     return matchSearch && matchFilter;
   });
-
-  const filters = [
-    { key: "all", label: "All" },
-    { key: "vip", label: "VIP" },
-    { key: "at_risk", label: "At Risk" },
-  ];
 
   const riskScore = (c) => {
     if (c.isAtRisk) return { label: "High", color: C.red };
@@ -127,6 +182,8 @@ export default function CustomersView({ isLandscape, isMobile }) {
         @media(max-width:767px){
           .cv-root{overflow-y:auto!important;flex:1!important;min-height:0!important;}
         }
+        .seg-row::-webkit-scrollbar{display:none;}
+        .seg-row{-ms-overflow-style:none;scrollbar-width:none;}
       `}</style>
 
       {/* Top bar */}
@@ -163,14 +220,21 @@ export default function CustomersView({ isLandscape, isMobile }) {
             />
           </div>
 
-          {/* Filter tabs */}
-          <div style={{ display: "flex", gap: 8 }}>
-            {filters.map(f => (
-              <button key={f.key} onClick={() => setActiveFilter(f.key)}
-                style={{ padding: "5px 14px", borderRadius: 7, fontSize: 12, fontWeight: activeFilter === f.key ? 700 : 400, cursor: "pointer", border: `1px solid ${activeFilter === f.key ? C.coral : C.border}`, background: activeFilter === f.key ? "rgba(229,82,102,.10)" : "transparent", color: activeFilter === f.key ? C.coral : C.muted, fontFamily: "'Outfit',sans-serif", outline: "none" }}>
-                {f.label}
-              </button>
-            ))}
+          {/* Smart Segments */}
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 6 }}>Segments</div>
+            <div className="seg-row" style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+              {segments.map(seg => {
+                const active = activeFilter === seg.key;
+                return (
+                  <button key={seg.key} onClick={() => setActiveFilter(seg.key)}
+                    style={{ padding: "5px 14px", borderRadius: 100, fontSize: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif", display: "flex", alignItems: "center", gap: 6, outline: "none", whiteSpace: "nowrap", background: active ? seg.color : "transparent", color: active ? "#fff" : C.muted, border: `1px solid ${active ? seg.color : C.border}`, fontWeight: active ? 700 : 400 }}>
+                    {seg.label}
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 100, background: active ? "rgba(255,255,255,.25)" : C.dim, color: active ? "#fff" : C.muted }}>{seg.count}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* List */}
