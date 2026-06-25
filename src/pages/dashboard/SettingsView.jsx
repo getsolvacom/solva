@@ -1452,15 +1452,16 @@ function WorkflowsSection() {
   const [customTrigger,  setCustomTrigger]  = useState("");
   const [customAction,   setCustomAction]   = useState("");
   const [hoveredTpl,     setHoveredTpl]     = useState(null);
+  const [tplFilter,      setTplFilter]      = useState("all");
 
   const TEMPLATES = [
-    {name:"Escalate angry customers",    trigger:"Customer sentiment is Angry",         action:"Escalate to human agent",         category:"support", color:C.red  },
-    {name:"Auto-close resolved tickets", trigger:"Customer replies with thank you",     action:"Mark ticket as resolved",         category:"support", color:C.teal },
-    {name:"Flag VIP customers",          trigger:"Customer total spend exceeds $1,000", action:"Tag as VIP and notify",           category:"support", color:C.amber},
-    {name:"High-value return alert",     trigger:"Return value exceeds $200",           action:"Send escalation notification",    category:"returns", color:C.amber},
-    {name:"Exchange nudge",              trigger:"Return reason is Wrong size",         action:"Offer exchange before refund",    category:"returns", color:C.coral},
-    {name:"VIP cart priority",           trigger:"Abandoned cart value exceeds $500",   action:"Send priority recovery sequence", category:"cart",    color:C.blue },
-    {name:"Repeat abandoner discount",   trigger:"Customer abandoned cart 2+ times",   action:"Include 15% discount in email 1", category:"cart",    color:C.blue },
+    { name:"Escalate angry customers",    trigger:"Customer sentiment is Angry",         action:"Escalate to human agent",         category:"support", color:C.red,   steps:2, desc:"Protect your brand by instantly routing hostile conversations to a human." },
+    { name:"Auto-close resolved tickets", trigger:"Customer replies with thank you",     action:"Mark ticket as resolved",         category:"support", color:C.teal,  steps:2, desc:"Keep your queue clean by automatically closing tickets the customer is happy with." },
+    { name:"Flag VIP customers",          trigger:"Customer total spend exceeds $1,000", action:"Tag as VIP and notify",           category:"support", color:C.amber, steps:3, desc:"Identify and prioritize your highest-value customers automatically." },
+    { name:"High-value return alert",     trigger:"Return value exceeds $200",           action:"Send escalation notification",    category:"returns", color:C.amber, steps:2, desc:"Never miss a high-risk return — get notified instantly when big refunds are requested." },
+    { name:"Exchange nudge",              trigger:"Return reason is Wrong size",         action:"Offer exchange before refund",    category:"returns", color:C.coral, steps:3, desc:"Save the sale by automatically offering an exchange before processing the refund." },
+    { name:"VIP cart priority",           trigger:"Abandoned cart value exceeds $500",   action:"Send priority recovery sequence", category:"cart",    color:C.blue,  steps:4, desc:"High-value carts get a faster, more aggressive recovery sequence." },
+    { name:"Repeat abandoner discount",   trigger:"Customer abandoned cart 2+ times",   action:"Include 15% discount in email 1", category:"cart",    color:C.blue,  steps:3, desc:"Convert stubborn abandoners with an automatic discount on their next attempt." },
   ];
 
   const catColor = (cat) => cat === "support" ? C.coral : cat === "returns" ? C.amber : C.blue;
@@ -1567,16 +1568,39 @@ function WorkflowsSection() {
             </div>
             <div style={{fontSize:13,color:C.muted,marginBottom:20}}>Choose a template or build from scratch</div>
 
+            {/* Template filter tabs */}
+            <div style={{display:"flex",gap:6,marginBottom:16}}>
+              {["All","Support","Returns","Cart"].map(tab => {
+                const active = tplFilter === tab.toLowerCase();
+                return (
+                  <button key={tab} onClick={()=>setTplFilter(tab.toLowerCase())}
+                    style={{padding:"4px 12px",borderRadius:100,fontSize:11.5,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif",outline:"none",background:active?C.coral:"transparent",color:active?"#fff":C.muted,border:active?`1px solid ${C.coral}`:`1px solid ${C.border}`}}>
+                    {tab}
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Templates grid */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
-              {TEMPLATES.map((tpl,i) => (
+              {TEMPLATES.filter(tpl => tplFilter === "all" || tpl.category === tplFilter).map((tpl,i) => (
                 <div key={i} onClick={()=>addFromTemplate(tpl)}
                   onMouseEnter={()=>setHoveredTpl(i)} onMouseLeave={()=>setHoveredTpl(null)}
-                  style={{padding:14,borderRadius:10,background:C.surface,border:`1px solid ${hoveredTpl===i?tpl.color+"60":C.border}`,cursor:"pointer",transition:"all .15s"}}>
-                  <div style={{width:8,height:8,borderRadius:"50%",background:tpl.color,marginBottom:8}}/>
-                  <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:6}}>{tpl.name}</div>
-                  <div style={{fontSize:11.5,color:C.muted,lineHeight:1.5}}>IF {tpl.trigger}</div>
-                  <div style={{fontSize:11.5,color:tpl.color}}>→ THEN {tpl.action}</div>
+                  style={{padding:14,borderRadius:12,background:C.surface,border:`1px solid ${hoveredTpl===i?tpl.color+"60":C.border}`,cursor:"pointer",transition:"all .15s"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div style={{width:8,height:8,borderRadius:"50%",background:tpl.color}}/>
+                    <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:100,background:tpl.color+"18",color:tpl.color}}>{tpl.steps} steps</span>
+                  </div>
+                  <div style={{fontSize:13,fontWeight:700,color:C.text,marginTop:8,marginBottom:4}}>{tpl.name}</div>
+                  <div style={{fontSize:11.5,color:C.muted,lineHeight:1.5,marginBottom:10}}>{tpl.desc}</div>
+                  <div style={{display:"flex",alignItems:"center",flexWrap:"wrap",gap:2}}>
+                    <span style={{fontSize:10,padding:"2px 6px",borderRadius:4,background:"rgba(91,173,255,.10)",color:C.blue,fontWeight:700}}>IF</span>
+                    <span style={{fontSize:11,color:C.sub,marginLeft:4}}>{tpl.trigger}</span>
+                    <span style={{color:C.muted,margin:"0 4px"}}>→</span>
+                    <span style={{fontSize:10,padding:"2px 6px",borderRadius:4,background:"rgba(62,207,178,.10)",color:C.teal,fontWeight:700}}>THEN</span>
+                    <span style={{fontSize:11,color:tpl.color,marginLeft:4}}>{tpl.action}</span>
+                  </div>
+                  <div style={{fontSize:10,padding:"2px 8px",borderRadius:100,background:catColor(tpl.category)+"14",color:catColor(tpl.category),fontWeight:600,marginTop:8,width:"fit-content",textTransform:"capitalize"}}>{tpl.category}</div>
                 </div>
               ))}
             </div>
