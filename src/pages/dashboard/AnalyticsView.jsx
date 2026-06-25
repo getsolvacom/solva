@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { C } from "../../tokens";
-import { DollarSign, Inbox, RotateCcw, Clock, Zap, Star, Trophy, TrendingUp, Lightbulb, Calendar, Bot, ShoppingCart } from "lucide-react";
+import { DollarSign, Inbox, RotateCcw, Clock, Zap, Star, Trophy, TrendingUp, Lightbulb, Calendar, Bot, ShoppingCart, Download } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -140,6 +140,7 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
   const [metric,        setMetric]        = useState("revenue");
   const [donutHover,    setDonutHover]    = useState(null);
   const [activePeakDay, setActivePeakDay] = useState(null);
+  const [exportHover,    setExportHover]    = useState(false);
   const { stats, loading } = useDashboardStats();
 
   const chartData = stats?.weekData || ANALYTICS_DATA[range];
@@ -193,6 +194,27 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
   const defaultPeakDay = DOW_DATA.reduce((max,d) => d.tickets > max.tickets ? d : max, DOW_DATA[0]);
   const peakDay        = activePeakDay || defaultPeakDay;
 
+  function handleExportCSV() {
+    const rows = [
+      ["Period", "Revenue Recovered", "Tickets Resolved", "Returns Deflected", "Hours Saved"],
+      ...ANALYTICS_DATA[range].map(d => [
+        d.label,
+        `$${d.revenue}`,
+        d.tickets,
+        d.returns,
+        (d.tickets * 0.5).toFixed(1) + "h"
+      ])
+    ];
+    const csv = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `solva-analytics-${range}-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="av-root" style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",overflowX:"hidden",fontFamily:"'Outfit',sans-serif"}}>
       <GlobalStyles/>
@@ -213,6 +235,14 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
               </button>
             ))}
           </div>
+          {/* Export CSV */}
+          <button
+            onClick={handleExportCSV}
+            onMouseEnter={()=>setExportHover(true)}
+            onMouseLeave={()=>setExportHover(false)}
+            style={{padding:"6px 14px",borderRadius:8,fontSize:12.5,fontWeight:600,cursor:"pointer",background:exportHover?C.dim:C.card,border:`1px solid ${C.border}`,color:exportHover?C.coral:C.text,display:"flex",alignItems:"center",fontFamily:"'Outfit',sans-serif",transition:"background .15s,color .15s"}}>
+            <Download size={14} strokeWidth={2} style={{marginRight:6}}/>Export CSV
+          </button>
           <div style={{display:"flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:8,background:"rgba(229,82,102,.09)",border:"1px solid rgba(229,82,102,.22)"}}>
             <div className="blink" style={{width:6,height:6,borderRadius:"50%",background:C.coral}}/>
             <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".04em"}}>SOLVA LIVE</span>

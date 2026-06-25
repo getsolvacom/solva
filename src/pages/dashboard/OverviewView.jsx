@@ -5,7 +5,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
-import { DollarSign, Inbox, RotateCcw, Clock, TrendingUp, Bot, BarChart3, Zap, UserPlus } from "lucide-react";
+import { DollarSign, Inbox, RotateCcw, Clock, TrendingUp, Bot, BarChart3, Zap, UserPlus, CheckCircle2, ShoppingCart } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useDashboardStats } from '../../hooks/useDashboardStats';
 
@@ -59,6 +59,7 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
   const navigate = useNavigate();
   const [activeChart, setActiveChart] = useState("revenue");
   const [hoveredRow, setHoveredRow] = useState(null);
+  const [completedSteps, setCompletedSteps] = useState([]);
   const { stats, loading } = useDashboardStats();
 
   const weekData = stats?.weekData || [
@@ -111,25 +112,59 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
         {/* Setup checklist */}
         {!loading && stats && stats.totalTickets === 0 && stats.totalCarts === 0 && stats.totalReturns === 0 && (
           <div style={{padding:20,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
-            <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:4}}>Get set up</div>
-            <div style={{fontSize:12,color:C.muted,marginBottom:16}}>Complete these steps to start automating your store</div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <div style={{fontSize:15,fontWeight:700,color:C.text}}>Get set up</div>
+              <div style={{fontSize:12,color:C.muted,fontWeight:600}}>{completedSteps.length} / 3 completed</div>
+            </div>
+            <div style={{width:"100%",height:4,borderRadius:3,background:C.dim,marginBottom:16}}>
+              <div style={{width:`${(completedSteps.length/3)*100}%`,height:"100%",background:C.grad,borderRadius:3,transition:"width .4s ease"}}/>
+            </div>
             {[
               {title:"Connect your Shopify store",subtitle:"Link your store to start receiving automations",badge:"2 min",badgeBg:"rgba(62,207,178,.12)",badgeColor:C.teal,path:"/dashboard/settings/general"},
               {title:"Configure your AI tone",subtitle:"Set how SOLVA communicates with your customers",badge:"1 min",badgeBg:"rgba(229,82,102,.12)",badgeColor:C.coral,path:"/dashboard/settings/ai"},
               {title:"Enable automations",subtitle:"Turn on ticket resolution, cart recovery, and returns",badge:"1 min",badgeBg:"rgba(240,160,75,.12)",badgeColor:C.amber,path:"/dashboard/settings/automations"},
-            ].map((item,i)=>(
-              <div key={i} onClick={()=>navigate(item.path)} onMouseEnter={()=>setHoveredRow(i)} onMouseLeave={()=>setHoveredRow(null)}
-                style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none",cursor:"pointer"}}>
-                <div style={{width:22,height:22,borderRadius:"50%",border:`1.5px solid ${C.border}`,flexShrink:0,marginRight:4}}/>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:13.5,fontWeight:600,color:hoveredRow===i?C.coral:C.text}}>{item.title}</div>
-                  <div style={{fontSize:12,color:C.muted}}>{item.subtitle}</div>
+            ].map((item,i)=>{
+              const completed = completedSteps.includes(i);
+              return (
+                <div key={i} onClick={()=>navigate(item.path)} onMouseEnter={()=>setHoveredRow(i)} onMouseLeave={()=>setHoveredRow(null)}
+                  style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none",cursor:"pointer"}}>
+                  <div
+                    onClick={e=>{e.stopPropagation();setCompletedSteps(prev=>prev.includes(i)?prev.filter(x=>x!==i):[...prev,i]);}}
+                    style={completed
+                      ?{width:22,height:22,borderRadius:"50%",background:C.teal,border:`1.5px solid ${C.teal}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,marginRight:4}
+                      :{width:22,height:22,borderRadius:"50%",border:`1.5px solid ${C.border}`,cursor:"pointer",flexShrink:0,marginRight:4,background:"transparent"}}>
+                    {completed && <CheckCircle2 size={13} strokeWidth={2.5} style={{color:"#fff"}}/>}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13.5,fontWeight:600,color:completed?C.muted:hoveredRow===i?C.coral:C.text,textDecoration:completed?"line-through":"none"}}>{item.title}</div>
+                    <div style={{fontSize:12,color:C.muted}}>{item.subtitle}</div>
+                  </div>
+                  <span style={{fontSize:11,fontWeight:600,padding:"3px 9px",borderRadius:100,background:item.badgeBg,color:item.badgeColor,flexShrink:0}}>{item.badge}</span>
                 </div>
-                <span style={{fontSize:11,fontWeight:600,padding:"3px 9px",borderRadius:100,background:item.badgeBg,color:item.badgeColor,flexShrink:0}}>{item.badge}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
+
+        {/* AI Automations card */}
+        <div style={{padding:20,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
+          <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:4}}>Your AI Automations</div>
+          <div style={{fontSize:12,color:C.muted,marginBottom:16}}>3 automations ready and waiting for your store</div>
+          {[
+            {icon:<Bot size={18} strokeWidth={2}/>,iconBg:"rgba(62,207,178,.12)",iconColor:C.teal,title:"AI Support Agent",sub:"Auto-resolves tickets, order inquiries & FAQs",badgeBg:"rgba(62,207,178,.12)",badgeColor:C.teal},
+            {icon:<ShoppingCart size={18} strokeWidth={2}/>,iconBg:"rgba(91,173,255,.12)",iconColor:C.blue,title:"Cart Recovery",sub:"3-touch AI sequence to recover abandoned carts",badgeBg:"rgba(91,173,255,.12)",badgeColor:C.blue},
+            {icon:<RotateCcw size={18} strokeWidth={2}/>,iconBg:"rgba(240,160,75,.12)",iconColor:C.amber,title:"Return Deflection",sub:"AI intercepts returns and offers smart alternatives",badgeBg:"rgba(240,160,75,.12)",badgeColor:C.amber},
+          ].map((a,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:i<2?`1px solid ${C.dim}`:"none"}}>
+              <div style={{width:32,height:32,borderRadius:8,background:a.iconBg,display:"flex",alignItems:"center",justifyContent:"center",color:a.iconColor,flexShrink:0}}>{a.icon}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:C.text}}>{a.title}</div>
+                <div style={{fontSize:11.5,color:C.muted}}>{a.sub}</div>
+              </div>
+              <span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:100,background:a.badgeBg,color:a.badgeColor,flexShrink:0}}>Ready</span>
+            </div>
+          ))}
+        </div>
 
         {/* KPI Cards */}
         <div className="kpi-row" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
