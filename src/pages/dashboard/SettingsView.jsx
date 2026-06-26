@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import { useTheme } from '../../hooks/useTheme';
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../hooks/useStore";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X, FlaskConical, Plus, Send, ChevronDown } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X, FlaskConical, Plus, Send, ChevronDown, Star, Lightbulb } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
@@ -1201,6 +1201,72 @@ function AutomationsSection() {
         </div>
       </div>
 
+      {/* Coming Soon — Post-Purchase Follow-up */}
+      <div style={{ padding: "20px 24px", borderRadius: 14, background: C.card, border: `1px solid ${C.border}`, marginBottom: 12, display: "flex", alignItems: "center", gap: 16, opacity: 0.6 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(91,173,255,.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Mail size={20} strokeWidth={2} style={{ color: C.blue }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Post-Purchase Follow-up</span>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: "rgba(240,160,75,.12)", color: C.amber, letterSpacing: ".04em" }}>COMING SOON</span>
+          </div>
+          <p style={{ fontSize: 12.5, color: C.muted }}>Automatically follow up after delivery to collect reviews and encourage repeat purchases.</p>
+        </div>
+        <Toggle on={false} onToggle={() => {}} />
+      </div>
+
+      {/* Coming Soon — Loyalty & Rewards */}
+      <div style={{ padding: "20px 24px", borderRadius: 14, background: C.card, border: `1px solid ${C.border}`, marginBottom: 12, display: "flex", alignItems: "center", gap: 16, opacity: 0.6 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(62,207,178,.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Star size={20} strokeWidth={2} style={{ color: C.teal }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Loyalty & Rewards</span>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: "rgba(240,160,75,.12)", color: C.amber, letterSpacing: ".04em" }}>COMING SOON</span>
+          </div>
+          <p style={{ fontSize: 12.5, color: C.muted }}>Automatically reward repeat customers with points, discounts, and VIP perks.</p>
+        </div>
+        <Toggle on={false} onToggle={() => {}} />
+      </div>
+
+      {/* Request a Feature */}
+      <div style={{ padding: "20px 24px", borderRadius: 14, background: "rgba(229,82,102,.04)", border: `1px dashed rgba(229,82,102,.25)`, marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(229,82,102,.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Lightbulb size={18} strokeWidth={2} style={{ color: C.coral }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text, marginBottom: 4 }}>Can't find what you need?</div>
+            <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 14, lineHeight: 1.6 }}>Tell us what automation would make the biggest difference for your store. We read every request.</div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <input
+                placeholder="e.g. Auto-reply to Instagram DMs about orders..."
+                style={{ flex: 1, padding: "10px 14px", borderRadius: 9, background: C.surface, border: `1px solid ${C.border}`, color: C.text, fontSize: 13, fontFamily: "'Outfit',sans-serif", outline: "none" }}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && e.target.value.trim()) {
+                    window.open(`mailto:support@getsolva.app?subject=Feature Request&body=${encodeURIComponent(e.target.value.trim())}`, '_blank');
+                    e.target.value = "";
+                  }
+                }}
+              />
+              <button
+                onClick={e => {
+                  const input = e.currentTarget.previousSibling;
+                  if (input && input.value.trim()) {
+                    window.open(`mailto:support@getsolva.app?subject=Feature Request&body=${encodeURIComponent(input.value.trim())}`, '_blank');
+                    input.value = "";
+                  }
+                }}
+                style={{ padding: "10px 18px", borderRadius: 9, background: "linear-gradient(135deg,#E55266,#992A67,#4E0269)", color: "#fff", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}>
+                Send Request
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <SaveBar onSave={save} saved={saved}/>
     </div>
   );
@@ -2089,6 +2155,26 @@ function WorkflowsSection() {
           </div>
         </div>
       ))}
+
+      {/* Coming Soon workflows */}
+      <div style={{ marginTop: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 10 }}>Coming Soon</div>
+        {[
+          { name: "AI Sentiment Scoring", desc: "Automatically score every customer message by sentiment and route accordingly.", color: C.blue },
+          { name: "Smart Discount Engine", desc: "Dynamically offer personalised discounts based on customer history and cart value.", color: C.teal },
+        ].map((item, i) => (
+          <div key={i} style={{ padding: "14px 18px", borderRadius: 12, background: C.card, border: `1px solid ${C.border}`, marginBottom: 8, display: "flex", alignItems: "center", gap: 12, opacity: 0.55 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.color, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: C.text }}>{item.name}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: "rgba(240,160,75,.12)", color: C.amber, letterSpacing: ".04em" }}>COMING SOON</span>
+              </div>
+              <div style={{ fontSize: 12, color: C.muted }}>{item.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Add Rule Modal */}
       {showBuilder && (
