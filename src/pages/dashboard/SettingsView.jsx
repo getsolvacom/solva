@@ -437,14 +437,14 @@ function AIConfigSection() {
     setTestHistory(prev => [...prev, { role: "user", text: userMsg }]);
     setTestMsg("");
     try {
-      const systemPrompt = `You are SOLVA AI, a customer support assistant for a Shopify store.
-Tone: ${tone || "friendly"}.
-${brandDesc ? `Brand: ${brandDesc}` : ""}
-${customerDesc ? `Customers: ${customerDesc}` : ""}
-${globalInstr ? `Instructions: ${globalInstr}` : ""}
-Response length: ${responseDetail === "short" ? "Keep replies very brief, 1-2 sentences max." : responseDetail === "detailed" ? "Give thorough, detailed responses." : "Keep replies concise but complete."}
-${faqs.length > 0 ? `FAQs:\n${faqs.map(f => `Q: ${f.q}\nA: ${f.a}`).join("\n")}` : ""}
-Answer the customer's question helpfully and accurately.`;
+      let currentStoreId = null;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: storeData } = await supabase.from('stores').select('id').eq('user_id', user.id).eq('is_active', true).maybeSingle();
+          if (storeData) currentStoreId = storeData.id;
+        }
+      } catch(e) {}
 
       const response = await fetch("/api/ai/ticket-resolve", {
         method: "POST",
@@ -453,7 +453,7 @@ Answer the customer's question helpfully and accurately.`;
           ticket: userMsg,
           storeName: "your store",
           brandTone: tone || "friendly",
-          systemPrompt,
+          storeId: currentStoreId,
         }),
       });
       const data = await response.json();
