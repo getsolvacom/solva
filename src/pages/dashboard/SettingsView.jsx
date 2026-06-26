@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import { useTheme } from '../../hooks/useTheme';
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../hooks/useStore";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X, FlaskConical, Plus, Send, ChevronDown, Star, Lightbulb, Link } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X, FlaskConical, Plus, Send, ChevronDown, Star, Lightbulb, Link, Activity } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
@@ -1570,6 +1570,37 @@ function TeamSection() {
   const [inviteEmail,  setInviteEmail]  = useState("");
   const [inviteRole,   setInviteRole]   = useState("Support");
   const [saved,        setSaved]        = useState(false);
+  const [auditLog,     setAuditLog]     = useState([]);
+  const [auditLoading, setAuditLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAuditLog = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setAuditLoading(false); return; }
+        const { data: rows } = await supabase
+          .from('audit_log')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(50);
+        setAuditLog(rows || []);
+      } catch(err) {
+        console.error('Audit log fetch error:', err);
+      } finally {
+        setAuditLoading(false);
+      }
+    };
+    fetchAuditLog();
+  }, []);
+
+  const formatAuditTime = (ts) => {
+    if (!ts) return '';
+    const d = new Date(ts);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      + ' · '
+      + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
 
   const invite = () => {
     if(!inviteEmail) return;
@@ -1638,6 +1669,66 @@ function TeamSection() {
           <button className="btn-primary" onClick={invite} style={{padding:"11px 22px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14,whiteSpace:"nowrap",display:"flex",alignItems:"center"}}><UserPlus size={16} strokeWidth={2} style={{marginRight:6}}/>Send Invite</button>
         </div>
         {saved&&<div className="saved-badge" style={{marginTop:14,display:"flex",alignItems:"center",gap:7,padding:"8px 14px",borderRadius:9,background:"rgba(62,207,178,.10)",border:"1px solid rgba(62,207,178,.22)",width:"fit-content"}}><span style={{color:C.teal}}>✓</span><span style={{fontSize:13,fontWeight:600,color:C.teal}}>Invite sent successfully</span></div>}
+      </div>
+
+      {/* Activity Log */}
+      <div className="section-card fu fu3" style={{marginTop:16}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+          <div>
+            <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:4}}>Activity Log</p>
+            <p style={{fontSize:12.5,color:C.sub}}>Every settings change made to your SOLVA account.</p>
+          </div>
+          <span style={{fontSize:11,color:C.muted,fontWeight:600}}>{auditLog.length} entries</span>
+        </div>
+
+        {auditLoading && (
+          <div style={{display:"flex",alignItems:"center",gap:10,padding:"20px 0",color:C.muted,fontSize:13.5}}>
+            <div style={{width:14,height:14,borderRadius:"50%",border:`2px solid ${C.dim}`,borderTopColor:C.coral,animation:"spin .7s linear infinite",flexShrink:0}}/>
+            Loading activity log…
+          </div>
+        )}
+
+        {!auditLoading && auditLog.length === 0 && (
+          <div style={{textAlign:"center",padding:"28px 0",color:C.muted}}>
+            <div style={{fontSize:28,marginBottom:8,opacity:0.4}}>📋</div>
+            <div style={{fontSize:13,fontWeight:600,color:C.sub,marginBottom:4}}>No activity yet</div>
+            <div style={{fontSize:12,color:C.muted}}>Changes you make to your settings will appear here.</div>
+          </div>
+        )}
+
+        {!auditLoading && auditLog.length > 0 && (
+          <div style={{display:"flex",flexDirection:"column",gap:0}}>
+            {auditLog.map((entry, i) => (
+              <div key={entry.id} style={{
+                display:"flex",alignItems:"flex-start",gap:12,
+                padding:"12px 0",
+                borderBottom: i < auditLog.length - 1 ? `1px solid ${C.dim}` : "none",
+              }}>
+                <div style={{width:32,height:32,borderRadius:9,flexShrink:0,background:"rgba(229,82,102,.08)",border:`1px solid rgba(229,82,102,.15)`,display:"flex",alignItems:"center",justifyContent:"center",color:C.coral,marginTop:1}}>
+                  <Activity size={14} strokeWidth={2}/>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
+                    <span style={{fontSize:13,fontWeight:600,color:C.text}}>{entry.action}</span>
+                    <span style={{fontSize:10.5,padding:"2px 8px",borderRadius:100,background:C.dim,color:C.muted,fontWeight:600,textTransform:"capitalize"}}>{entry.section}</span>
+                  </div>
+                  {entry.field && (
+                    <div style={{fontSize:12,color:C.sub,marginBottom:3}}>
+                      <span style={{color:C.muted}}>Field: </span>{entry.field}
+                      {entry.old_value && entry.new_value && (
+                        <span style={{color:C.muted}}> · <span style={{color:"#FF5272",textDecoration:"line-through"}}>{entry.old_value}</span> → <span style={{color:C.teal}}>{entry.new_value}</span></span>
+                      )}
+                    </div>
+                  )}
+                  <div style={{fontSize:11,color:C.muted,display:"flex",alignItems:"center",gap:4}}>
+                    <Clock size={10} strokeWidth={2}/>
+                    {formatAuditTime(entry.created_at)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2027,7 +2118,7 @@ const WIDGET_COLORS = [
   { value:"#992A67", label:"Magenta" },
   { value:"#4E0269", label:"Violet" },
 ];
-const EMBED_CODE = `<script src="https://cdn.getsolva.com/widget.js" data-store-id="YOUR_STORE_ID"></script>`;
+const EMBED_CODE = `<script src="https://cdn.getsolva.app/widget.js" data-store-id="YOUR_STORE_ID"></script>`;
 
 function WidgetSection() {
   const [widgetEnabled,  setWidgetEnabled]  = useState(true);
