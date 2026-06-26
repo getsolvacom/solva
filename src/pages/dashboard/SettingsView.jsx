@@ -2030,11 +2030,14 @@ const WIDGET_COLORS = [
 const EMBED_CODE = `<script src="https://cdn.getsolva.com/widget.js" data-store-id="YOUR_STORE_ID"></script>`;
 
 function WidgetSection() {
-  const [widgetEnabled, setWidgetEnabled] = useState(true);
-  const [position,      setPosition]      = useState("bottom-right");
-  const [greeting,      setGreeting]      = useState("Hi there 👋 How can we help you today?");
-  const [widgetColor,   setWidgetColor]   = useState("#E55266");
-  const [copied,        setCopied]        = useState(false);
+  const [widgetEnabled,  setWidgetEnabled]  = useState(true);
+  const [position,       setPosition]       = useState("bottom-right");
+  const [greeting,       setGreeting]       = useState("Hi there 👋 How can we help you today?");
+  const [widgetColor,    setWidgetColor]    = useState("#E55266");
+  const [copied,         setCopied]         = useState(false);
+  const [widgetName,     setWidgetName]     = useState("SOLVA Support");
+  const [widgetSubtitle, setWidgetSubtitle] = useState("Typically replies instantly");
+  const [widgetSaved,    setWidgetSaved]    = useState(false);
 
   function handleCopy() {
     navigator.clipboard.writeText(EMBED_CODE).then(() => {
@@ -2042,6 +2045,37 @@ function WidgetSection() {
       setTimeout(() => setCopied(false), 2000);
     });
   }
+
+  const saveWidget = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: storeData } = await supabase
+        .from('stores').select('id')
+        .eq('user_id', user.id).eq('is_active', true).maybeSingle();
+      if (!storeData) return;
+      const { data: existing } = await supabase
+        .from('store_settings').select('id')
+        .eq('store_id', storeData.id).maybeSingle();
+      if (existing) {
+        await supabase.from('store_settings').update({
+          widget_name: widgetName,
+          widget_subtitle: widgetSubtitle,
+          updated_at: new Date().toISOString(),
+        }).eq('store_id', storeData.id);
+      } else {
+        await supabase.from('store_settings').insert({
+          store_id: storeData.id,
+          widget_name: widgetName,
+          widget_subtitle: widgetSubtitle,
+        });
+      }
+      setWidgetSaved(true);
+      setTimeout(() => setWidgetSaved(false), 2500);
+    } catch(err) {
+      console.error('Save widget error:', err);
+    }
+  };
 
   return (
     <div>
@@ -2068,6 +2102,18 @@ function WidgetSection() {
       {/* Section 2 — Appearance */}
       <div className="section-card fu fu1">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Widget Appearance</p>
+
+        {/* Widget Name */}
+        <div style={{marginBottom:18}}>
+          <FieldLabel hint="The name displayed at the top of your chat widget. Use your AI assistant's name or your brand name.">Widget Name</FieldLabel>
+          <TextInput value={widgetName} onChange={e => setWidgetName(e.target.value)} placeholder="e.g. Aria · SOLVA Support · Help Center"/>
+        </div>
+
+        {/* Widget Subtitle */}
+        <div style={{marginBottom:18}}>
+          <FieldLabel hint="A short status line shown below the widget name.">Widget Subtitle</FieldLabel>
+          <TextInput value={widgetSubtitle} onChange={e => setWidgetSubtitle(e.target.value)} placeholder="e.g. Typically replies instantly · We're online · Ask us anything"/>
+        </div>
 
         {/* Position pills */}
         <div style={{marginBottom:18}}>
@@ -2105,7 +2151,13 @@ function WidgetSection() {
         <div>
           <FieldLabel>Preview</FieldLabel>
           <div style={{width:"100%",height:120,background:C.dim,borderRadius:12,border:`1px solid ${C.border}`,position:"relative",overflow:"hidden",display:"flex",alignItems:"flex-end",justifyContent:position==="bottom-right"?"flex-end":"flex-start",padding:14,transition:"justify-content .2s"}}>
-            <span style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:11,color:C.muted,pointerEvents:"none",textAlign:"center",lineHeight:1.6}}>Your Shopify Store</span>
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",lineHeight:1.6,pointerEvents:"none"}}>
+              <div style={{fontSize:11,color:C.muted}}>{widgetName || "Widget Name"}</div>
+              <div style={{fontSize:10,color:C.muted,opacity:0.7}}>{widgetSubtitle || "Subtitle"}</div>
+            </div>
+            <div style={{position:"absolute",bottom:70,right:position==="bottom-right"?14:"auto",left:position==="bottom-left"?14:"auto",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"6px 10px",fontSize:10.5,color:C.text,fontWeight:600,whiteSpace:"nowrap",boxShadow:"0 2px 10px rgba(0,0,0,.3)",zIndex:2}}>
+              {widgetName || "Widget Name"}
+            </div>
             <div style={{width:44,height:44,borderRadius:"50%",background:widgetColor,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(0,0,0,.5)",color:"#fff",position:"relative",zIndex:1,transition:"background .2s,left .2s,right .2s"}}>
               <MessageSquare size={20} strokeWidth={2}/>
             </div>
@@ -2137,6 +2189,8 @@ function WidgetSection() {
           {" "}for a step-by-step guide.
         </p>
       </div>
+
+      <SaveBar onSave={saveWidget} saved={widgetSaved}/>
     </div>
   );
 }
