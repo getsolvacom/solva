@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import { useTheme } from '../../hooks/useTheme';
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../hooks/useStore";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X, FlaskConical, Plus, Send, ChevronDown } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
@@ -64,7 +64,7 @@ function GlobalStyles() {
       .sv-toast-in{animation:toastSlideIn .35s cubic-bezier(.16,1,.3,1) both;}
       .sv-toast-out{animation:toastFadeOut .3s ease forwards;}
       .fu{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) both;}
-      .fu1{animation-delay:.05s;}.fu2{animation-delay:.10s;}.fu3{animation-delay:.15s;}.fu4{animation-delay:.20s;}
+      .fu1{animation-delay:.05s;}.fu2{animation-delay:.10s;}.fu3{animation-delay:.15s;}.fu4{animation-delay:.20s;}.fu5{animation-delay:.25s;}.fu6{animation-delay:.30s;}
       .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;}
       .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(229,82,102,.28);}
       .btn-ghost{cursor:pointer;border:none;outline:none;transition:all .14s;font-family:'Outfit',sans-serif;background:transparent;}
@@ -328,6 +328,20 @@ function AIConfigSection() {
   const [conds,          setConds]          = useState({angry:true,refund:true,legal:false,repeat:true});
   const [saved,          setSaved]          = useState(false);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [brandDesc,      setBrandDesc]      = useState("");
+  const [customerDesc,   setCustomerDesc]   = useState("");
+  const [globalInstr,    setGlobalInstr]    = useState("");
+  const [responseDetail, setResponseDetail] = useState("balanced");
+  const [faqs,           setFaqs]           = useState([]);
+  const [newQ,           setNewQ]           = useState("");
+  const [newA,           setNewA]           = useState("");
+  const [showFaqForm,    setShowFaqForm]    = useState(false);
+  const [testMsg,        setTestMsg]        = useState("");
+  const [testReply,      setTestReply]      = useState("");
+  const [testLoading,    setTestLoading]    = useState(false);
+  const [testHistory,    setTestHistory]    = useState([]);
+  const [showTest,       setShowTest]       = useState(false);
+  const [langMode,       setLangMode]       = useState("fixed");
 
   useEffect(() => {
     function onLoad(e) {
@@ -337,6 +351,12 @@ function AIConfigSection() {
       if (s.ai_auto_reply_limit) setAutoReplyLimit(s.ai_auto_reply_limit);
       if (s.ai_escalation_email) setEscEmail(s.ai_escalation_email);
       if (s.ai_signature) setSig(s.ai_signature);
+      if (s.brand_description) setBrandDesc(s.brand_description);
+      if (s.customer_description) setCustomerDesc(s.customer_description);
+      if (s.global_instructions) setGlobalInstr(s.global_instructions);
+      if (s.response_detail) setResponseDetail(s.response_detail);
+      if (s.faqs) { try { setFaqs(JSON.parse(s.faqs)); } catch(e) {} }
+      if (s.language_mode) setLangMode(s.language_mode);
       setSettingsLoaded(true);
       if (window.__solvaSettings) {
         const s2 = window.__solvaSettings;
@@ -345,6 +365,12 @@ function AIConfigSection() {
         if (s2.ai_auto_reply_limit) setAutoReplyLimit(s2.ai_auto_reply_limit);
         if (s2.ai_escalation_email) setEscEmail(s2.ai_escalation_email);
         if (s2.ai_signature) setSig(s2.ai_signature);
+        if (s2.brand_description) setBrandDesc(s2.brand_description);
+        if (s2.customer_description) setCustomerDesc(s2.customer_description);
+        if (s2.global_instructions) setGlobalInstr(s2.global_instructions);
+        if (s2.response_detail) setResponseDetail(s2.response_detail);
+        if (s2.faqs) { try { setFaqs(JSON.parse(s2.faqs)); } catch(e) {} }
+        if (s2.language_mode) setLangMode(s2.language_mode);
         setSettingsLoaded(true);
       }
     }
@@ -373,6 +399,12 @@ function AIConfigSection() {
           ai_auto_reply_limit: autoReplyLimit,
           ai_escalation_email: escEmail,
           ai_signature: sig,
+          brand_description: brandDesc,
+          customer_description: customerDesc,
+          global_instructions: globalInstr,
+          response_detail: responseDetail,
+          faqs: JSON.stringify(faqs),
+          language_mode: langMode,
           updated_at: new Date().toISOString(),
         }).eq('store_id', storeData.id);
       } else {
@@ -383,12 +415,55 @@ function AIConfigSection() {
           ai_auto_reply_limit: autoReplyLimit,
           ai_escalation_email: escEmail,
           ai_signature: sig,
+          brand_description: brandDesc,
+          customer_description: customerDesc,
+          global_instructions: globalInstr,
+          response_detail: responseDetail,
+          faqs: JSON.stringify(faqs),
+          language_mode: langMode,
         });
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       console.error('Save AI config error:', err);
+    }
+  };
+
+  const runTest = async () => {
+    if (!testMsg.trim()) return;
+    setTestLoading(true);
+    const userMsg = testMsg.trim();
+    setTestHistory(prev => [...prev, { role: "user", text: userMsg }]);
+    setTestMsg("");
+    try {
+      const systemPrompt = `You are SOLVA AI, a customer support assistant for a Shopify store.
+Tone: ${tone || "friendly"}.
+${brandDesc ? `Brand: ${brandDesc}` : ""}
+${customerDesc ? `Customers: ${customerDesc}` : ""}
+${globalInstr ? `Instructions: ${globalInstr}` : ""}
+Response length: ${responseDetail === "short" ? "Keep replies very brief, 1-2 sentences max." : responseDetail === "detailed" ? "Give thorough, detailed responses." : "Keep replies concise but complete."}
+${faqs.length > 0 ? `FAQs:\n${faqs.map(f => `Q: ${f.q}\nA: ${f.a}`).join("\n")}` : ""}
+Answer the customer's question helpfully and accurately.`;
+
+      const response = await fetch("/api/ai/ticket-resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticket: userMsg,
+          storeName: "your store",
+          brandTone: tone || "friendly",
+          systemPrompt,
+        }),
+      });
+      const data = await response.json();
+      const reply = data.response || "I couldn't generate a response. Please try again.";
+      setTestReply(reply);
+      setTestHistory(prev => [...prev, { role: "ai", text: reply }]);
+    } catch (err) {
+      setTestHistory(prev => [...prev, { role: "ai", text: "Error generating response. Check your connection." }]);
+    } finally {
+      setTestLoading(false);
     }
   };
 
@@ -448,8 +523,32 @@ function AIConfigSection() {
             <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Response Settings</p>
             <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
               <div>
-                <FieldLabel hint="Language used in all AI-generated replies.">Response Language</FieldLabel>
-                <SelectInput value={lang} onChange={e=>setLang(e.target.value)} options={LANGUAGES}/>
+                <FieldLabel hint="How the AI determines which language to respond in.">Response Language</FieldLabel>
+                <div style={{ display: "flex", gap: 8, marginBottom: langMode === "fixed" ? 10 : 0, marginTop: 8 }}>
+                  {[
+                    { key: "fixed", label: "Fixed Language", desc: "Always respond in the selected language." },
+                    { key: "auto",  label: "Auto-Detect",    desc: "Match the customer's browser language." },
+                  ].map(m => (
+                    <div key={m.key} onClick={() => setLangMode(m.key)}
+                      style={{
+                        flex: 1, padding: "10px 12px", borderRadius: 9, cursor: "pointer",
+                        background: langMode === m.key ? "rgba(229,82,102,.08)" : C.surface,
+                        border: `1px solid ${langMode === m.key ? C.coral : C.border}`,
+                        transition: "all .15s",
+                      }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: langMode === m.key ? C.coral : C.text, marginBottom: 3 }}>{m.label}</div>
+                      <div style={{ fontSize: 11, color: C.muted }}>{m.desc}</div>
+                    </div>
+                  ))}
+                </div>
+                {langMode === "fixed" && (
+                  <SelectInput value={lang} onChange={e => setLang(e.target.value)} options={LANGUAGES} />
+                )}
+                {langMode === "auto" && (
+                  <div style={{ padding: "10px 14px", borderRadius: 9, background: "rgba(62,207,178,.07)", border: `1px solid rgba(62,207,178,.20)`, marginTop: 0 }}>
+                    <span style={{ fontSize: 12.5, color: C.teal, fontWeight: 600 }}>Auto-detect active — AI will match the customer's browser language automatically.</span>
+                  </div>
+                )}
               </div>
               <div>
                 <FieldLabel hint="Max consecutive AI replies before escalating.">Auto-Reply Limit</FieldLabel>
@@ -484,6 +583,265 @@ function AIConfigSection() {
               </div>
             ))}
           </div>
+
+          {/* Card A: Brand & Customer Context */}
+          <div className="section-card fu fu3" style={{ marginTop: 0 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>AI Context</p>
+            <p style={{ fontSize: 12.5, color: C.sub, marginBottom: 18, lineHeight: 1.6 }}>Help SOLVA AI understand your brand and customers so every response feels store-specific.</p>
+
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <FieldLabel hint="Describe your brand, products, and values. The AI uses this in every response.">About Your Brand</FieldLabel>
+                <span style={{ fontSize: 11, color: C.muted }}>{brandDesc.length}/500</span>
+              </div>
+              <textarea
+                value={brandDesc}
+                onChange={e => setBrandDesc(e.target.value.slice(0, 500))}
+                rows={3}
+                placeholder="e.g. We sell premium handcrafted leather goods. Our brand values craftsmanship, sustainability, and exceptional customer care. We serve fashion-conscious adults who appreciate quality over quantity."
+                style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, color: C.text, fontSize: 13.5, lineHeight: 1.65, fontFamily: "'Outfit',sans-serif", resize: "vertical", outline: "none", boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <FieldLabel hint="Describe your typical customer. The AI uses this to personalize its tone.">About Your Customers</FieldLabel>
+                <span style={{ fontSize: 11, color: C.muted }}>{customerDesc.length}/500</span>
+              </div>
+              <textarea
+                value={customerDesc}
+                onChange={e => setCustomerDesc(e.target.value.slice(0, 500))}
+                rows={3}
+                placeholder="e.g. Our customers are mostly women aged 25-45 who care about sustainable fashion. They tend to ask about shipping times, product materials, and return policies. They appreciate warm, personal responses."
+                style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, color: C.text, fontSize: 13.5, lineHeight: 1.65, fontFamily: "'Outfit',sans-serif", resize: "vertical", outline: "none", boxSizing: "border-box" }}
+              />
+            </div>
+          </div>
+
+          {/* Card B: Global AI Instructions + Response Detail */}
+          <div className="section-card fu fu4">
+            <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>AI Behaviour</p>
+            <p style={{ fontSize: 12.5, color: C.sub, marginBottom: 18, lineHeight: 1.6 }}>Custom rules the AI follows in every conversation.</p>
+
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <FieldLabel hint="Write rules the AI must always follow. One per line works best.">Global Instructions</FieldLabel>
+                <span style={{ fontSize: 11, color: C.muted }}>{globalInstr.length}/1000</span>
+              </div>
+              <textarea
+                value={globalInstr}
+                onChange={e => setGlobalInstr(e.target.value.slice(0, 1000))}
+                rows={4}
+                placeholder={"e.g.\nNever mention competitor brands.\nAlways address the customer by their first name.\nOffer free shipping on orders over $100.\nEscalate any mention of legal action immediately."}
+                style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, color: C.text, fontSize: 13.5, lineHeight: 1.65, fontFamily: "'Outfit',sans-serif", resize: "vertical", outline: "none", boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div>
+              <FieldLabel hint="Controls how long and detailed AI responses are.">Response Detail Level</FieldLabel>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginTop: 8 }}>
+                {[
+                  { key: "short",    label: "Short",    desc: "1-2 sentences. Fast and direct." },
+                  { key: "balanced", label: "Balanced", desc: "Concise but complete." },
+                  { key: "detailed", label: "Detailed", desc: "Thorough, full explanations." },
+                ].map(opt => (
+                  <div key={opt.key} onClick={() => setResponseDetail(opt.key)}
+                    style={{
+                      padding: "12px 14px",
+                      borderRadius: 10,
+                      background: responseDetail === opt.key ? "rgba(229,82,102,.08)" : C.surface,
+                      border: `1px solid ${responseDetail === opt.key ? C.coral : C.border}`,
+                      cursor: "pointer",
+                      transition: "all .15s",
+                    }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: responseDetail === opt.key ? C.coral : C.text, marginBottom: 4 }}>{opt.label}</div>
+                    <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{opt.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Card D: Custom FAQs */}
+          <div className="section-card fu fu5">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: ".08em", textTransform: "uppercase" }}>Custom FAQs</p>
+              <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>{faqs.length} FAQ{faqs.length !== 1 ? "s" : ""}</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: C.sub, marginBottom: 16, lineHeight: 1.6 }}>Train your AI with store-specific knowledge. These Q&A pairs are used in every AI response.</p>
+
+            {faqs.length === 0 && !showFaqForm && (
+              <div style={{ textAlign: "center", padding: "24px 0", color: C.muted }}>
+                <Bot size={28} strokeWidth={1.5} style={{ marginBottom: 8, opacity: 0.5 }} />
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>No FAQs yet</div>
+                <div style={{ fontSize: 12, marginBottom: 16 }}>Add your first FAQ to make your AI smarter about your store.</div>
+              </div>
+            )}
+
+            {faqs.map((faq, i) => (
+              <div key={i} style={{ padding: "12px 14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 4 }}>{faq.q}</div>
+                    <div style={{ fontSize: 12.5, color: C.sub, lineHeight: 1.55 }}>{faq.a}</div>
+                  </div>
+                  <button onClick={() => setFaqs(prev => prev.filter((_, idx) => idx !== i))}
+                    style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, display: "flex", alignItems: "center", padding: 4, flexShrink: 0 }}>
+                    <Trash2 size={14} strokeWidth={2} />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {showFaqForm && (
+              <div style={{ padding: "16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderHi}`, marginBottom: 12 }}>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontSize: 11.5, fontWeight: 700, color: C.sub, display: "block", marginBottom: 6 }}>Question</label>
+                  <input value={newQ} onChange={e => setNewQ(e.target.value)}
+                    placeholder="e.g. What is your return policy?"
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: 9, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 13.5, fontFamily: "'Outfit',sans-serif", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ fontSize: 11.5, fontWeight: 700, color: C.sub, display: "block", marginBottom: 6 }}>Answer</label>
+                  <textarea value={newA} onChange={e => setNewA(e.target.value)}
+                    rows={3}
+                    placeholder="e.g. We accept returns within 30 days of purchase. Items must be unused and in original packaging. Contact support@yourstore.com to initiate a return."
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: 9, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 13.5, fontFamily: "'Outfit',sans-serif", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => {
+                    if (!newQ.trim() || !newA.trim()) return;
+                    setFaqs(prev => [...prev, { q: newQ.trim(), a: newA.trim() }]);
+                    setNewQ(""); setNewA(""); setShowFaqForm(false);
+                  }}
+                    style={{ flex: 1, padding: "9px", borderRadius: 8, background: "linear-gradient(135deg,#E55266,#992A67,#4E0269)", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                    Save FAQ
+                  </button>
+                  <button onClick={() => { setShowFaqForm(false); setNewQ(""); setNewA(""); }}
+                    style={{ padding: "9px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!showFaqForm && (
+              <button onClick={() => setShowFaqForm(true)}
+                style={{ width: "100%", padding: "10px", borderRadius: 9, border: `1px dashed ${C.borderHi}`, background: "transparent", color: C.coral, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontFamily: "'Outfit',sans-serif" }}>
+                <Plus size={15} strokeWidth={2} /> Add FAQ
+              </button>
+            )}
+          </div>
+
+          {/* Card E: Test Your AI sandbox */}
+          <div className="section-card fu fu6">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(229,82,102,.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <FlaskConical size={16} strokeWidth={2} style={{ color: C.coral }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 1 }}>Test Your AI</p>
+                  <p style={{ fontSize: 11.5, color: C.muted }}>Simulate a customer conversation before going live</p>
+                </div>
+              </div>
+              <button onClick={() => { setShowTest(v => !v); setTestHistory([]); setTestReply(""); }}
+                style={{ padding: "7px 16px", borderRadius: 8, background: showTest ? C.surface : "linear-gradient(135deg,#E55266,#992A67,#4E0269)", border: showTest ? `1px solid ${C.border}` : "none", color: showTest ? C.muted : "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                {showTest ? "Close Test" : "Open Sandbox"}
+              </button>
+            </div>
+
+            {showTest && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+
+                  {/* Left — chat simulation */}
+                  <div style={{ borderRadius: 12, background: C.bg, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 320 }}>
+                    <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.border}`, background: C.surface, display: "flex", alignItems: "center", gap: 8 }}>
+                      <Bot size={14} strokeWidth={2} style={{ color: C.coral }} />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>SOLVA AI Preview</span>
+                    </div>
+                    <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+                      {testHistory.length === 0 && (
+                        <div style={{ textAlign: "center", padding: "30px 10px", color: C.muted }}>
+                          <Bot size={24} strokeWidth={1.5} style={{ marginBottom: 8, opacity: 0.4 }} />
+                          <div style={{ fontSize: 12 }}>Type a test message to see how your AI responds</div>
+                        </div>
+                      )}
+                      {testHistory.map((msg, i) => (
+                        <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
+                          <div style={{
+                            maxWidth: "85%", padding: "9px 13px", borderRadius: 12,
+                            borderBottomRightRadius: msg.role === "user" ? 3 : 12,
+                            borderBottomLeftRadius: msg.role === "ai" ? 3 : 12,
+                            background: msg.role === "user" ? "rgba(229,82,102,.12)" : C.card,
+                            border: `1px solid ${msg.role === "user" ? "rgba(229,82,102,.25)" : C.border}`,
+                            fontSize: 12.5, color: C.text, lineHeight: 1.6,
+                          }}>
+                            {msg.role === "ai" && (
+                              <div style={{ fontSize: 10, fontWeight: 700, color: C.coral, marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                                <Bot size={10} strokeWidth={2} /> SOLVA AI
+                              </div>
+                            )}
+                            {msg.text}
+                          </div>
+                        </div>
+                      ))}
+                      {testLoading && (
+                        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                          <div style={{ padding: "9px 13px", borderRadius: 12, borderBottomLeftRadius: 3, background: C.card, border: `1px solid ${C.border}`, display: "flex", gap: 5, alignItems: "center" }}>
+                            {[0,1,2].map(i => (
+                              <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: C.muted, animation: "typingDot 1.2s ease-in-out infinite", animationDelay: `${i*0.18}s` }} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}`, background: C.surface, display: "flex", gap: 8 }}>
+                      <input
+                        value={testMsg}
+                        onChange={e => setTestMsg(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runTest(); } }}
+                        placeholder="Type a customer message..."
+                        style={{ flex: 1, padding: "9px 12px", borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 13, fontFamily: "'Outfit',sans-serif", outline: "none" }}
+                      />
+                      <button onClick={runTest} disabled={testLoading || !testMsg.trim()}
+                        style={{ width: 36, height: 36, borderRadius: 8, background: "linear-gradient(135deg,#E55266,#992A67,#4E0269)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: testLoading || !testMsg.trim() ? 0.5 : 1 }}>
+                        <Send size={14} strokeWidth={2} style={{ color: "#fff" }} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right — quick test prompts */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <p style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em" }}>Quick Test Prompts</p>
+                    {[
+                      "Where is my order? It's been 5 days.",
+                      "I want to return my item, it doesn't fit.",
+                      "Do you offer free shipping?",
+                      "I received the wrong product.",
+                      "Can I change my shipping address?",
+                      "What's your refund policy?",
+                    ].map((prompt, i) => (
+                      <button key={i} onClick={() => { setTestMsg(prompt); }}
+                        style={{ padding: "10px 14px", borderRadius: 9, background: C.surface, border: `1px solid ${C.border}`, color: C.sub, fontSize: 12.5, cursor: "pointer", textAlign: "left", fontFamily: "'Outfit',sans-serif", transition: "all .14s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.coral; e.currentTarget.style.color = C.coral; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.sub; }}>
+                        {prompt}
+                      </button>
+                    ))}
+                    <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(229,82,102,.06)", border: `1px solid rgba(229,82,102,.15)`, marginTop: 4 }}>
+                      <p style={{ fontSize: 11.5, color: C.sub, lineHeight: 1.6 }}>
+                        <span style={{ fontWeight: 700, color: C.coral }}>Tip: </span>
+                        Save your AI settings first, then test to see how your brand tone, instructions, and FAQs affect the responses.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <SaveBar onSave={save} saved={saved}/>
         </>
       )}
