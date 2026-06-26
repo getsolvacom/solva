@@ -231,6 +231,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const mobilePanel                           = ticketId ? "chat" : "list";
   const [filter,          setFilter]          = useState("All");
   const [search,          setSearch]          = useState("");
+  const [topicFilter,     setTopicFilter]     = useState("All");
+  const [sortOrder,       setSortOrder]       = useState("newest");
   const [reply,           setReply]           = useState("");
   const [statusOverrides, setStatusOverrides] = useState({});
   const [ticketEscalated, setTicketEscalated] = useState({});
@@ -335,11 +337,45 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
   const getStatus = (id, def) => statusOverrides[id] || def;
 
+  const TOPICS = ["All", "Order Status", "Wrong Item", "Shipping", "Return Request", "Discount/Promo", "Product Question"];
+
   const ticketSource = realTickets && realTickets.length > 0 ? realTickets : TICKETS;
-  const filtered = ticketSource.filter(t => {
+
+  const filteredByStatus = ticketSource.filter(t => {
     const mf = filter === "All" || getStatus(t.id, t.status) === filter.toLowerCase();
     const ms = t.name.toLowerCase().includes(search.toLowerCase()) || t.subject.toLowerCase().includes(search.toLowerCase());
     return mf && ms;
+  });
+
+  const filteredByTopic = topicFilter === "All"
+    ? filteredByStatus
+    : filteredByStatus.filter(t => {
+        const subject = (t.subject || "").toLowerCase();
+        const topicMap = {
+          "Order Status":     ["order", "where is", "tracking", "status", "shipped"],
+          "Wrong Item":       ["wrong", "incorrect", "different", "not what"],
+          "Shipping":         ["shipping", "delivery", "deliver", "transit", "courier"],
+          "Return Request":   ["return", "refund", "send back", "exchange"],
+          "Discount/Promo":   ["discount", "promo", "coupon", "code", "offer"],
+          "Product Question": ["product", "size", "color", "material", "spec"],
+        };
+        const keywords = topicMap[topicFilter] || [];
+        return keywords.some(kw => subject.includes(kw));
+      });
+
+  const filtered = [...filteredByTopic].sort((a, b) => {
+    if (sortOrder === "escalated") {
+      const aEsc = getStatus(a.id, a.status) === "escalated" ? 0 : 1;
+      const bEsc = getStatus(b.id, b.status) === "escalated" ? 0 : 1;
+      return aEsc - bEsc;
+    }
+    if (sortOrder === "pending") {
+      const aPen = getStatus(a.id, a.status) === "pending" ? 0 : 1;
+      const bPen = getStatus(b.id, b.status) === "pending" ? 0 : 1;
+      return aPen - bPen;
+    }
+    if (sortOrder === "oldest") return (a.time || "").localeCompare(b.time || "");
+    return (b.time || "").localeCompare(a.time || "");
   });
 
   const selected        = ticketSource.find(t => t.id === selectedId);
@@ -543,6 +579,30 @@ export default function TicketsView({ isLandscape, isMobile }) {
                 {f} ({counts[f]})
               </button>
             ))}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 14px 10px", flexWrap: "wrap" }}>
+            <div style={{ position: "relative", flex: 1, minWidth: 120 }}>
+              <select
+                value={topicFilter}
+                onChange={e => setTopicFilter(e.target.value)}
+                style={{ width: "100%", padding: "6px 10px", borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: topicFilter !== "All" ? C.coral : C.muted, fontSize: 12, fontFamily: "'Outfit',sans-serif", outline: "none", cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}
+              >
+                {TOPICS.map(t => <option key={t} value={t} style={{ background: "var(--card)", color: "var(--text)" }}>{t === "All" ? "All Topics" : t}</option>)}
+              </select>
+            </div>
+            <div style={{ position: "relative", flex: 1, minWidth: 120 }}>
+              <select
+                value={sortOrder}
+                onChange={e => setSortOrder(e.target.value)}
+                style={{ width: "100%", padding: "6px 10px", borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.muted, fontSize: 12, fontFamily: "'Outfit',sans-serif", outline: "none", cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}
+              >
+                <option value="newest" style={{ background: "var(--card)" }}>Newest First</option>
+                <option value="oldest" style={{ background: "var(--card)" }}>Oldest First</option>
+                <option value="escalated" style={{ background: "var(--card)" }}>Escalated First</option>
+                <option value="pending" style={{ background: "var(--card)" }}>Pending First</option>
+              </select>
+            </div>
           </div>
 
           {realTickets !== null && realTickets.length === 0 && (

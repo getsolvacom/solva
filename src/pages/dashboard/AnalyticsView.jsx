@@ -39,6 +39,7 @@ const KPI_DATA = {
     {label:"Hours Saved",       value:"47.5h",     change:"+31%", color:C.blue,    icon:<Clock size={18} strokeWidth={2}/>},
     {label:"Avg Response",      value:"<45s",      change:"-18%", color:C.magenta, icon:<Zap size={18} strokeWidth={2}/>},
     {label:"Satisfaction",      value:"98.3%",     change:"+2%",  color:C.violet,  icon:<Star size={18} strokeWidth={2}/>},
+    {label:"Cost Savings",      value:"$1,428",    change:"+18%", color:C.violet,  icon:<DollarSign size={18} strokeWidth={2}/>},
   ],
   "30D":[
     {label:"Revenue Recovered", value:"$36,820", change:"+31%", color:C.teal,    icon:<DollarSign size={18} strokeWidth={2}/>},
@@ -47,6 +48,7 @@ const KPI_DATA = {
     {label:"Hours Saved",       value:"184h",     change:"+28%", color:C.blue,    icon:<Clock size={18} strokeWidth={2}/>},
     {label:"Avg Response",      value:"<52s",     change:"-12%", color:C.magenta, icon:<Zap size={18} strokeWidth={2}/>},
     {label:"Satisfaction",      value:"97.8%",    change:"+1%",  color:C.violet,  icon:<Star size={18} strokeWidth={2}/>},
+    {label:"Cost Savings",      value:"$4,370",   change:"+22%", color:C.violet,  icon:<DollarSign size={18} strokeWidth={2}/>},
   ],
   "90D":[
     {label:"Revenue Recovered", value:"$113,320", change:"+41%", color:C.teal,    icon:<DollarSign size={18} strokeWidth={2}/>},
@@ -55,6 +57,7 @@ const KPI_DATA = {
     {label:"Hours Saved",       value:"512h",      change:"+44%", color:C.blue,    icon:<Clock size={18} strokeWidth={2}/>},
     {label:"Avg Response",      value:"<48s",      change:"-22%", color:C.magenta, icon:<Zap size={18} strokeWidth={2}/>},
     {label:"Satisfaction",      value:"98.1%",     change:"+3%",  color:C.violet,  icon:<Star size={18} strokeWidth={2}/>},
+    {label:"Cost Savings",      value:"$11,830",   change:"+35%", color:C.violet,  icon:<DollarSign size={18} strokeWidth={2}/>},
   ],
 };
 
@@ -152,6 +155,7 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
       stats ? `${(stats.ticketsResolved * 0.5).toFixed(1)}h` : "—",
       "—",
       "—",
+      stats ? `$${(stats.ticketsResolved * 3.5).toFixed(2)}` : "—",
     ];
     const hasRealData = stats && (stats.totalTickets > 0 || stats.totalCarts > 0 || stats.totalReturns > 0);
     const change = hasRealData ? k.change : "—";
@@ -255,7 +259,7 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
       <div className="av-body" style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexDirection:"column",gap:18,background:C.bg}}>
 
         {/* KPI Cards */}
-        <div className="av-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:12}}>
+        <div className="av-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:12}}>
           {kpis.map((k,i)=>(
             <div key={i} className={`kpi-card fu fu${Math.min(i+1,6)}`}
               style={{padding:"16px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
@@ -265,6 +269,7 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
               </div>
               <div style={{fontSize:20,fontWeight:800,color:k.color,marginBottom:3}}>{k.value}</div>
               <div style={{fontSize:11,color:C.muted}}>{k.label}</div>
+              {k.label === "Cost Savings" && <div style={{fontSize:9,color:C.muted,marginTop:2}}>@ $3.5 per ticket</div>}
             </div>
           ))}
         </div>
