@@ -1151,7 +1151,19 @@ function AutomationsSection() {
   const [winBackDiscType, setWinBackDiscType] = useState("percentage");
   const [winBackDiscVal,  setWinBackDiscVal]  = useState(10);
   const [winBackSaved,    setWinBackSaved]    = useState(false);
+  const [winBackMessage,  setWinBackMessage]  = useState("Hey [Customer name], we miss you! Here's [Discount value] off your next order — use code [Discount code] at checkout. Valid for 7 days.");
+  const winBackMsgRef = useRef(null);
   const winBackSave = () => { setWinBackSaved(true); setTimeout(()=>setWinBackSaved(false),2500); };
+
+  const insertTag = (tag) => {
+    const el = winBackMsgRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const newVal = winBackMessage.slice(0, start) + tag + winBackMessage.slice(end);
+    setWinBackMessage(newVal.slice(0, 300));
+    setTimeout(() => { el.selectionStart = el.selectionEnd = start + tag.length; el.focus(); }, 0);
+  };
 
   const inputStyle = {flex:1,padding:"11px 12px",borderRadius:10,background:C.card,border:`1px solid ${C.borderHi}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"};
 
@@ -1323,15 +1335,27 @@ function AutomationsSection() {
                   style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"}}/>
               </div>
               <div style={{marginBottom:16}}>
-                <FieldLabel>Message Preview</FieldLabel>
-                <div style={{padding:"14px 16px",borderRadius:10,background:C.dim,border:`1px solid ${C.borderHi}`,color:C.sub,fontSize:13.5,lineHeight:1.7}}>
-                  Hey [Customer name], we miss you! Here's{" "}
-                  <strong style={{color:C.coral}}>
-                    {winBackDiscType==="percentage"?`${winBackDiscVal}% off`:`$${winBackDiscVal} off`}
-                  </strong>
-                  {" "}your next order — use code{" "}
-                  <span style={{fontFamily:"monospace",color:C.text,fontWeight:700}}>WINBACK10</span>
-                  {" "}at checkout. Valid for 7 days.
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                  <FieldLabel hint="Personalise the message sent to inactive customers.">Win-Back Message</FieldLabel>
+                  <span style={{fontSize:11,color:C.muted}}>{winBackMessage.length}/300</span>
+                </div>
+                <textarea
+                  ref={winBackMsgRef}
+                  value={winBackMessage}
+                  onChange={e=>setWinBackMessage(e.target.value.slice(0,300))}
+                  rows={4}
+                  style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:13.5,lineHeight:1.65,fontFamily:"'Outfit',sans-serif",resize:"vertical",outline:"none",boxSizing:"border-box"}}
+                />
+                <div style={{marginTop:8}}>
+                  <p style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:6}}>Insert variable:</p>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                    {["[Customer name]","[Discount value]","[Discount code]","[Store name]"].map(tag=>(
+                      <button key={tag} onClick={()=>insertTag(tag)}
+                        style={{padding:"3px 10px",borderRadius:100,background:C.dim,border:`1px solid ${C.border}`,color:C.sub,fontSize:11.5,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
               <div style={{display:"flex",alignItems:"center",gap:12}}>
