@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import {
   Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle,
   ArrowUpRight, AlertTriangle, User, Search, Zap,
-  Smile, Bold, Italic, ChevronUp, Clock, Calendar,
+  Smile, Bold, Italic, ChevronUp, Clock, Calendar, Bookmark,
 } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
@@ -247,6 +247,12 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [activeFormat,    setActiveFormat]    = useState(null);
   const [csatRatings,    setCsatRatings]    = useState({});
   const [csatHover,      setCsatHover]      = useState(null);
+  const [bookmarked,     setBookmarked]     = useState({});
+
+  const toggleBookmark = (e, id) => {
+    e.stopPropagation();
+    setBookmarked(prev => ({ ...prev, [id]: !prev[id] }));
+  };
   const [customPickOpen, setCustomPickOpen] = useState(false);
   const [pickDay,   setPickDay]   = useState(new Date().getDate());
   const [pickMonth, setPickMonth] = useState(new Date().getMonth() + 1);
@@ -342,7 +348,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const ticketSource = realTickets && realTickets.length > 0 ? realTickets : TICKETS;
 
   const filteredByStatus = ticketSource.filter(t => {
-    const mf = filter === "All" || getStatus(t.id, t.status) === filter.toLowerCase();
+    const mf = filter === "All"
+      || (filter === "Bookmarked" ? bookmarked[t.id] : getStatus(t.id, t.status) === filter.toLowerCase());
     const ms = t.name.toLowerCase().includes(search.toLowerCase()) || t.subject.toLowerCase().includes(search.toLowerCase());
     return mf && ms;
   });
@@ -383,10 +390,11 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const effectiveMsgs   = selected ? [...(Array.isArray(selected.messages) ? selected.messages : []), ...(extraMessages[selectedId] || [])] : [];
 
   const counts = {
-    All:       ticketSource.length,
-    Pending:   ticketSource.filter(t => getStatus(t.id, t.status) === "pending").length,
-    Resolved:  ticketSource.filter(t => getStatus(t.id, t.status) === "resolved").length,
-    Escalated: ticketSource.filter(t => getStatus(t.id, t.status) === "escalated").length,
+    All:        ticketSource.length,
+    Pending:    ticketSource.filter(t => getStatus(t.id, t.status) === "pending").length,
+    Resolved:   ticketSource.filter(t => getStatus(t.id, t.status) === "resolved").length,
+    Escalated:  ticketSource.filter(t => getStatus(t.id, t.status) === "escalated").length,
+    Bookmarked: ticketSource.filter(t => bookmarked[t.id]).length,
   };
 
   function fireToast(message, color, bg) {
@@ -573,7 +581,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
           </div>
 
           <div style={{display:"flex",gap:4,padding:"0 14px 10px",flexWrap:"wrap"}}>
-            {["All","Pending","Resolved","Escalated"].map(f=>(
+            {["All","Pending","Resolved","Escalated","Bookmarked"].map(f=>(
               <button key={f} className="filter-tab" onClick={()=>setFilter(f)}
                 style={{padding:"4px 10px",borderRadius:100,border:`1px solid ${filter===f?C.coral:C.border}`,background:filter===f?"rgba(229,82,102,.10)":"transparent",color:filter===f?C.coral:C.muted,fontSize:11.5,fontWeight:filter===f?700:400}}>
                 {f} ({counts[f]})
@@ -637,11 +645,18 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       </div>
                       <div style={{fontSize:12.5,fontWeight:t.unread?600:400,color:t.unread?C.text:C.sub,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:5}}>{t.subject}</div>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                        <span style={{fontSize:11.5,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:150}}>{t.preview}</span>
-                        <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
-                          <span className="tag" style={{color:st.color,background:st.bg,marginLeft:6,gap:4}}>{st.icon}{st.label}</span>
+                        <span style={{fontSize:11.5,color:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:120}}>{t.preview}</span>
+                        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+                          <button
+                            onClick={(e) => toggleBookmark(e, t.id)}
+                            style={{background:"transparent",border:"none",cursor:"pointer",padding:"2px 3px",display:"flex",alignItems:"center",color:bookmarked[t.id]?C.amber:C.muted,flexShrink:0,transition:"color .15s"}}
+                            title={bookmarked[t.id] ? "Remove bookmark" : "Bookmark ticket"}
+                          >
+                            <Bookmark size={13} strokeWidth={2} fill={bookmarked[t.id] ? C.amber : "none"} />
+                          </button>
+                          <span className="tag" style={{color:st.color,background:st.bg,gap:4}}>{st.icon}{st.label}</span>
                           {csatRatings[t.id] !== undefined && csatRatings[t.id] > 0 && (
-                            <span style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10.5,padding:"2px 7px",borderRadius:100,background:"rgba(240,160,75,.10)",color:C.amber,marginLeft:4}}>★ {csatRatings[t.id]}</span>
+                            <span style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10.5,padding:"2px 7px",borderRadius:100,background:"rgba(240,160,75,.10)",color:C.amber}}>★ {csatRatings[t.id]}</span>
                           )}
                         </div>
                       </div>
