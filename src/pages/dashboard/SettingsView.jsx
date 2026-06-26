@@ -2150,16 +2150,62 @@ function WidgetSection() {
         {/* Live preview */}
         <div>
           <FieldLabel>Preview</FieldLabel>
-          <div style={{width:"100%",height:120,background:C.dim,borderRadius:12,border:`1px solid ${C.border}`,position:"relative",overflow:"hidden",display:"flex",alignItems:"flex-end",justifyContent:position==="bottom-right"?"flex-end":"flex-start",padding:14,transition:"justify-content .2s"}}>
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",lineHeight:1.6,pointerEvents:"none"}}>
-              <div style={{fontSize:11,color:C.muted}}>{widgetName || "Widget Name"}</div>
-              <div style={{fontSize:10,color:C.muted,opacity:0.7}}>{widgetSubtitle || "Subtitle"}</div>
-            </div>
-            <div style={{position:"absolute",bottom:70,right:position==="bottom-right"?14:"auto",left:position==="bottom-left"?14:"auto",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"6px 10px",fontSize:10.5,color:C.text,fontWeight:600,whiteSpace:"nowrap",boxShadow:"0 2px 10px rgba(0,0,0,.3)",zIndex:2}}>
-              {widgetName || "Widget Name"}
-            </div>
-            <div style={{width:44,height:44,borderRadius:"50%",background:widgetColor,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(0,0,0,.5)",color:"#fff",position:"relative",zIndex:1,transition:"background .2s,left .2s,right .2s"}}>
-              <MessageSquare size={20} strokeWidth={2}/>
+          <div style={{
+            width:"100%", borderRadius:14, border:`1px solid ${C.border}`,
+            overflow:"hidden", background:C.dim, position:"relative",
+            display:"flex", alignItems:"flex-end",
+            justifyContent: position === "bottom-right" ? "flex-end" : "flex-start",
+            padding:16, minHeight:320,
+          }}>
+            {/* Storefront background label */}
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:11,color:C.muted,opacity:0.4,pointerEvents:"none",textAlign:"center"}}>Your Shopify Store</div>
+
+            {/* Widget panel */}
+            <div style={{
+              width:260, borderRadius:16, overflow:"hidden",
+              boxShadow:"0 8px 32px rgba(0,0,0,.45)",
+              border:`1px solid ${C.border}`,
+              display:"flex", flexDirection:"column",
+              position:"relative", zIndex:2,
+            }}>
+              {/* Widget header */}
+              <div style={{background:widgetColor, padding:"14px 16px", display:"flex", alignItems:"center", gap:10}}>
+                <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.20)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <MessageSquare size={18} strokeWidth={2} style={{color:"#fff"}}/>
+                </div>
+                <div style={{flex:1, minWidth:0}}>
+                  <div style={{fontSize:13.5, fontWeight:700, color:"#fff", marginBottom:2}}>{widgetName || "Support"}</div>
+                  <div style={{fontSize:11, color:"rgba(255,255,255,.75)"}}>{widgetSubtitle || "Typically replies instantly"}</div>
+                </div>
+                <div style={{width:8,height:8,borderRadius:"50%",background:"#4ade80",flexShrink:0}}/>
+              </div>
+
+              {/* Widget messages */}
+              <div style={{background:C.bg, padding:"12px 12px 8px", display:"flex", flexDirection:"column", gap:8}}>
+                <div style={{display:"flex", alignItems:"flex-start", gap:7}}>
+                  <div style={{width:24,height:24,borderRadius:"50%",background:widgetColor,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <MessageSquare size={12} strokeWidth={2} style={{color:"#fff"}}/>
+                  </div>
+                  <div style={{padding:"8px 11px",borderRadius:12,borderBottomLeftRadius:3,background:C.card,border:`1px solid ${C.border}`,fontSize:11.5,color:C.text,lineHeight:1.55,maxWidth:160}}>
+                    {greeting || "Hi there 👋 How can we help you today?"}
+                  </div>
+                </div>
+                <div style={{display:"flex", justifyContent:"flex-end"}}>
+                  <div style={{padding:"8px 11px",borderRadius:12,borderBottomRightRadius:3,background:widgetColor,fontSize:11.5,color:"#fff",lineHeight:1.55,maxWidth:140}}>
+                    Where is my order?
+                  </div>
+                </div>
+              </div>
+
+              {/* Widget input bar */}
+              <div style={{background:C.surface, borderTop:`1px solid ${C.border}`, padding:"9px 12px", display:"flex", alignItems:"center", gap:8}}>
+                <div style={{flex:1,padding:"7px 10px",borderRadius:20,background:C.card,border:`1px solid ${C.border}`,fontSize:11,color:C.muted}}>
+                  Type a message…
+                </div>
+                <div style={{width:28,height:28,borderRadius:"50%",background:widgetColor,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <Send size={12} strokeWidth={2} style={{color:"#fff"}}/>
+                </div>
+              </div>
             </div>
           </div>
         </div>
