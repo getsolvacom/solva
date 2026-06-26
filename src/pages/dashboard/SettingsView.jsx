@@ -751,95 +751,152 @@ Answer the customer's question helpfully and accurately.`;
               </button>
             </div>
 
-            {showTest && (
-              <div style={{ marginTop: 16 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {showTest && (() => {
+              const isTestMobile = window.innerWidth <= 500;
+              const testPrompts = [
+                "Where is my order? It's been 5 days.",
+                "I want to return my item, it doesn't fit.",
+                "Do you offer free shipping?",
+                "I received the wrong product.",
+                "Can I change my shipping address?",
+                "What's your refund policy?",
+              ];
+              const tipCard = (
+                <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(229,82,102,.06)", border: `1px solid rgba(229,82,102,.15)`, marginTop: 4 }}>
+                  <p style={{ fontSize: 11.5, color: C.sub, lineHeight: 1.6 }}>
+                    <span style={{ fontWeight: 700, color: C.coral }}>Tip: </span>
+                    Save your AI settings first, then test to see how your brand tone, instructions, and FAQs affect the responses.
+                  </p>
+                </div>
+              );
+              const chatMessages = (
+                <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+                  {testHistory.length === 0 && (
+                    <div style={{ textAlign: "center", padding: "30px 10px", color: C.muted }}>
+                      <Bot size={24} strokeWidth={1.5} style={{ marginBottom: 8, opacity: 0.4 }} />
+                      <div style={{ fontSize: 12 }}>Type a test message to see how your AI responds</div>
+                    </div>
+                  )}
+                  {testHistory.map((msg, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
+                      <div style={{
+                        maxWidth: "85%", padding: "9px 13px", borderRadius: 12,
+                        borderBottomRightRadius: msg.role === "user" ? 3 : 12,
+                        borderBottomLeftRadius: msg.role === "ai" ? 3 : 12,
+                        background: msg.role === "user" ? "rgba(229,82,102,.12)" : C.card,
+                        border: `1px solid ${msg.role === "user" ? "rgba(229,82,102,.25)" : C.border}`,
+                        fontSize: 12.5, color: C.text, lineHeight: 1.6,
+                      }}>
+                        {msg.role === "ai" && (
+                          <div style={{ fontSize: 10, fontWeight: 700, color: C.coral, marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                            <Bot size={10} strokeWidth={2} /> SOLVA AI
+                          </div>
+                        )}
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                  {testLoading && (
+                    <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                      <div style={{ padding: "9px 13px", borderRadius: 12, borderBottomLeftRadius: 3, background: C.card, border: `1px solid ${C.border}`, display: "flex", gap: 5, alignItems: "center" }}>
+                        {[0,1,2].map(i => (
+                          <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: C.muted, animation: "typingDot 1.2s ease-in-out infinite", animationDelay: `${i*0.18}s` }} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
 
-                  {/* Left — chat simulation */}
-                  <div style={{ borderRadius: 12, background: C.bg, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 320 }}>
-                    <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.border}`, background: C.surface, display: "flex", alignItems: "center", gap: 8 }}>
-                      <Bot size={14} strokeWidth={2} style={{ color: C.coral }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>SOLVA AI Preview</span>
+              if (isTestMobile) {
+                return (
+                  <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                    {/* 1. Quick Test Prompts — horizontally scrollable row */}
+                    <div>
+                      <p style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 8 }}>Quick Test Prompts</p>
+                      <div style={{ display: "flex", flexDirection: "row", gap: 8, overflowX: "auto", paddingBottom: 6, WebkitOverflowScrolling: "touch" }}>
+                        {testPrompts.map((prompt, i) => (
+                          <button key={i} onClick={() => { setTestMsg(prompt); }}
+                            style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 20, background: C.surface, border: `1px solid ${C.border}`, color: C.sub, fontSize: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = C.coral; e.currentTarget.style.color = C.coral; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.sub; }}>
+                            {prompt}
+                          </button>
+                        ))}
+                      </div>
+                      {tipCard}
                     </div>
-                    <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
-                      {testHistory.length === 0 && (
-                        <div style={{ textAlign: "center", padding: "30px 10px", color: C.muted }}>
-                          <Bot size={24} strokeWidth={1.5} style={{ marginBottom: 8, opacity: 0.4 }} />
-                          <div style={{ fontSize: 12 }}>Type a test message to see how your AI responds</div>
-                        </div>
-                      )}
-                      {testHistory.map((msg, i) => (
-                        <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-                          <div style={{
-                            maxWidth: "85%", padding: "9px 13px", borderRadius: 12,
-                            borderBottomRightRadius: msg.role === "user" ? 3 : 12,
-                            borderBottomLeftRadius: msg.role === "ai" ? 3 : 12,
-                            background: msg.role === "user" ? "rgba(229,82,102,.12)" : C.card,
-                            border: `1px solid ${msg.role === "user" ? "rgba(229,82,102,.25)" : C.border}`,
-                            fontSize: 12.5, color: C.text, lineHeight: 1.6,
-                          }}>
-                            {msg.role === "ai" && (
-                              <div style={{ fontSize: 10, fontWeight: 700, color: C.coral, marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                                <Bot size={10} strokeWidth={2} /> SOLVA AI
-                              </div>
-                            )}
-                            {msg.text}
-                          </div>
-                        </div>
-                      ))}
-                      {testLoading && (
-                        <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                          <div style={{ padding: "9px 13px", borderRadius: 12, borderBottomLeftRadius: 3, background: C.card, border: `1px solid ${C.border}`, display: "flex", gap: 5, alignItems: "center" }}>
-                            {[0,1,2].map(i => (
-                              <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: C.muted, animation: "typingDot 1.2s ease-in-out infinite", animationDelay: `${i*0.18}s` }} />
-                            ))}
-                          </div>
-                        </div>
-                      )}
+
+                    {/* 2. Chat area — full width */}
+                    <div style={{ borderRadius: 12, background: C.bg, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflow: "hidden", width: "100%", minHeight: 260, maxHeight: 320 }}>
+                      <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.border}`, background: C.surface, display: "flex", alignItems: "center", gap: 8 }}>
+                        <Bot size={14} strokeWidth={2} style={{ color: C.coral }} />
+                        <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>SOLVA AI Preview</span>
+                      </div>
+                      {chatMessages}
                     </div>
-                    <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}`, background: C.surface, display: "flex", gap: 8 }}>
+
+                    {/* 3. Input row — full width */}
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
                       <input
                         value={testMsg}
                         onChange={e => setTestMsg(e.target.value)}
                         onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runTest(); } }}
                         placeholder="Type a customer message..."
-                        style={{ flex: 1, padding: "9px 12px", borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 13, fontFamily: "'Outfit',sans-serif", outline: "none" }}
+                        style={{ flex: 1, padding: "11px 14px", borderRadius: 10, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 14, fontFamily: "'Outfit',sans-serif", outline: "none" }}
                       />
                       <button onClick={runTest} disabled={testLoading || !testMsg.trim()}
-                        style={{ width: 36, height: 36, borderRadius: 8, background: "linear-gradient(135deg,#E55266,#992A67,#4E0269)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: testLoading || !testMsg.trim() ? 0.5 : 1 }}>
-                        <Send size={14} strokeWidth={2} style={{ color: "#fff" }} />
+                        style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 10, background: "linear-gradient(135deg,#E55266,#992A67,#4E0269)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: testLoading || !testMsg.trim() ? 0.5 : 1 }}>
+                        <Send size={16} strokeWidth={2} style={{ color: "#fff" }} />
                       </button>
                     </div>
                   </div>
+                );
+              }
 
-                  {/* Right — quick test prompts */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    <p style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em" }}>Quick Test Prompts</p>
-                    {[
-                      "Where is my order? It's been 5 days.",
-                      "I want to return my item, it doesn't fit.",
-                      "Do you offer free shipping?",
-                      "I received the wrong product.",
-                      "Can I change my shipping address?",
-                      "What's your refund policy?",
-                    ].map((prompt, i) => (
-                      <button key={i} onClick={() => { setTestMsg(prompt); }}
-                        style={{ padding: "10px 14px", borderRadius: 9, background: C.surface, border: `1px solid ${C.border}`, color: C.sub, fontSize: 12.5, cursor: "pointer", textAlign: "left", fontFamily: "'Outfit',sans-serif", transition: "all .14s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.coral; e.currentTarget.style.color = C.coral; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.sub; }}>
-                        {prompt}
-                      </button>
-                    ))}
-                    <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(229,82,102,.06)", border: `1px solid rgba(229,82,102,.15)`, marginTop: 4 }}>
-                      <p style={{ fontSize: 11.5, color: C.sub, lineHeight: 1.6 }}>
-                        <span style={{ fontWeight: 700, color: C.coral }}>Tip: </span>
-                        Save your AI settings first, then test to see how your brand tone, instructions, and FAQs affect the responses.
-                      </p>
+              return (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+
+                    {/* Left — chat simulation */}
+                    <div style={{ borderRadius: 12, background: C.bg, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 320 }}>
+                      <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.border}`, background: C.surface, display: "flex", alignItems: "center", gap: 8 }}>
+                        <Bot size={14} strokeWidth={2} style={{ color: C.coral }} />
+                        <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>SOLVA AI Preview</span>
+                      </div>
+                      {chatMessages}
+                      <div style={{ padding: "10px 12px", borderTop: `1px solid ${C.border}`, background: C.surface, display: "flex", gap: 8 }}>
+                        <input
+                          value={testMsg}
+                          onChange={e => setTestMsg(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runTest(); } }}
+                          placeholder="Type a customer message..."
+                          style={{ flex: 1, padding: "9px 12px", borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 13, fontFamily: "'Outfit',sans-serif", outline: "none" }}
+                        />
+                        <button onClick={runTest} disabled={testLoading || !testMsg.trim()}
+                          style={{ width: 36, height: 36, borderRadius: 8, background: "linear-gradient(135deg,#E55266,#992A67,#4E0269)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: testLoading || !testMsg.trim() ? 0.5 : 1 }}>
+                          <Send size={14} strokeWidth={2} style={{ color: "#fff" }} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Right — quick test prompts */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <p style={{ fontSize: 11.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em" }}>Quick Test Prompts</p>
+                      {testPrompts.map((prompt, i) => (
+                        <button key={i} onClick={() => { setTestMsg(prompt); }}
+                          style={{ padding: "10px 14px", borderRadius: 9, background: C.surface, border: `1px solid ${C.border}`, color: C.sub, fontSize: 12.5, cursor: "pointer", textAlign: "left", fontFamily: "'Outfit',sans-serif", transition: "all .14s" }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = C.coral; e.currentTarget.style.color = C.coral; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.sub; }}>
+                          {prompt}
+                        </button>
+                      ))}
+                      {tipCard}
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
 
           <SaveBar onSave={save} saved={saved}/>
