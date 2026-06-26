@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { ticket, storeName, brandTone, storeId } = req.body;
+  const { ticket, storeName, brandTone, storeId, systemPrompt: clientSystemPrompt } = req.body;
 
   if (!ticket) {
     return res.status(400).json({ error: 'Ticket content is required' });
@@ -77,7 +77,7 @@ export default async function handler(req, res) {
     ? 'Use a relaxed, casual, conversational tone.'
     : 'Use a warm, friendly, helpful tone.';
 
-  const systemPrompt = `You are an AI customer support assistant for ${storeName || 'this Shopify store'}.
+  const systemPrompt = clientSystemPrompt || `You are an AI customer support assistant for ${storeName || 'this Shopify store'}.
 
 TONE: ${toneInstruction}
 LENGTH: ${lengthInstruction}${brandSection}${customerSection}${instructionsSection}${faqSection}

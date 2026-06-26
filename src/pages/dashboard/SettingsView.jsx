@@ -446,6 +446,48 @@ function AIConfigSection() {
         }
       } catch(e) {}
 
+      const faqSection = faqs && faqs.length > 0
+        ? `\n\nSTORE FAQs — when a customer asks something that matches or is similar to these, use the provided answer as your primary reference:\n${faqs.map(f => `Q: ${f.q}\nA: ${f.a}`).join('\n\n')}`
+        : '';
+
+      const brandSection = brandDesc
+        ? `\n\nABOUT THIS STORE: ${brandDesc}`
+        : '';
+
+      const customerSection = customerDesc
+        ? `\n\nABOUT THEIR CUSTOMERS: ${customerDesc}`
+        : '';
+
+      const instructionsSection = globalInstr
+        ? `\n\nMANDATORY RULES — always follow these without exception:\n${globalInstr}`
+        : '';
+
+      const lengthInstruction = responseDetail === 'short'
+        ? 'Keep responses to 1-2 sentences. Be direct.'
+        : responseDetail === 'detailed'
+        ? 'Give thorough, complete responses.'
+        : 'Be concise but complete. 2-3 sentences is ideal.';
+
+      const toneInstruction = (tone || 'friendly') === 'professional'
+        ? 'formal and precise'
+        : (tone || 'friendly') === 'casual'
+        ? 'relaxed and conversational'
+        : 'warm, friendly and helpful';
+
+      const systemPrompt = `You are an AI customer support assistant for ${'your store'}. You are intelligent, helpful, and conversational.
+
+TONE: Be ${toneInstruction}.
+LENGTH: ${lengthInstruction}
+FORMAT: Write in plain conversational text only. No markdown headers (##), no bullet points with **, no excessive formatting. Just natural sentences.${brandSection}${customerSection}${instructionsSection}${faqSection}
+
+BEHAVIOR RULES:
+1. For general greetings, small talk, and conversational messages — respond naturally and warmly using the brand context above.
+2. For questions that match or are similar to the FAQs above — use that answer as your primary reference. You may rephrase it naturally but keep the facts accurate.
+3. For questions about topics you have context for (brand, products, policies mentioned above) — answer helpfully using that context.
+4. For highly specific questions you have no context for (exact shipping rates, technical specs, order-specific details) — politely acknowledge you don't have that specific information and suggest they contact support directly.
+5. Never make up specific facts like prices, dates, or policies that aren't provided above.
+6. Never refuse to engage in a normal conversation. Always respond helpfully.`;
+
       const response = await fetch("/api/ai/ticket-resolve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -454,6 +496,7 @@ function AIConfigSection() {
           storeName: "your store",
           brandTone: tone || "friendly",
           storeId: currentStoreId,
+          systemPrompt,
         }),
       });
       const data = await response.json();
@@ -770,7 +813,7 @@ function AIConfigSection() {
                 </div>
               );
               const chatMessages = (
-                <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10, minHeight: 0 }}>
                   {testHistory.length === 0 && (
                     <div style={{ textAlign: "center", padding: "30px 10px", color: C.muted }}>
                       <Bot size={24} strokeWidth={1.5} style={{ marginBottom: 8, opacity: 0.4 }} />
@@ -828,7 +871,7 @@ function AIConfigSection() {
                     </div>
 
                     {/* 2. Chat area — full width */}
-                    <div style={{ borderRadius: 12, background: C.bg, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflow: "hidden", width: "100%", minHeight: 260, maxHeight: 320 }}>
+                    <div style={{ borderRadius: 12, background: C.bg, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflow: "hidden", height: 300, maxHeight: 300, flexShrink: 0 }}>
                       <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.border}`, background: C.surface, display: "flex", alignItems: "center", gap: 8 }}>
                         <Bot size={14} strokeWidth={2} style={{ color: C.coral }} />
                         <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>SOLVA AI Preview</span>
@@ -859,7 +902,7 @@ function AIConfigSection() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
 
                     {/* Left — chat simulation */}
-                    <div style={{ borderRadius: 12, background: C.bg, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 320 }}>
+                    <div style={{ borderRadius: 12, background: C.bg, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflow: "hidden", height: 360, maxHeight: 360, flexShrink: 0 }}>
                       <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.border}`, background: C.surface, display: "flex", alignItems: "center", gap: 8 }}>
                         <Bot size={14} strokeWidth={2} style={{ color: C.coral }} />
                         <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>SOLVA AI Preview</span>
