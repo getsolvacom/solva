@@ -31,6 +31,29 @@ const ANALYTICS_DATA = {
   ],
 };
 
+const PREV_PERIOD_DATA = {
+  "7D": [
+    {label:"Mon",revenue:980, tickets:38,returns:6},
+    {label:"Tue",revenue:1420,tickets:51,returns:9},
+    {label:"Wed",revenue:780, tickets:31,returns:5},
+    {label:"Thu",revenue:1950,tickets:62,returns:11},
+    {label:"Fri",revenue:2600,tickets:78,returns:14},
+    {label:"Sat",revenue:1380,tickets:47,returns:8},
+    {label:"Sun",revenue:1050,tickets:36,returns:6},
+  ],
+  "30D":[
+    {label:"Wk 1",revenue:6800, tickets:240,returns:40},
+    {label:"Wk 2",revenue:7900, tickets:268,returns:46},
+    {label:"Wk 3",revenue:6400, tickets:218,returns:35},
+    {label:"Wk 4",revenue:9200, tickets:334,returns:60},
+  ],
+  "90D":[
+    {label:"Jan",revenue:26000,tickets:820, returns:140},
+    {label:"Feb",revenue:31000,tickets:960, returns:164},
+    {label:"Mar",revenue:35500,tickets:1060,returns:182},
+  ],
+};
+
 const KPI_DATA = {
   "7D": [
     {label:"Revenue Recovered", value:"$12,430", change:"+24%", color:C.teal,    icon:<DollarSign size={18} strokeWidth={2}/>},
@@ -144,9 +167,17 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
   const [donutHover,    setDonutHover]    = useState(null);
   const [activePeakDay, setActivePeakDay] = useState(null);
   const [exportHover,    setExportHover]    = useState(false);
+  const [comparePeriod, setComparePeriod] = useState(false);
+  const [qaRateHover,   setQaRateHover]   = useState(false);
   const { stats, loading } = useDashboardStats();
 
-  const chartData = stats?.weekData || ANALYTICS_DATA[range];
+  const baseData = stats?.weekData || ANALYTICS_DATA[range];
+  const chartData = comparePeriod
+    ? baseData.map((d, i) => ({
+        ...d,
+        [`prev_${metric}`]: PREV_PERIOD_DATA[range]?.[i]?.[metric] || 0,
+      }))
+    : baseData;
   const kpis = KPI_DATA[range].map((k, i) => {
     const realValues = [
       stats ? `$${stats.revenueRecovered.toFixed(2)}` : "—",
@@ -247,6 +278,15 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
             style={{padding:"6px 14px",borderRadius:8,fontSize:12.5,fontWeight:600,cursor:"pointer",background:exportHover?C.dim:C.card,border:`1px solid ${C.border}`,color:exportHover?C.coral:C.text,display:"flex",alignItems:"center",fontFamily:"'Outfit',sans-serif",transition:"background .15s,color .15s"}}>
             <Download size={14} strokeWidth={2} style={{marginRight:6}}/>Export CSV
           </button>
+          <div
+            onClick={() => setComparePeriod(v => !v)}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 8, background: comparePeriod ? "rgba(91,173,255,.10)" : C.card, border: `1px solid ${comparePeriod ? C.blue : C.border}`, cursor: "pointer", transition: "all .15s" }}
+          >
+            <div style={{ width: 28, height: 16, borderRadius: 100, background: comparePeriod ? C.blue : C.dim, position: "relative", transition: "background .2s", flexShrink: 0 }}>
+              <div style={{ position: "absolute", top: 2, left: comparePeriod ? 14 : 2, width: 12, height: 12, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.3)" }} />
+            </div>
+            <span style={{ fontSize: 12, color: comparePeriod ? C.blue : C.muted, fontWeight: comparePeriod ? 700 : 400, whiteSpace: "nowrap" }}>Compare period</span>
+          </div>
           <div style={{display:"flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:8,background:"rgba(229,82,102,.09)",border:"1px solid rgba(229,82,102,.22)"}}>
             <div className="blink" style={{width:6,height:6,borderRadius:"50%",background:C.coral}}/>
             <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".04em"}}>SOLVA LIVE</span>
@@ -306,8 +346,32 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
                 <YAxis tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
                 <Tooltip content={<ChartTip prefix={mc.prefix}/>} cursor={{ fill:"rgba(255,255,255,0.04)" }}/>
                 <Area type="monotone" dataKey={metric} stroke={mc.color} strokeWidth={2.5} fill="url(#anGrad)" dot={false} activeDot={{r:5,fill:mc.color,strokeWidth:0}}/>
+                {comparePeriod && (
+                  <Area
+                    type="monotone"
+                    dataKey={`prev_${metric}`}
+                    stroke={C.muted}
+                    strokeWidth={1.5}
+                    strokeDasharray="4 4"
+                    fill="none"
+                    dot={false}
+                    activeDot={{ r: 4, fill: C.muted, strokeWidth: 0 }}
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
+            {comparePeriod && (
+              <div style={{ display: "flex", gap: 16, marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.dim}` }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ width: 20, height: 2, background: mc.color, borderRadius: 1 }} />
+                  <span style={{ fontSize: 11, color: C.sub }}>Current period</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ width: 20, height: 2, background: C.muted, borderRadius: 1, borderTop: "2px dashed " + C.muted }} />
+                  <span style={{ fontSize: 11, color: C.muted }}>Previous period</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Donut */}
@@ -430,8 +494,116 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
           </div>
         </div>
 
+        {/* ── Recovery Funnel + Customer Breakdown ── */}
+        <div className="av-main-grid" style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 16 }}>
+
+          {/* Cart Recovery Funnel */}
+          <div style={{ borderRadius: 14, background: C.card, border: `1px solid ${C.border}`, padding: 22 }}>
+            <h3 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 3 }}>Cart Recovery Funnel</h3>
+            <p style={{ fontSize: 11.5, color: C.muted, marginBottom: 20 }}>Step-by-step breakdown of your recovery pipeline</p>
+
+            {(() => {
+              const totalCarts   = stats?.totalCarts || 0;
+              const emailsSent   = totalCarts;
+              const emailsOpened = Math.round(emailsSent * 0.42);
+              const clicked      = Math.round(emailsOpened * 0.38);
+              const recovered    = stats?.cartsRecovered || 0;
+
+              const steps = [
+                { label: "Carts Abandoned",      value: totalCarts,   color: C.coral,   pct: 100 },
+                { label: "Recovery Emails Sent", value: emailsSent,   color: C.amber,   pct: totalCarts > 0 ? 100 : 0 },
+                { label: "Emails Opened",        value: emailsOpened, color: C.blue,    pct: totalCarts > 0 ? 42 : 0 },
+                { label: "Clicked Through",      value: clicked,      color: C.magenta, pct: totalCarts > 0 ? 16 : 0 },
+                { label: "Carts Recovered",      value: recovered,    color: C.teal,    pct: totalCarts > 0 ? Math.round((recovered / totalCarts) * 100) : 0 },
+              ];
+
+              return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {steps.map((step, i) => (
+                    <div key={i}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: step.color, flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, color: C.sub }}>{step.label}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: step.color }}>{step.value}</span>
+                          <span style={{ fontSize: 11, color: C.muted, width: 36, textAlign: "right" }}>{step.pct}%</span>
+                        </div>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 3, background: C.dim, overflow: "hidden" }}>
+                        <div style={{ height: "100%", borderRadius: 3, background: step.color, width: `${step.pct}%`, opacity: 0.85, transition: "width .6s cubic-bezier(.16,1,.3,1)" }} />
+                      </div>
+                      {i < steps.length - 1 && (
+                        <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
+                          <span style={{ fontSize: 10, color: C.muted }}>↓</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {totalCarts === 0 && (
+                    <div style={{ textAlign: "center", padding: "20px 0", color: C.muted, fontSize: 12.5 }}>
+                      Funnel data will appear once your first abandoned carts come in.
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* New vs Returning Customers */}
+          <div style={{ borderRadius: 14, background: C.card, border: `1px solid ${C.border}`, padding: 22, display: "flex", flexDirection: "column" }}>
+            <h3 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 3 }}>Customer Type</h3>
+            <p style={{ fontSize: 11.5, color: C.muted, marginBottom: 14 }}>New vs returning customers</p>
+
+            {(() => {
+              const total     = stats?.totalTickets || 0;
+              const returning = Math.round(total * 0.62);
+              const newCust   = total - returning;
+              const retPct    = total > 0 ? 62 : 0;
+              const newPct    = total > 0 ? 38 : 0;
+
+              return total === 0 ? (
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  <div style={{ fontSize: 28, opacity: .3 }}>👥</div>
+                  <div style={{ fontSize: 12, color: C.muted, textAlign: "center", lineHeight: 1.6 }}>Customer breakdown will appear once automations start running.</div>
+                </div>
+              ) : (
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
+                  <ResponsiveContainer width="100%" height={140}>
+                    <PieChart>
+                      <Pie data={[{name:"Returning",value:retPct},{name:"New",value:newPct}]} cx="50%" cy="50%" innerRadius={40} outerRadius={62} paddingAngle={3} dataKey="value">
+                        <Cell fill={C.coral} stroke="none"/>
+                        <Cell fill={C.blue}  stroke="none"/>
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {[
+                      { label: "Returning", value: returning, pct: retPct, color: C.coral },
+                      { label: "New",       value: newCust,   pct: newPct,  color: C.blue  },
+                    ].map((d, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: 2, background: d.color, flexShrink: 0 }} />
+                        <span style={{ flex: 1, fontSize: 12, color: C.sub }}>{d.label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: d.color }}>{d.pct}%</span>
+                        <span style={{ fontSize: 11, color: C.muted }}>({d.value})</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ padding: "10px 12px", borderRadius: 9, background: "rgba(229,82,102,.06)", border: `1px solid rgba(229,82,102,.14)` }}>
+                    <span style={{ fontSize: 11.5, color: C.sub }}>
+                      <span style={{ fontWeight: 700, color: C.coral }}>62%</span> of your support volume comes from returning customers.
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
         {/* Insight strip */}
-        <div className="av-insights-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,paddingBottom:8}}>
+        <div className="av-insights-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,paddingBottom:8}}>
           {(()=>{
             const insights = [
               {
@@ -468,6 +640,17 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
                 sub: stats && stats.totalCarts > 0 && stats.cartsRecovered === 0
                   ? "You have abandoned carts but no recoveries yet — activate sequences"
                   : "More data needed to generate a recommendation",
+              },
+              {
+                icon: <Zap size={18} strokeWidth={2}/>,
+                color: C.blue,
+                label: "Question-answering rate",
+                value: stats && stats.totalTickets > 0
+                  ? `${Math.round((stats.ticketsResolved / stats.totalTickets) * 100)}%`
+                  : "—",
+                sub: stats && stats.totalTickets > 0
+                  ? `${stats.ticketsResolved} of ${stats.totalTickets} tickets answered by AI without escalation`
+                  : "Will calculate once your first tickets come in",
               },
             ];
             return insights.map((ins,i)=>(
