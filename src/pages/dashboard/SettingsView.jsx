@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import { useTheme } from '../../hooks/useTheme';
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../hooks/useStore";
-import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X, FlaskConical, Plus, Send, ChevronDown, Star, Lightbulb } from "lucide-react";
+import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X, FlaskConical, Plus, Send, ChevronDown, Star, Lightbulb, Link } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 
 // ── Comprehensive dropdown options ──
@@ -341,7 +341,12 @@ function AIConfigSection() {
   const [testLoading,    setTestLoading]    = useState(false);
   const [testHistory,    setTestHistory]    = useState([]);
   const [showTest,       setShowTest]       = useState(false);
-  const [langMode,       setLangMode]       = useState("fixed");
+  const [langMode,          setLangMode]          = useState("fixed");
+  const [knowledgeUrls,     setKnowledgeUrls]     = useState([]);
+  const [newUrl,            setNewUrl]            = useState("");
+  const [urlError,          setUrlError]          = useState("");
+  const [generatingBrand,   setGeneratingBrand]   = useState(false);
+  const [generatingCustomer,setGeneratingCustomer]= useState(false);
 
   useEffect(() => {
     function onLoad(e) {
@@ -357,6 +362,7 @@ function AIConfigSection() {
       if (s.response_detail) setResponseDetail(s.response_detail);
       if (s.faqs) { try { setFaqs(JSON.parse(s.faqs)); } catch(e) {} }
       if (s.language_mode) setLangMode(s.language_mode);
+      if (s.knowledge_urls) { try { setKnowledgeUrls(JSON.parse(s.knowledge_urls)); } catch(e) {} }
       setSettingsLoaded(true);
       if (window.__solvaSettings) {
         const s2 = window.__solvaSettings;
@@ -371,6 +377,7 @@ function AIConfigSection() {
         if (s2.response_detail) setResponseDetail(s2.response_detail);
         if (s2.faqs) { try { setFaqs(JSON.parse(s2.faqs)); } catch(e) {} }
         if (s2.language_mode) setLangMode(s2.language_mode);
+        if (s2.knowledge_urls) { try { setKnowledgeUrls(JSON.parse(s2.knowledge_urls)); } catch(e) {} }
         setSettingsLoaded(true);
       }
     }
@@ -405,6 +412,7 @@ function AIConfigSection() {
           response_detail: responseDetail,
           faqs: JSON.stringify(faqs),
           language_mode: langMode,
+          knowledge_urls: JSON.stringify(knowledgeUrls),
           updated_at: new Date().toISOString(),
         }).eq('store_id', storeData.id);
       } else {
@@ -421,6 +429,7 @@ function AIConfigSection() {
           response_detail: responseDetail,
           faqs: JSON.stringify(faqs),
           language_mode: langMode,
+          knowledge_urls: JSON.stringify(knowledgeUrls),
         });
       }
       setSaved(true);
@@ -507,6 +516,36 @@ BEHAVIOR RULES:
       setTestHistory(prev => [...prev, { role: "ai", text: "Error generating response. Check your connection." }]);
     } finally {
       setTestLoading(false);
+    }
+  };
+
+  const generateDescription = async (type) => {
+    const isB = type === "brand";
+    if (isB) setGeneratingBrand(true);
+    else setGeneratingBrand(false);
+    if (!isB) setGeneratingCustomer(true);
+    try {
+      const response = await fetch("/api/ai/ticket-resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticket: isB
+            ? `Write a 2-3 sentence brand description for a Shopify store. Tone: ${tone || "friendly"}. Keep it professional and focused on customer service excellence. Return only the description text, no labels or prefixes.`
+            : `Write a 2-3 sentence description of the typical customers for a Shopify store. Tone: ${tone || "friendly"}. Focus on what they care about when contacting support. Return only the description text, no labels or prefixes.`,
+          storeName: "this store",
+          brandTone: tone || "friendly",
+        }),
+      });
+      const data = await response.json();
+      if (data.response) {
+        if (isB) setBrandDesc(data.response.trim());
+        else setCustomerDesc(data.response.trim());
+      }
+    } catch(err) {
+      console.error("Generate error:", err);
+    } finally {
+      if (isB) setGeneratingBrand(false);
+      else setGeneratingCustomer(false);
     }
   };
 
@@ -635,7 +674,19 @@ BEHAVIOR RULES:
             <div style={{ marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                 <FieldLabel hint="Describe your brand, products, and values. The AI uses this in every response.">About Your Brand</FieldLabel>
-                <span style={{ fontSize: 11, color: C.muted }}>{brandDesc.length}/500</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 11, color: C.muted }}>{brandDesc.length}/500</span>
+                  <button
+                    onClick={() => generateDescription("brand")}
+                    disabled={generatingBrand}
+                    style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 7, background: "rgba(229,82,102,.08)", border: `1px solid rgba(229,82,102,.25)`, color: C.coral, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", opacity: generatingBrand ? 0.6 : 1 }}>
+                    {generatingBrand ? (
+                      <><div style={{ width: 10, height: 10, borderRadius: "50%", border: `1.5px solid rgba(229,82,102,.3)`, borderTopColor: C.coral, animation: "spin .7s linear infinite" }} /> Generating…</>
+                    ) : (
+                      <><Zap size={11} strokeWidth={2} /> Generate</>
+                    )}
+                  </button>
+                </div>
               </div>
               <textarea
                 value={brandDesc}
@@ -648,8 +699,20 @@ BEHAVIOR RULES:
 
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <FieldLabel hint="Describe your typical customer. The AI uses this to personalize its tone.">About Your Customers</FieldLabel>
-                <span style={{ fontSize: 11, color: C.muted }}>{customerDesc.length}/500</span>
+                <FieldLabel hint="Describe your typical customer. The AI uses this to personalise its tone.">About Your Customers</FieldLabel>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 11, color: C.muted }}>{customerDesc.length}/500</span>
+                  <button
+                    onClick={() => generateDescription("customer")}
+                    disabled={generatingCustomer}
+                    style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 7, background: "rgba(229,82,102,.08)", border: `1px solid rgba(229,82,102,.25)`, color: C.coral, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", opacity: generatingCustomer ? 0.6 : 1 }}>
+                    {generatingCustomer ? (
+                      <><div style={{ width: 10, height: 10, borderRadius: "50%", border: `1.5px solid rgba(229,82,102,.3)`, borderTopColor: C.coral, animation: "spin .7s linear infinite" }} /> Generating…</>
+                    ) : (
+                      <><Zap size={11} strokeWidth={2} /> Generate</>
+                    )}
+                  </button>
+                </div>
               </div>
               <textarea
                 value={customerDesc}
@@ -776,7 +839,70 @@ BEHAVIOR RULES:
             )}
           </div>
 
-          {/* Card E: Test Your AI sandbox */}
+          {/* Card E: URL Knowledge Sources */}
+          <div className="section-card fu">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: ".08em", textTransform: "uppercase" }}>URL Knowledge Sources</p>
+              <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>{knowledgeUrls.length} URL{knowledgeUrls.length !== 1 ? "s" : ""}</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: C.sub, marginBottom: 16, lineHeight: 1.6 }}>Add your store's FAQ page, shipping policy, return policy URLs. The AI uses these pages as knowledge sources when answering customer questions.</p>
+
+            {knowledgeUrls.length === 0 && (
+              <div style={{ textAlign: "center", padding: "20px 0", color: C.muted, marginBottom: 12 }}>
+                <Link size={24} strokeWidth={1.5} style={{ marginBottom: 8, opacity: 0.4 }} />
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>No URLs added yet</div>
+                <div style={{ fontSize: 12 }}>Add your policy pages so the AI can reference them automatically.</div>
+              </div>
+            )}
+
+            {knowledgeUrls.map((url, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, background: C.surface, border: `1px solid ${C.border}`, marginBottom: 8 }}>
+                <Link size={14} strokeWidth={2} style={{ color: C.blue, flexShrink: 0 }} />
+                <span style={{ flex: 1, fontSize: 12.5, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{url}</span>
+                <button onClick={() => setKnowledgeUrls(prev => prev.filter((_, idx) => idx !== i))}
+                  style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, display: "flex", alignItems: "center", padding: 4, flexShrink: 0 }}>
+                  <Trash2 size={14} strokeWidth={2} />
+                </button>
+              </div>
+            ))}
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                value={newUrl}
+                onChange={e => { setNewUrl(e.target.value); setUrlError(""); }}
+                placeholder="https://yourstore.com/pages/faq"
+                style={{ flex: 1, padding: "10px 14px", borderRadius: 9, background: C.surface, border: `1px solid ${urlError ? C.red : C.border}`, color: C.text, fontSize: 13, fontFamily: "'Outfit',sans-serif", outline: "none" }}
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    if (!newUrl.trim().startsWith("http")) { setUrlError("Please enter a valid URL starting with http:// or https://"); return; }
+                    if (knowledgeUrls.includes(newUrl.trim())) { setUrlError("This URL has already been added."); return; }
+                    setKnowledgeUrls(prev => [...prev, newUrl.trim()]);
+                    setNewUrl(""); setUrlError("");
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (!newUrl.trim().startsWith("http")) { setUrlError("Please enter a valid URL starting with http:// or https://"); return; }
+                  if (knowledgeUrls.includes(newUrl.trim())) { setUrlError("This URL has already been added."); return; }
+                  setKnowledgeUrls(prev => [...prev, newUrl.trim()]);
+                  setNewUrl(""); setUrlError("");
+                }}
+                style={{ padding: "10px 18px", borderRadius: 9, background: "linear-gradient(135deg,#E55266,#992A67,#4E0269)", color: "#fff", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}>
+                Add URL
+              </button>
+            </div>
+            {urlError && <p style={{ fontSize: 12, color: C.red, marginTop: 6 }}>{urlError}</p>}
+
+            <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 9, background: C.dim, border: `1px solid ${C.border}` }}>
+              <p style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>
+                <span style={{ fontWeight: 700, color: C.sub }}>Tip: </span>
+                Add your FAQ page, shipping policy, return policy, and about page for best results. The AI will reference these when customers ask related questions.
+              </p>
+            </div>
+          </div>
+
+          {/* Card F: Test Your AI sandbox */}
           <div className="section-card fu fu6">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
