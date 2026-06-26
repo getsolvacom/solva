@@ -1176,155 +1176,183 @@ function AutomationsSection() {
     </div>
   );
 
+  const activeCount = [support, returns, cart, winBack].filter(Boolean).length;
+
   return (
     <div>
       <SectionTitle sub="Enable, disable, and configure each AI automation.">Automations</SectionTitle>
 
-      {/* AI Support Agent */}
-      <div className="section-card fu" style={{marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:support?20:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:13}}>
-            <div style={{width:42,height:42,borderRadius:12,background:`${C.teal}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.teal}}><Bot size={20} strokeWidth={2}/></div>
-            <div>
-              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>AI Support Agent</div>
-              <div style={{fontSize:12.5,color:C.muted}}>Auto-resolve tickets, order inquiries, and FAQs</div>
-            </div>
-          </div>
-          <Toggle on={support} onToggle={()=>setSupport(v=>!v)}/>
-        </div>
-        {support && (
-          <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-            <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-              <div><FieldLabel hint="How many tickets AI can handle per day.">Daily Ticket Limit</FieldLabel><SelectInput value={ticketLimit} onChange={e=>setTicketLimit(e.target.value)} options={["100","500","1,000","Unlimited"]}/></div>
-              <div><FieldLabel hint="Delay before AI sends its reply.">Response Delay</FieldLabel><SelectInput value={respDelay} onChange={e=>setRespDelay(e.target.value)} options={["Instant","30 seconds","2 minutes","5 minutes"]}/></div>
-            </div>
-          </div>
-        )}
+      {/* Section header row */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+        <span style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase"}}>YOUR AUTOMATIONS</span>
+        <span style={{fontSize:12,color:C.sub,padding:"3px 10px",borderRadius:100,background:C.dim,border:`1px solid ${C.border}`}}>
+          {activeCount} of 4 active
+        </span>
       </div>
 
-      {/* Return Deflection */}
-      <div className="section-card fu fu1" style={{marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:returns?20:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:13}}>
-            <div style={{width:42,height:42,borderRadius:12,background:`${C.amber}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.amber}}><RotateCcw size={20} strokeWidth={2}/></div>
-            <div>
-              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>Return Deflection</div>
-              <div style={{fontSize:12.5,color:C.muted}}>Offer smart alternatives before processing refunds</div>
+      {/* 2-column automation card grid */}
+      <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+
+        {/* AI Support Agent */}
+        <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,borderLeft:support?`3px solid ${C.coral}`:`1px solid ${C.border}`,padding:18,display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",alignItems:"flex-start",gap:13,marginBottom:12}}>
+            <div style={{width:48,height:48,borderRadius:12,background:`${C.teal}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.teal,flexShrink:0}}>
+              <Bot size={22} strokeWidth={2}/>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>AI Support Agent</div>
+              <div style={{fontSize:12.5,color:C.muted,lineHeight:1.5}}>Auto-resolve tickets, order inquiries, and FAQs</div>
+            </div>
+            <div style={{padding:"3px 10px",borderRadius:100,background:support?"rgba(62,207,178,.10)":C.dim,color:support?C.teal:C.muted,fontSize:11,fontWeight:700,flexShrink:0,whiteSpace:"nowrap"}}>
+              {support?"Active":"Paused"}
             </div>
           </div>
-          <Toggle on={returns} onToggle={()=>setReturns(v=>!v)}/>
+          <div style={{overflow:"hidden",maxHeight:support?"600px":"0",opacity:support?1:0,transition:"max-height .35s cubic-bezier(.16,1,.3,1),opacity .25s ease"}}>
+            <div style={{paddingTop:14,borderTop:`1px solid ${C.border}`,marginBottom:12}}>
+              <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+                <div><FieldLabel hint="How many tickets AI can handle per day.">Daily Ticket Limit</FieldLabel><SelectInput value={ticketLimit} onChange={e=>setTicketLimit(e.target.value)} options={["100","500","1,000","Unlimited"]}/></div>
+                <div><FieldLabel hint="Delay before AI sends its reply.">Response Delay</FieldLabel><SelectInput value={respDelay} onChange={e=>setRespDelay(e.target.value)} options={["Instant","30 seconds","2 minutes","5 minutes"]}/></div>
+              </div>
+            </div>
+          </div>
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:8}}>
+            <Toggle on={support} onToggle={()=>setSupport(v=>!v)}/>
+          </div>
         </div>
-        {returns && (
-          <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-            <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-              <div>
-                <FieldLabel hint="Max % discount AI can offer.">Max Deflection Discount</FieldLabel>
-                <SelectInput value={deflectDisc} onChange={e=>setDeflectDisc(e.target.value)} options={["5%","10%","15%","20%","25%","Custom..."]}/>
-                {deflectDisc==="Custom..." && (
-                  <div style={{marginTop:8,display:"flex",alignItems:"center",gap:8}}>
-                    <input type="number" value={customDisc} onChange={e=>setCustomDisc(e.target.value)} min={1} max={99} placeholder="e.g. 12" style={{...inputStyle,flex:1}}/>
-                    <span style={{fontSize:14,fontWeight:700,color:C.sub,flexShrink:0}}>%</span>
+
+        {/* Return Deflection */}
+        <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,borderLeft:returns?`3px solid ${C.coral}`:`1px solid ${C.border}`,padding:18,display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",alignItems:"flex-start",gap:13,marginBottom:12}}>
+            <div style={{width:48,height:48,borderRadius:12,background:`${C.amber}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.amber,flexShrink:0}}>
+              <RotateCcw size={22} strokeWidth={2}/>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Return Deflection</div>
+              <div style={{fontSize:12.5,color:C.muted,lineHeight:1.5}}>Offer smart alternatives before processing refunds</div>
+            </div>
+            <div style={{padding:"3px 10px",borderRadius:100,background:returns?"rgba(62,207,178,.10)":C.dim,color:returns?C.teal:C.muted,fontSize:11,fontWeight:700,flexShrink:0,whiteSpace:"nowrap"}}>
+              {returns?"Active":"Paused"}
+            </div>
+          </div>
+          <div style={{overflow:"hidden",maxHeight:returns?"600px":"0",opacity:returns?1:0,transition:"max-height .35s cubic-bezier(.16,1,.3,1),opacity .25s ease"}}>
+            <div style={{paddingTop:14,borderTop:`1px solid ${C.border}`,marginBottom:12}}>
+              <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+                <div>
+                  <FieldLabel hint="Max % discount AI can offer.">Max Deflection Discount</FieldLabel>
+                  <SelectInput value={deflectDisc} onChange={e=>setDeflectDisc(e.target.value)} options={["5%","10%","15%","20%","25%","Custom..."]}/>
+                  {deflectDisc==="Custom..." && (
+                    <div style={{marginTop:8,display:"flex",alignItems:"center",gap:8}}>
+                      <input type="number" value={customDisc} onChange={e=>setCustomDisc(e.target.value)} min={1} max={99} placeholder="e.g. 12" style={{...inputStyle,flex:1}}/>
+                      <span style={{fontSize:14,fontWeight:700,color:C.sub,flexShrink:0}}>%</span>
+                    </div>
+                  )}
+                </div>
+                <div><FieldLabel hint="How long to wait before processing.">Response Window</FieldLabel><SelectInput value={respWindow} onChange={e=>setRespWindow(e.target.value)} options={["6 hours","12 hours","24 hours","48 hours"]}/></div>
+              </div>
+            </div>
+          </div>
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:8}}>
+            <Toggle on={returns} onToggle={()=>setReturns(v=>!v)}/>
+          </div>
+        </div>
+
+        {/* Cart Recovery */}
+        <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,borderLeft:cart?`3px solid ${C.coral}`:`1px solid ${C.border}`,padding:18,display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",alignItems:"flex-start",gap:13,marginBottom:12}}>
+            <div style={{width:48,height:48,borderRadius:12,background:`${C.blue}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.blue,flexShrink:0}}>
+              <ShoppingCart size={22} strokeWidth={2}/>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Cart Recovery</div>
+              <div style={{fontSize:12.5,color:C.muted,lineHeight:1.5}}>3-touch AI sequence to recover abandoned carts</div>
+            </div>
+            <div style={{padding:"3px 10px",borderRadius:100,background:cart?"rgba(62,207,178,.10)":C.dim,color:cart?C.teal:C.muted,fontSize:11,fontWeight:700,flexShrink:0,whiteSpace:"nowrap"}}>
+              {cart?"Active":"Paused"}
+            </div>
+          </div>
+          <div style={{overflow:"hidden",maxHeight:cart?"600px":"0",opacity:cart?1:0,transition:"max-height .35s cubic-bezier(.16,1,.3,1),opacity .25s ease"}}>
+            <div style={{paddingTop:14,borderTop:`1px solid ${C.border}`,marginBottom:12}}>
+              <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}}>
+                {delayField(delay1,setDelay1,delay1Val,setDelay1Val,delay1Unit,setDelay1Unit,["30 minutes","1 hour","3 hours","6 hours"],"Email 1 Delay")}
+                {delayField(delay2,setDelay2,delay2Val,setDelay2Val,delay2Unit,setDelay2Unit,["3 hours","6 hours","12 hours","24 hours"],"Email 2 Delay")}
+                {delayField(delay3,setDelay3,delay3Val,setDelay3Val,delay3Unit,setDelay3Unit,["12 hours","24 hours","48 hours"],"Email 3 Delay")}
+              </div>
+              <div><FieldLabel hint="Discount code included in Email 2.">Discount Code</FieldLabel><TextInput value={cartCode} onChange={e=>setCartCode(e.target.value)} placeholder="e.g. COMEBACK10"/></div>
+            </div>
+          </div>
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:8}}>
+            <Toggle on={cart} onToggle={()=>setCart(v=>!v)}/>
+          </div>
+        </div>
+
+        {/* Win-Back Campaign */}
+        <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,borderLeft:winBack?`3px solid ${C.coral}`:`1px solid ${C.border}`,padding:18,display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",alignItems:"flex-start",gap:13,marginBottom:12}}>
+            <div style={{width:48,height:48,borderRadius:12,background:`${C.magenta}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.magenta,flexShrink:0}}>
+              <Gift size={22} strokeWidth={2}/>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Win-Back Campaign</div>
+              <div style={{fontSize:12.5,color:C.muted,lineHeight:1.5}}>Automatically send a discount to customers who haven't ordered recently.</div>
+            </div>
+            <div style={{padding:"3px 10px",borderRadius:100,background:winBack?"rgba(62,207,178,.10)":C.dim,color:winBack?C.teal:C.muted,fontSize:11,fontWeight:700,flexShrink:0,whiteSpace:"nowrap"}}>
+              {winBack?"Active":"Paused"}
+            </div>
+          </div>
+          <div style={{overflow:"hidden",maxHeight:winBack?"600px":"0",opacity:winBack?1:0,transition:"max-height .35s cubic-bezier(.16,1,.3,1),opacity .25s ease"}}>
+            <div style={{paddingTop:14,borderTop:`1px solid ${C.border}`,marginBottom:12}}>
+              <div style={{marginBottom:16}}>
+                <FieldLabel hint="Recommended: 60 days">Send win-back after X days of no orders</FieldLabel>
+                <input type="number" value={winBackDays} onChange={e=>setWinBackDays(e.target.value)} min={1}
+                  style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"}}/>
+              </div>
+              <div style={{marginBottom:16}}>
+                <FieldLabel>Discount Type</FieldLabel>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  {[{key:"percentage",label:"Percentage (%)"},{key:"fixed",label:"Fixed Amount ($)"}].map(opt=>(
+                    <button key={opt.key} onClick={()=>setWinBackDiscType(opt.key)}
+                      style={{padding:"9px 18px",borderRadius:100,border:`1px solid ${winBackDiscType===opt.key?C.coral:C.border}`,background:winBackDiscType===opt.key?"rgba(229,82,102,.10)":"transparent",color:winBackDiscType===opt.key?C.coral:C.sub,fontWeight:winBackDiscType===opt.key?700:400,fontSize:13,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .15s",outline:"none"}}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{marginBottom:16}}>
+                <FieldLabel>{winBackDiscType==="percentage"?"Discount Value (%)":"Discount Amount ($)"}</FieldLabel>
+                <input type="number" value={winBackDiscVal} onChange={e=>setWinBackDiscVal(e.target.value)} min={1}
+                  style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"}}/>
+              </div>
+              <div style={{marginBottom:16}}>
+                <FieldLabel>Message Preview</FieldLabel>
+                <div style={{padding:"14px 16px",borderRadius:10,background:C.dim,border:`1px solid ${C.borderHi}`,color:C.sub,fontSize:13.5,lineHeight:1.7}}>
+                  Hey [Customer name], we miss you! Here's{" "}
+                  <strong style={{color:C.coral}}>
+                    {winBackDiscType==="percentage"?`${winBackDiscVal}% off`:`$${winBackDiscVal} off`}
+                  </strong>
+                  {" "}your next order — use code{" "}
+                  <span style={{fontFamily:"monospace",color:C.text,fontWeight:700}}>WINBACK10</span>
+                  {" "}at checkout. Valid for 7 days.
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <button className="btn-primary" onClick={winBackSave}
+                  style={{padding:"10px 28px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14}}>
+                  Save Changes
+                </button>
+                {winBackSaved&&(
+                  <div className="saved-badge" style={{display:"flex",alignItems:"center",gap:7,padding:"7px 14px",borderRadius:9,background:"rgba(62,207,178,.10)",border:"1px solid rgba(62,207,178,.22)"}}>
+                    <span style={{color:C.teal,fontSize:14}}>✓</span>
+                    <span style={{fontSize:13.5,fontWeight:600,color:C.teal}}>Changes saved</span>
                   </div>
                 )}
               </div>
-              <div><FieldLabel hint="How long to wait before processing.">Response Window</FieldLabel><SelectInput value={respWindow} onChange={e=>setRespWindow(e.target.value)} options={["6 hours","12 hours","24 hours","48 hours"]}/></div>
             </div>
           </div>
-        )}
-      </div>
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:8}}>
+            <Toggle on={winBack} onToggle={()=>setWinBack(v=>!v)}/>
+          </div>
+        </div>
 
-      {/* Cart Recovery */}
-      <div className="section-card fu fu2" style={{marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:cart?20:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:13}}>
-            <div style={{width:42,height:42,borderRadius:12,background:`${C.blue}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.blue}}><ShoppingCart size={20} strokeWidth={2}/></div>
-            <div>
-              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>Cart Recovery</div>
-              <div style={{fontSize:12.5,color:C.muted}}>3-touch AI sequence to recover abandoned carts</div>
-            </div>
-          </div>
-          <Toggle on={cart} onToggle={()=>setCart(v=>!v)}/>
-        </div>
-        {cart && (
-          <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-            <div className="sv-three-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}}>
-              {delayField(delay1,setDelay1,delay1Val,setDelay1Val,delay1Unit,setDelay1Unit,["30 minutes","1 hour","3 hours","6 hours"],"Email 1 Delay")}
-              {delayField(delay2,setDelay2,delay2Val,setDelay2Val,delay2Unit,setDelay2Unit,["3 hours","6 hours","12 hours","24 hours"],"Email 2 Delay")}
-              {delayField(delay3,setDelay3,delay3Val,setDelay3Val,delay3Unit,setDelay3Unit,["12 hours","24 hours","48 hours"],"Email 3 Delay")}
-            </div>
-            <div><FieldLabel hint="Discount code included in Email 2.">Discount Code</FieldLabel><TextInput value={cartCode} onChange={e=>setCartCode(e.target.value)} placeholder="e.g. COMEBACK10"/></div>
-          </div>
-        )}
-      </div>
-
-      {/* Win-Back Campaign */}
-      <div className="section-card fu fu3" style={{marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:winBack?16:0,transition:"margin-bottom .25s ease"}}>
-          <div style={{display:"flex",alignItems:"center",gap:13}}>
-            <div style={{width:42,height:42,borderRadius:12,background:`${C.magenta}22`,display:"flex",alignItems:"center",justifyContent:"center",color:C.magenta}}>
-              <Gift size={20} strokeWidth={2}/>
-            </div>
-            <div>
-              <div style={{fontSize:15,fontWeight:700,color:C.text,marginBottom:2}}>Win-Back Campaign</div>
-              <div style={{fontSize:12.5,color:C.muted,maxWidth:420}}>Automatically send a discount to customers who haven't ordered in a set number of days to bring them back.</div>
-            </div>
-          </div>
-          <Toggle on={winBack} onToggle={()=>setWinBack(v=>!v)}/>
-        </div>
-        <div style={{overflow:"hidden",maxHeight:winBack?"800px":"0",opacity:winBack?1:0,transition:"max-height .38s cubic-bezier(.16,1,.3,1),opacity .25s ease"}}>
-          <div style={{paddingTop:16,borderTop:`1px solid ${C.border}`}}>
-            {/* Days of inactivity */}
-            <div style={{marginBottom:16}}>
-              <FieldLabel hint="Recommended: 60 days">Send win-back after X days of no orders</FieldLabel>
-              <input type="number" value={winBackDays} onChange={e=>setWinBackDays(e.target.value)} min={1}
-                style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"}}/>
-            </div>
-            {/* Discount type pills */}
-            <div style={{marginBottom:16}}>
-              <FieldLabel>Discount Type</FieldLabel>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                {[{key:"percentage",label:"Percentage (%)"},{key:"fixed",label:"Fixed Amount ($)"}].map(opt=>(
-                  <button key={opt.key} onClick={()=>setWinBackDiscType(opt.key)}
-                    style={{padding:"9px 18px",borderRadius:100,border:`1px solid ${winBackDiscType===opt.key?C.coral:C.border}`,background:winBackDiscType===opt.key?"rgba(229,82,102,.10)":"transparent",color:winBackDiscType===opt.key?C.coral:C.sub,fontWeight:winBackDiscType===opt.key?700:400,fontSize:13,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .15s",outline:"none"}}>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Discount value */}
-            <div style={{marginBottom:16}}>
-              <FieldLabel>{winBackDiscType==="percentage"?"Discount Value (%)":"Discount Amount ($)"}</FieldLabel>
-              <input type="number" value={winBackDiscVal} onChange={e=>setWinBackDiscVal(e.target.value)} min={1}
-                style={{width:"100%",padding:"11px 14px",borderRadius:10,background:C.surface,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontFamily:"'Outfit',sans-serif",outline:"none"}}/>
-            </div>
-            {/* Message preview */}
-            <div style={{marginBottom:20}}>
-              <FieldLabel>Message Preview</FieldLabel>
-              <div style={{padding:"14px 16px",borderRadius:10,background:C.dim,border:`1px solid ${C.borderHi}`,color:C.sub,fontSize:13.5,lineHeight:1.7}}>
-                Hey [Customer name], we miss you! Here's{" "}
-                <strong style={{color:C.coral}}>
-                  {winBackDiscType==="percentage"?`${winBackDiscVal}% off`:`$${winBackDiscVal} off`}
-                </strong>
-                {" "}your next order — use code{" "}
-                <span style={{fontFamily:"monospace",color:C.text,fontWeight:700}}>WINBACK10</span>
-                {" "}at checkout. Valid for 7 days.
-              </div>
-            </div>
-            {/* Save */}
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <button className="btn-primary" onClick={winBackSave}
-                style={{padding:"10px 28px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14}}>
-                Save Changes
-              </button>
-              {winBackSaved&&(
-                <div className="saved-badge" style={{display:"flex",alignItems:"center",gap:7,padding:"7px 14px",borderRadius:9,background:"rgba(62,207,178,.10)",border:"1px solid rgba(62,207,178,.22)"}}>
-                  <span style={{color:C.teal,fontSize:14}}>✓</span>
-                  <span style={{fontSize:13.5,fontWeight:600,color:C.teal}}>Changes saved</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Coming Soon — Post-Purchase Follow-up */}
