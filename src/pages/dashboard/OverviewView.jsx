@@ -51,7 +51,22 @@ function GlobalStyles() {
       .ls-mob .kpi-row{display:grid!important;grid-template-columns:1fr 1fr!important;overflow-x:visible!important;padding-bottom:0!important;}
       .ls-mob .kpi-row .kpi-card{min-width:0!important;flex-shrink:unset!important;padding:10px 12px!important;}
       .ls-mob .chart-activity-grid{grid-template-columns:1fr 1fr!important;}
+      @keyframes skeletonShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
     `}</style>
+  );
+}
+
+function SkeletonBlock({ width = "100%", height = 16, radius = 8, style = {} }) {
+  return (
+    <div style={{
+      width, height,
+      borderRadius: radius,
+      background: `linear-gradient(90deg, var(--dim) 25%, var(--border) 50%, var(--dim) 75%)`,
+      backgroundSize: "200% 100%",
+      animation: "skeletonShimmer 1.4s ease infinite",
+      flexShrink: 0,
+      ...style,
+    }}/>
   );
 }
 
@@ -168,7 +183,19 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
 
         {/* KPI Cards */}
         <div className="kpi-row" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
-          {kpis.map((k,i)=>(
+          {loading ? (
+            [0,1,2,3].map(i => (
+              <div key={i} style={{padding:"18px 20px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`,animationDelay:`${i*.06}s`}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:12}}>
+                  <SkeletonBlock width={120} height={12}/>
+                  <SkeletonBlock width={40} height={12}/>
+                </div>
+                <SkeletonBlock width={80} height={28} style={{marginBottom:8}}/>
+                <SkeletonBlock width={60} height={10} style={{marginBottom:14}}/>
+                <SkeletonBlock width="100%" height={3} radius={2}/>
+              </div>
+            ))
+          ) : kpis.map((k,i)=>(
             <div key={i} className="kpi-card fu" style={{padding:"18px 20px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`,animationDelay:`${i*.06}s`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                 <div style={{display:"flex",alignItems:"center",gap:7}}>
@@ -190,46 +217,71 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
 
         {/* Chart + Activity */}
         <div className="chart-activity-grid" style={{display:"grid",gridTemplateColumns:"1fr 310px",gap:16}}>
-
-          {/* Area Chart */}
           <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22}}>
-            <div className="chart-header" style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+            {loading ? (
               <div>
-                <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Weekly Performance</h3>
-                <p style={{fontSize:11.5,color:C.muted}}>Tickets resolved & revenue recovered</p>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    <SkeletonBlock width={160} height={14}/>
+                    <SkeletonBlock width={220} height={11}/>
+                  </div>
+                  <div style={{display:"flex",gap:7}}>
+                    <SkeletonBlock width={64} height={28} radius={7}/>
+                    <SkeletonBlock width={64} height={28} radius={7}/>
+                  </div>
+                </div>
+                <SkeletonBlock width="100%" height={186} radius={10}/>
               </div>
-              <div style={{display:"flex",gap:7}}>
-                {["revenue","tickets"].map(t=>(
-                  <button key={t} className="filter-tab btn-ghost" onClick={()=>setActiveChart(t)}
-                    style={{padding:"4px 12px",borderRadius:7,border:`1px solid ${activeChart===t?C.coral:C.border}`,background:activeChart===t?"rgba(229,82,102,.10)":"transparent",color:activeChart===t?C.coral:C.muted,fontSize:11.5,fontWeight:activeChart===t?700:400,textTransform:"capitalize"}}>
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={186}>
-              <AreaChart data={weekData} margin={{top:0,right:0,bottom:0,left:-24}}>
-                <defs>
-                  <linearGradient id="ovGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor={activeChart==="revenue"?C.coral:C.blue} stopOpacity={.28}/>
-                    <stop offset="95%" stopColor={activeChart==="revenue"?C.coral:C.blue} stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={C.dim}/>
-                <XAxis dataKey="day" tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
-                <Tooltip contentStyle={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,color:C.text}} cursor={{stroke:C.dim,strokeWidth:1}}/>
-                <Area type="monotone" dataKey={activeChart} stroke={activeChart==="revenue"?C.coral:C.blue} strokeWidth={2} fill="url(#ovGrad)"/>
-              </AreaChart>
-            </ResponsiveContainer>
+            ) : (
+              <>
+                <div className="chart-header" style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                  <div>
+                    <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Weekly Performance</h3>
+                    <p style={{fontSize:11.5,color:C.muted}}>Tickets resolved & revenue recovered</p>
+                  </div>
+                  <div style={{display:"flex",gap:7}}>
+                    {["revenue","tickets"].map(t=>(
+                      <button key={t} className="filter-tab btn-ghost" onClick={()=>setActiveChart(t)}
+                        style={{padding:"4px 12px",borderRadius:7,border:`1px solid ${activeChart===t?C.coral:C.border}`,background:activeChart===t?"rgba(229,82,102,.10)":"transparent",color:activeChart===t?C.coral:C.muted,fontSize:11.5,fontWeight:activeChart===t?700:400,textTransform:"capitalize"}}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={186}>
+                  <AreaChart data={weekData} margin={{top:0,right:0,bottom:0,left:-24}}>
+                    <defs>
+                      <linearGradient id="ovGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor={activeChart==="revenue"?C.coral:C.blue} stopOpacity={.28}/>
+                        <stop offset="95%" stopColor={activeChart==="revenue"?C.coral:C.blue} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={C.dim}/>
+                    <XAxis dataKey="day" tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
+                    <YAxis tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
+                    <Tooltip contentStyle={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,color:C.text}} cursor={{stroke:C.dim,strokeWidth:1}}/>
+                    <Area type="monotone" dataKey={activeChart} stroke={activeChart==="revenue"?C.coral:C.blue} strokeWidth={2} fill="url(#ovGrad)"/>
+                  </AreaChart>
+                </ResponsiveContainer>
+              </>
+            )}
           </div>
 
-          {/* Live Activity */}
           <div style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:20,display:"flex",flexDirection:"column"}}>
             <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>Live Activity</h3>
             <p style={{fontSize:11.5,color:C.muted,marginBottom:14}}>Real-time automation feed</p>
-            <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,overflowY:"auto"}}>
-              {liveActivity.length === 0 ? (
+            <div style={{display:"flex",flexDirection:"column",gap:8,flex:1,overflowY:"auto"}}>
+              {loading ? (
+                [0,1,2,3,4].map(i => (
+                  <div key={i} style={{display:"flex",gap:10,padding:"9px 7px",alignItems:"center"}}>
+                    <SkeletonBlock width={28} height={28} radius={8} style={{flexShrink:0}}/>
+                    <div style={{flex:1,display:"flex",flexDirection:"column",gap:6}}>
+                      <SkeletonBlock width="85%" height={11}/>
+                      <SkeletonBlock width={80} height={10} radius={4}/>
+                    </div>
+                  </div>
+                ))
+              ) : liveActivity.length === 0 ? (
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,padding:20}}>
                   <Bot size={28} style={{color:C.muted}}/>
                   <div style={{fontSize:13,fontWeight:600,color:C.muted,marginTop:10}}>No activity yet</div>
