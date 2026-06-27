@@ -132,6 +132,11 @@ function GlobalStyles() {
       .ls-mob .sv-back-btn{display:none!important;}
       .ls-mob .sv-two-col{grid-template-columns:1fr 1fr!important;}
       .ls-mob .sv-three-col{grid-template-columns:1fr 1fr 1fr!important;}
+      @media(min-width:768px){
+        .sv-nav{display:none!important;}
+        .sv-content-hidden{display:block!important;}
+        .sv-back-btn{display:none!important;}
+      }
     `}</style>
   );
 }

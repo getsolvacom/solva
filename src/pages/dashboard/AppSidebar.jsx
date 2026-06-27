@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { C } from "../../tokens";
 import { useStore } from "../../hooks/useStore";
-import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, LogOut, Store, Users, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, LogOut, Store, Users, ChevronDown, PanelLeftClose, PanelLeftOpen, SlidersHorizontal, Bot, Zap, GitBranch, Bell, CreditCard, Sun, MessageSquare, AlertTriangle, Globe } from "lucide-react";
 
 function SolvaLogo({ collapsed = false }) {
   return (
@@ -24,16 +24,16 @@ function SolvaLogo({ collapsed = false }) {
 }
 
 const SETTINGS_SUB = [
-  {key:"settings/general",       label:"General"},
-  {key:"settings/ai",            label:"AI Config"},
-  {key:"settings/automations",   label:"Automations"},
-  {key:"settings/workflows",     label:"Workflows"},
-  {key:"settings/notifications", label:"Notifications"},
-  {key:"settings/team",          label:"Team"},
-  {key:"settings/billing",       label:"Billing"},
-  {key:"settings/appearance",    label:"Appearance"},
-  {key:"settings/widget",        label:"Widget"},
-  {key:"settings/danger",        label:"Danger Zone"},
+  {key:"settings/general",       label:"General",       icon:<Globe size={13} strokeWidth={2}/>},
+  {key:"settings/ai",            label:"AI Config",     icon:<Bot size={13} strokeWidth={2}/>},
+  {key:"settings/automations",   label:"Automations",   icon:<Zap size={13} strokeWidth={2}/>},
+  {key:"settings/workflows",     label:"Workflows",     icon:<GitBranch size={13} strokeWidth={2}/>},
+  {key:"settings/notifications", label:"Notifications", icon:<Bell size={13} strokeWidth={2}/>},
+  {key:"settings/team",          label:"Team",          icon:<Users size={13} strokeWidth={2}/>},
+  {key:"settings/billing",       label:"Billing",       icon:<CreditCard size={13} strokeWidth={2}/>},
+  {key:"settings/appearance",    label:"Appearance",    icon:<Sun size={13} strokeWidth={2}/>},
+  {key:"settings/widget",        label:"Widget",        icon:<MessageSquare size={13} strokeWidth={2}/>},
+  {key:"settings/danger",        label:"Danger Zone",   icon:<AlertTriangle size={13} strokeWidth={2}/>},
 ];
 
 export default function AppSidebar() {
@@ -111,7 +111,7 @@ export default function AppSidebar() {
               display:collapsed?"none":"flex",
             }}
           >
-            <ChevronLeft size={14} strokeWidth={2}/>
+            <PanelLeftClose size={14} strokeWidth={2}/>
           </button>
         </div>
 
@@ -126,7 +126,7 @@ export default function AppSidebar() {
               background:C.card,color:C.muted,
             }}
           >
-            <ChevronRight size={14} strokeWidth={2}/>
+            <PanelLeftOpen size={14} strokeWidth={2}/>
           </button>
         )}
 
@@ -224,7 +224,7 @@ export default function AppSidebar() {
                               background: subActive ? "rgba(229,82,102,.07)" : "transparent",
                             }}
                           >
-                            <span style={{width:5,height:5,borderRadius:"50%",background:subActive?C.coral:C.borderHi,flexShrink:0,marginRight:8,display:"inline-block"}}/>
+                            <span style={{display:"inline-flex",alignItems:"center",marginRight:7,color:subActive?C.coral:C.muted,flexShrink:0}}>{sub.icon}</span>
                             {sub.label}
                           </div>
                         );
