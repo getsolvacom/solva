@@ -104,6 +104,19 @@ const METRIC_CFG = {
   returns: {label:"Returns Deflected", color:C.amber, prefix:"" },
 };
 
+function SkeletonBlock({ width = "100%", height = 16, radius = 8, style = {} }) {
+  return (
+    <div style={{
+      width, height, borderRadius: radius,
+      background: `linear-gradient(90deg, var(--dim) 25%, var(--border) 50%, var(--dim) 75%)`,
+      backgroundSize: "200% 100%",
+      animation: "skeletonShimmer 1.4s ease infinite",
+      flexShrink: 0,
+      ...style,
+    }}/>
+  );
+}
+
 function GlobalStyles() {
   return (
     <style>{`
@@ -143,6 +156,7 @@ function GlobalStyles() {
       .ls-mob .av-root{height:100dvh!important;overflow:hidden!important;flex:1!important;}
       .ls-mob .av-body{overflow-y:auto!important;flex:1!important;min-height:0!important;padding:8px 12px!important;gap:10px!important;}
       .ls-mob .av-lower-grid{grid-template-columns:1fr 1fr!important;}
+      @keyframes skeletonShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
     `}</style>
   );
 }
@@ -309,7 +323,18 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
 
         {/* KPI Cards */}
         <div className="av-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:12}}>
-          {kpis.map((k,i)=>(
+          {loading ? (
+            [0,1,2,3,4,5,6].map(i => (
+              <div key={i} style={{padding:"16px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+                  <SkeletonBlock width={32} height={32} radius={9}/>
+                  <SkeletonBlock width={36} height={18} radius={100}/>
+                </div>
+                <SkeletonBlock width={70} height={22} style={{marginBottom:6}}/>
+                <SkeletonBlock width={90} height={11}/>
+              </div>
+            ))
+          ) : kpis.map((k,i)=>(
             <div key={i} className={`kpi-card fu fu${Math.min(i+1,6)}`}
               style={{padding:"16px",borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
@@ -328,58 +353,77 @@ export default function AnalyticsView({ isLandscape, isMobile }) {
 
           {/* Area chart */}
           <div className="av-chart-wrap" style={{borderRadius:14,background:C.card,border:`1px solid ${C.border}`,padding:22}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:10}}>
+            {loading ? (
               <div>
-                <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>{mc.label}</h3>
-                <p style={{fontSize:11.5,color:C.muted}}>{range==="7D"?"Last 7 days":range==="30D"?"Last 30 days":"Last 90 days"}</p>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    <SkeletonBlock width={180} height={14}/>
+                    <SkeletonBlock width={120} height={11}/>
+                  </div>
+                  <div style={{display:"flex",gap:6}}>
+                    <SkeletonBlock width={60} height={28} radius={8}/>
+                    <SkeletonBlock width={60} height={28} radius={8}/>
+                    <SkeletonBlock width={60} height={28} radius={8}/>
+                  </div>
+                </div>
+                <SkeletonBlock width="100%" height={210} radius={10}/>
               </div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                {Object.entries(METRIC_CFG).map(([key,cfg])=>(
-                  <button key={key} className="metric-tab" onClick={()=>setMetric(key)}
-                    style={{padding:"5px 13px",borderRadius:8,border:`1px solid ${metric===key?`${cfg.color}40`:C.border}`,background:metric===key?`${cfg.color}18`:"transparent",color:metric===key?cfg.color:C.muted,fontSize:12,fontWeight:metric===key?700:400}}>
-                    {cfg.label.split(" ")[0]}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={210}>
-              <AreaChart data={chartData} margin={{top:0,right:4,bottom:0,left:-20}}>
-                <defs>
-                  <linearGradient id="anGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor={mc.color} stopOpacity={.30}/>
-                    <stop offset="95%" stopColor={mc.color} stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={C.dim}/>
-                <XAxis dataKey="label" tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
-                <Tooltip content={<ChartTip prefix={mc.prefix}/>} cursor={{ fill:"rgba(255,255,255,0.04)" }}/>
-                <Area type="monotone" dataKey={metric} stroke={mc.color} strokeWidth={2.5} fill="url(#anGrad)" dot={false} activeDot={{r:5,fill:mc.color,strokeWidth:0}}/>
+            ) : (
+              <>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:10}}>
+                  <div>
+                    <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:3}}>{mc.label}</h3>
+                    <p style={{fontSize:11.5,color:C.muted}}>{range==="7D"?"Last 7 days":range==="30D"?"Last 30 days":"Last 90 days"}</p>
+                  </div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                    {Object.entries(METRIC_CFG).map(([key,cfg])=>(
+                      <button key={key} className="metric-tab" onClick={()=>setMetric(key)}
+                        style={{padding:"5px 13px",borderRadius:8,border:`1px solid ${metric===key?`${cfg.color}40`:C.border}`,background:metric===key?`${cfg.color}18`:"transparent",color:metric===key?cfg.color:C.muted,fontSize:12,fontWeight:metric===key?700:400}}>
+                        {cfg.label.split(" ")[0]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={210}>
+                  <AreaChart data={chartData} margin={{top:0,right:4,bottom:0,left:-20}}>
+                    <defs>
+                      <linearGradient id="anGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor={mc.color} stopOpacity={.30}/>
+                        <stop offset="95%" stopColor={mc.color} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={C.dim}/>
+                    <XAxis dataKey="label" tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
+                    <YAxis tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
+                    <Tooltip content={<ChartTip prefix={mc.prefix}/>} cursor={{ fill:"rgba(255,255,255,0.04)" }}/>
+                    <Area type="monotone" dataKey={metric} stroke={mc.color} strokeWidth={2.5} fill="url(#anGrad)" dot={false} activeDot={{r:5,fill:mc.color,strokeWidth:0}}/>
+                    {comparePeriod && (
+                      <Area
+                        type="monotone"
+                        dataKey={`prev_${metric}`}
+                        stroke={C.muted}
+                        strokeWidth={1.5}
+                        strokeDasharray="4 4"
+                        fill="none"
+                        dot={false}
+                        activeDot={{ r: 4, fill: C.muted, strokeWidth: 0 }}
+                      />
+                    )}
+                  </AreaChart>
+                </ResponsiveContainer>
                 {comparePeriod && (
-                  <Area
-                    type="monotone"
-                    dataKey={`prev_${metric}`}
-                    stroke={C.muted}
-                    strokeWidth={1.5}
-                    strokeDasharray="4 4"
-                    fill="none"
-                    dot={false}
-                    activeDot={{ r: 4, fill: C.muted, strokeWidth: 0 }}
-                  />
+                  <div style={{ display: "flex", gap: 16, marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.dim}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{ width: 20, height: 2, background: mc.color, borderRadius: 1 }} />
+                      <span style={{ fontSize: 11, color: C.sub }}>Current period</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{ width: 20, height: 2, background: C.muted, borderRadius: 1, borderTop: "2px dashed " + C.muted }} />
+                      <span style={{ fontSize: 11, color: C.muted }}>Previous period</span>
+                    </div>
+                  </div>
                 )}
-              </AreaChart>
-            </ResponsiveContainer>
-            {comparePeriod && (
-              <div style={{ display: "flex", gap: 16, marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.dim}` }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 20, height: 2, background: mc.color, borderRadius: 1 }} />
-                  <span style={{ fontSize: 11, color: C.sub }}>Current period</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 20, height: 2, background: C.muted, borderRadius: 1, borderTop: "2px dashed " + C.muted }} />
-                  <span style={{ fontSize: 11, color: C.muted }}>Previous period</span>
-                </div>
-              </div>
+              </>
             )}
           </div>
 

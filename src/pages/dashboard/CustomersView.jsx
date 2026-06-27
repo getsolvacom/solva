@@ -21,6 +21,19 @@ function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+function SkeletonBlock({ width = "100%", height = 16, radius = 8, style = {} }) {
+  return (
+    <div style={{
+      width, height, borderRadius: radius,
+      background: `linear-gradient(90deg, var(--dim) 25%, var(--border) 50%, var(--dim) 75%)`,
+      backgroundSize: "200% 100%",
+      animation: "skeletonShimmer 1.4s ease infinite",
+      flexShrink: 0,
+      ...style,
+    }}/>
+  );
+}
+
 export default function CustomersView({ isLandscape, isMobile }) {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -184,6 +197,7 @@ export default function CustomersView({ isLandscape, isMobile }) {
         }
         .seg-row::-webkit-scrollbar{display:none;}
         .seg-row{-ms-overflow-style:none;scrollbar-width:none;}
+        @keyframes skeletonShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
       `}</style>
 
       {/* Top bar */}
@@ -239,8 +253,27 @@ export default function CustomersView({ isLandscape, isMobile }) {
 
           {/* List */}
           {loading ? (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flex: 1, paddingTop: 60 }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", border: `3px solid ${C.dim}`, borderTopColor: C.coral, animation: "spin .7s linear infinite" }} />
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {[0,1,2,3,4,5].map(i => (
+                <div key={i} style={{padding:"14px 16px",borderRadius:12,background:C.card,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12,marginBottom:0}}>
+                  <SkeletonBlock width={38} height={38} radius="50%" style={{flexShrink:0}}/>
+                  <div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <SkeletonBlock width={120} height={13}/>
+                      <SkeletonBlock width={36} height={18} radius={100}/>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <SkeletonBlock width={160} height={11}/>
+                      <SkeletonBlock width={50} height={11}/>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:6,flexShrink:0}}>
+                    <SkeletonBlock width={36} height={22} radius={6}/>
+                    <SkeletonBlock width={36} height={22} radius={6}/>
+                    <SkeletonBlock width={36} height={22} radius={6}/>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filtered.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, paddingTop: 60, gap: 10 }}>

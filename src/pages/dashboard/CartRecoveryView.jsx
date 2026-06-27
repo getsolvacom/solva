@@ -78,6 +78,19 @@ const SEQ_STATUS = {
   converted: { color:"#3ECFB2", bg:"rgba(62,207,178,.10)",  label:"Converted" },
 };
 
+function SkeletonBlock({ width = "100%", height = 16, radius = 8, style = {} }) {
+  return (
+    <div style={{
+      width, height, borderRadius: radius,
+      background: `linear-gradient(90deg, var(--dim) 25%, var(--border) 50%, var(--dim) 75%)`,
+      backgroundSize: "200% 100%",
+      animation: "skeletonShimmer 1.4s ease infinite",
+      flexShrink: 0,
+      ...style,
+    }}/>
+  );
+}
+
 function GlobalStyles() {
   return (
     <style>{`
@@ -142,6 +155,7 @@ function GlobalStyles() {
       .toast-in{animation:toastSlideIn .35s cubic-bezier(.16,1,.3,1) both;}
       .toast-out{animation:toastFadeOut .3s ease forwards;}
       .cr-spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+      @keyframes skeletonShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
     `}</style>
   );
 }
@@ -306,7 +320,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
           <div key={i} className="cr-kpi-card kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${k.color}33`,color:k.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{k.icon}</div>
             <div>
-              <div style={{fontSize:18,fontWeight:800,color:k.color}}>{k.value}</div>
+              <div style={{fontSize:18,fontWeight:800,color:k.color}}>{cartsLoading ? <SkeletonBlock width={60} height={18} radius={6}/> : k.value}</div>
               <div style={{fontSize:11,color:C.muted,marginTop:2}}>{k.label}</div>
             </div>
           </div>
@@ -345,6 +359,30 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
           )}
 
           <div style={{flex:1,overflowY:"auto"}}>
+            {cartsLoading && (
+              <div style={{padding:"12px 0"}}>
+                {[0,1,2,3].map(i => (
+                  <div key={i} style={{padding:"13px 16px",borderBottom:`1px solid ${C.border}`}}>
+                    <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+                      <SkeletonBlock width={36} height={36} radius={10} style={{flexShrink:0}}/>
+                      <div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}>
+                        <div style={{display:"flex",justifyContent:"space-between"}}>
+                          <SkeletonBlock width={100} height={12}/>
+                          <SkeletonBlock width={48} height={12}/>
+                        </div>
+                        <div style={{display:"flex",gap:4}}>
+                          <SkeletonBlock width="100%" height={3} radius={2}/>
+                        </div>
+                        <div style={{display:"flex",justifyContent:"space-between"}}>
+                          <SkeletonBlock width={80} height={11}/>
+                          <SkeletonBlock width={64} height={18} radius={100}/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             {filtered.map(c=>{
               const s = STATUS_C[c.status];
               return (
