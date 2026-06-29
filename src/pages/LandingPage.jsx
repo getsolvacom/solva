@@ -83,6 +83,8 @@ function GlobalStyles() {
         .testimonials-grid{grid-template-columns:1fr!important;}
         .footer-grid{grid-template-columns:1fr 1fr!important;gap:32px!important;}
         .cta-section-inner{padding:70px 24px 60px!important;}
+        .solution-block{flex-direction:column!important;gap:32px!important;}
+        .solution-block-reverse{flex-direction:column!important;gap:32px!important;}
       }
     `}</style>
   );
@@ -372,6 +374,120 @@ export default function LandingPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* SOLUTION DEEP DIVE */}
+      <section style={{padding:"80px 40px",maxWidth:1060,margin:"0 auto"}}>
+        <p style={{textAlign:"center",fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#E55266",textTransform:"uppercase",marginBottom:12}}>THE SOLUTION</p>
+        <h2 style={{textAlign:"center",fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,3.8vw,44px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:16,color:"var(--text)"}}>One platform. Every customer moment covered.</h2>
+        <p style={{textAlign:"center",maxWidth:560,margin:"0 auto 64px",fontSize:15,color:"var(--sub)",lineHeight:1.75}}>SOLVA watches every interaction across your store and acts before problems become losses.</p>
+
+        {/* Block 1 — content left, visual right */}
+        <div className="solution-block" style={{display:"flex",alignItems:"center",gap:64,marginBottom:80}}>
+          <div style={{flex:1}}>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:".14em",color:"#E55266",marginBottom:12}}>01</p>
+            <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(20px,2.5vw,28px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:16}}>AI resolves support before it becomes a ticket</h3>
+            <p style={{fontSize:14.5,color:"var(--sub)",lineHeight:1.8,marginBottom:24}}>The moment a customer sends a message, SOLVA reads it, checks your knowledge base, and replies instantly — in your brand voice. Order tracking, shipping questions, policy queries — handled without a human in the loop.</p>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {["Instant replies under 60 seconds, 24/7","Trained on your FAQs, policies and products","Auto-escalates when confidence is low","Full conversation history in your dashboard"].map(t=>(
+                <div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+                  <span style={{color:"#3ECFB2",fontSize:14,flexShrink:0,marginTop:2}}>✓</span>
+                  <span style={{fontSize:13.5,color:"var(--sub)"}}>{t}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{flex:1,display:"flex",justifyContent:"center"}}>
+            <div style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:24,maxWidth:420,width:"100%"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:"#3ECFB2",flexShrink:0}}/>
+                <span style={{fontSize:12,color:"var(--muted)",fontWeight:600}}>AI Support Agent — Live</span>
+              </div>
+              <div style={{display:"flex",flexDirection:"column"}}>
+                <div style={{background:"var(--surface)",borderRadius:"12px 12px 12px 4px",padding:"10px 14px",fontSize:13,color:"var(--sub)",maxWidth:"85%",marginBottom:8}}>Hey, where is my order? It's been 5 days.</div>
+                <div style={{background:"linear-gradient(135deg,rgba(229,82,102,0.15),rgba(78,2,105,0.15))",border:"1px solid rgba(229,82,102,0.2)",borderRadius:"12px 12px 4px 12px",padding:"10px 14px",fontSize:13,color:"var(--text)",maxWidth:"85%",marginLeft:"auto",marginBottom:8}}>Hi Sarah! Your order #4821 shipped yesterday via UPS. Estimated delivery: tomorrow by 8pm. Tracking: 1Z999AA10123456784</div>
+                <div style={{background:"var(--surface)",borderRadius:"12px 12px 12px 4px",padding:"10px 14px",fontSize:13,color:"var(--sub)",maxWidth:"85%"}}>Amazing, thank you! 🙌</div>
+              </div>
+              <div style={{fontSize:11.5,color:"#3ECFB2",fontWeight:600,marginTop:12}}>✓ Resolved in 18 seconds</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Block 2 — content right, visual left */}
+        <div className="solution-block-reverse" style={{display:"flex",flexDirection:"row-reverse",alignItems:"center",gap:64,marginBottom:80}}>
+          <div style={{flex:1}}>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:".14em",color:"#E55266",marginBottom:12}}>02</p>
+            <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(20px,2.5vw,28px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:16}}>Returns deflected before they drain your margin</h3>
+            <p style={{fontSize:14.5,color:"var(--sub)",lineHeight:1.8,marginBottom:24}}>Before SOLVA processes a return, it intervenes. It reads the reason, checks the order history, and offers a smart alternative — an exchange, a discount, a troubleshooting fix. Most customers take the offer.</p>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {["Intercepts return requests automatically","Offers exchanges, discounts or fixes first","Only processes refunds when truly necessary","Tracks deflection rate in your analytics"].map(t=>(
+                <div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+                  <span style={{color:"#3ECFB2",fontSize:14,flexShrink:0,marginTop:2}}>✓</span>
+                  <span style={{fontSize:13.5,color:"var(--sub)"}}>{t}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{flex:1,display:"flex",justifyContent:"center"}}>
+            <div style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:24,maxWidth:420,width:"100%"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:"#F0A04B",flexShrink:0}}/>
+                <span style={{fontSize:12,color:"var(--muted)",fontWeight:600}}>Return Deflection — Active</span>
+              </div>
+              <div style={{background:"var(--surface)",borderRadius:10,padding:"12px 16px",marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>Return Request</div>
+                  <div style={{fontSize:11.5,color:"var(--muted)",marginTop:3}}>Order #3847 · Blue Sneakers · Size 9</div>
+                </div>
+                <div style={{background:"rgba(240,160,75,0.12)",color:"#F0A04B",fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:100,whiteSpace:"nowrap"}}>Intercepted</div>
+              </div>
+              <div style={{background:"linear-gradient(135deg,rgba(240,160,75,0.08),rgba(78,2,105,0.08))",border:"1px solid rgba(240,160,75,0.18)",borderRadius:10,padding:14,fontSize:12.5,color:"var(--sub)",lineHeight:1.7}}>We're sorry to hear that! Before we process your return, we'd love to offer you a free exchange for a different size, or 15% off your next order. Would either of these work for you?</div>
+              <div style={{fontSize:11.5,color:"#F0A04B",fontWeight:600,marginTop:12}}>✓ Refund avoided · Offer accepted</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Block 3 — content left, visual right */}
+        <div className="solution-block" style={{display:"flex",alignItems:"center",gap:64,marginBottom:0}}>
+          <div style={{flex:1}}>
+            <p style={{fontSize:11,fontWeight:800,letterSpacing:".14em",color:"#E55266",marginBottom:12}}>03</p>
+            <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(20px,2.5vw,28px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:16}}>Abandoned carts recovered with real copy</h3>
+            <p style={{fontSize:14.5,color:"var(--sub)",lineHeight:1.8,marginBottom:24}}>When a cart is abandoned, SOLVA doesn't send a template. It reads what was in the cart, writes a personalised sequence, and sends it at the right time. Three touches. Real language. Real results.</p>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {["Triggered automatically on abandonment","Copy written dynamically per cart contents","3-touch sequence: email, follow-up, final call","Recovery rate tracked in real time"].map(t=>(
+                <div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+                  <span style={{color:"#3ECFB2",fontSize:14,flexShrink:0,marginTop:2}}>✓</span>
+                  <span style={{fontSize:13.5,color:"var(--sub)"}}>{t}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{flex:1,display:"flex",justifyContent:"center"}}>
+            <div style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:24,maxWidth:420,width:"100%"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:"#5BADFF",flexShrink:0}}/>
+                <span style={{fontSize:12,color:"var(--muted)",fontWeight:600}}>Cart Recovery — Sequence Active</span>
+              </div>
+              <div>
+                {[
+                  {n:"1",title:"Email 1 — Sent",sub:"2 mins after abandonment",badge:"Opened",badgeBg:"rgba(62,207,178,0.1)",badgeColor:"#3ECFB2"},
+                  {n:"2",title:"Email 2 — Sent",sub:"24 hours later",          badge:"Clicked",badgeBg:"rgba(62,207,178,0.1)",badgeColor:"#3ECFB2"},
+                  {n:"3",title:"Email 3 — Sent",sub:"72 hours later",          badge:"Converted",badgeBg:"rgba(229,82,102,0.1)",badgeColor:"#E55266"},
+                ].map((row,i,arr)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<arr.length-1?"1px solid var(--border)":"none"}}>
+                    <div style={{width:24,height:24,borderRadius:"50%",background:"rgba(91,173,255,0.12)",color:"#5BADFF",fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{row.n}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{row.title}</div>
+                      <div style={{fontSize:11.5,color:"var(--muted)"}}>{row.sub}</div>
+                    </div>
+                    <div style={{background:row.badgeBg,color:row.badgeColor,fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:100,whiteSpace:"nowrap"}}>{row.badge}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{fontSize:11.5,color:"#5BADFF",fontWeight:600,marginTop:12}}>✓ Cart recovered · $127 saved</div>
+            </div>
+          </div>
         </div>
       </section>
 
