@@ -1978,12 +1978,52 @@ const DANGER_ACTIONS = [
 function DangerSection({ isLandscape = false, isMobile = false }) {
   const [modal,       setModal]       = useState(null);
   const [deleteInput, setDeleteInput] = useState("");
+  const [dangerLoading, setDangerLoading] = useState(false);
+  const [dangerError, setDangerError] = useState("");
+  const navigate = useNavigate();
   const lsMob = isLandscape && isMobile;
 
   function openModal(action) { setModal(action); setDeleteInput(""); }
   function closeModal()       { setModal(null);   setDeleteInput(""); }
 
   const confirmed = modal && deleteInput === modal.confirmWord;
+
+  const handleConfirm = async () => {
+    if (!modal || deleteInput !== modal.confirmWord) return;
+
+    if (modal.confirmWord === "DELETE") {
+      setDangerLoading(true);
+      setDangerError("");
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setDangerLoading(false); return; }
+
+        const { data: storeData } = await supabase
+          .from('stores').select('id')
+          .eq('user_id', user.id).maybeSingle();
+
+        if (storeData) {
+          await supabase.from('tickets').delete().eq('store_id', storeData.id);
+          await supabase.from('carts').delete().eq('store_id', storeData.id);
+          await supabase.from('returns').delete().eq('store_id', storeData.id);
+          await supabase.from('store_settings').delete().eq('store_id', storeData.id);
+          await supabase.from('audit_log').delete().eq('store_id', storeData.id);
+          await supabase.from('stores').delete().eq('id', storeData.id);
+        }
+
+        await supabase.from('profiles').delete().eq('id', user.id);
+        await supabase.auth.signOut();
+        navigate('/');
+      } catch (err) {
+        console.error('Delete account error:', err);
+        setDangerError('Something went wrong. Please try again or contact support@getsolva.app');
+        setDangerLoading(false);
+      }
+      return;
+    }
+
+    closeModal();
+  };
 
   return (
     <div>
@@ -2012,17 +2052,29 @@ function DangerSection({ isLandscape = false, isMobile = false }) {
               <button className="btn-ghost" onClick={closeModal}
                 style={{padding:"10px 20px",borderRadius:10,border:`1px solid ${C.border}`,color:C.sub,fontSize:13,fontWeight:600}}>Cancel</button>
               <button
-                disabled={!confirmed}
-                onClick={closeModal}
-                style={{padding:"10px 22px",borderRadius:10,fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13,transition:"all .18s",
-                  background:confirmed?"#FF5272":"transparent",
-                  border:`1px solid ${confirmed?"#FF5272":C.border}`,
-                  color:confirmed?"#fff":C.muted,
-                  cursor:confirmed?"pointer":"not-allowed",
+                disabled={!confirmed || dangerLoading}
+                onClick={handleConfirm}
+                style={{
+                  padding:"10px 22px", borderRadius:10,
+                  fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:13,
+                  transition:"all .18s",
+                  background: confirmed && !dangerLoading ? "#FF5272" : "transparent",
+                  border: `1px solid ${confirmed ? "#FF5272" : C.border}`,
+                  color: confirmed && !dangerLoading ? "#fff" : C.muted,
+                  cursor: confirmed && !dangerLoading ? "pointer" : "not-allowed",
+                  display:"flex", alignItems:"center", gap:7,
                 }}>
-                Confirm
+                {dangerLoading ? (
+                  <>
+                    <div style={{width:12,height:12,borderRadius:"50%",border:"2px solid rgba(255,255,255,.3)",borderTopColor:"#fff",animation:"spin .7s linear infinite",flexShrink:0}}/>
+                    Deleting…
+                  </>
+                ) : "Confirm"}
               </button>
             </div>
+            {dangerError && (
+              <p style={{fontSize:12,color:"#FF5272",marginTop:10,lineHeight:1.6}}>{dangerError}</p>
+            )}
           </div>
         </div>
       )}
