@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, ChevronDown, Linkedin, Instagram, Twitter, Youtube } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -81,6 +81,8 @@ function GlobalStyles() {
         .logo-bar-row{gap:28px!important;}
         .logo-bar-label{font-size:9px!important;}
         .testimonials-grid{grid-template-columns:1fr!important;}
+        .footer-grid{grid-template-columns:1fr 1fr!important;gap:32px!important;}
+        .cta-section-inner{padding:70px 24px 60px!important;}
       }
     `}</style>
   );
@@ -430,30 +432,91 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER CTA */}
-      <div className="cta-section" style={{margin:"16px 36px 52px",borderRadius:22,background:`linear-gradient(160deg,${C.surface} 0%,${C.dim} 100%)`,border:`1px solid ${C.border}`,borderTop:`1px solid ${C.borderHi}`,padding:"68px 40px",textAlign:"center",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",inset:0,pointerEvents:"none",background:"radial-gradient(ellipse 60% 90% at 50% 0%,rgba(229,82,102,.13),transparent)"}}/>
-        <h2 className="cta-heading" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(28px,4.5vw,50px)",fontWeight:800,letterSpacing:"-.025em",marginBottom:14,position:"relative"}}>
-          Ready to solve everything<br/>on autopilot?
-        </h2>
-        <p className="cta-sub" style={{color:C.sub,fontSize:15.5,marginBottom:32,position:"relative"}}>Built for Shopify stores that want to automate support, returns, and cart recovery — all in one place.</p>
-        <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"16px 36px",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15.5,position:"relative"}}>
-          Connect Your Store — It's Free →
-        </button>
+      <div style={{margin:"16px 36px 0",borderRadius:"22px 22px 0 0",background:"linear-gradient(135deg,#1C0022 0%,#2E0040 40%,#1A0030 70%,#0C000F 100%)",border:"1px solid var(--border-hi)",borderBottom:"none",padding:0,textAlign:"center",position:"relative",overflow:"hidden"}}>
+        {/* Orbs */}
+        <div style={{position:"absolute",width:500,height:500,top:-200,left:"50%",transform:"translateX(-50%)",background:"radial-gradient(circle,rgba(229,82,102,0.18),transparent 70%)",borderRadius:"50%",filter:"blur(1px)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",width:300,height:300,bottom:-100,left:-80,background:"radial-gradient(circle,rgba(78,2,105,0.35),transparent 70%)",borderRadius:"50%",filter:"blur(1px)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",width:300,height:300,bottom:-100,right:-80,background:"radial-gradient(circle,rgba(153,42,103,0.25),transparent 70%)",borderRadius:"50%",filter:"blur(1px)",pointerEvents:"none"}}/>
+        {/* Content */}
+        <div className="cta-section-inner" style={{position:"relative",zIndex:1,padding:"100px 48px 80px"}}>
+          <p style={{fontSize:10,letterSpacing:".16em",color:"rgba(229,82,102,0.7)",fontWeight:700,marginBottom:20,textTransform:"uppercase"}}>JOIN THOUSANDS OF BRANDS</p>
+          <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(32px,5vw,64px)",fontWeight:800,letterSpacing:"-.03em",lineHeight:1.05,color:"#fff",marginBottom:18}}>Turn every interaction into revenue.</h2>
+          <p style={{fontSize:"clamp(14px,1.8vw,18px)",color:"rgba(245,234,242,0.6)",marginBottom:44,lineHeight:1.7}}>Support. Returns. Cart recovery. All automated. All intelligent. All on autopilot.</p>
+          <div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
+            <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"16px 36px",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15.5}}>Connect Your Store — It's Free →</button>
+            <button onClick={()=>navigate("/dashboard")}
+              style={{padding:"16px 28px",borderRadius:12,border:"1px solid rgba(255,255,255,0.15)",background:"transparent",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:500,cursor:"pointer",transition:"all .15s",fontFamily:"'Outfit',sans-serif"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(229,82,102,0.5)";e.currentTarget.style.color="#fff";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.15)";e.currentTarget.style.color="rgba(255,255,255,0.7)";}}>
+              View Live Demo ↗
+            </button>
+          </div>
+          <p style={{marginTop:20,fontSize:12,color:"rgba(245,234,242,0.35)",letterSpacing:".03em"}}>14-day free trial · No credit card required · Cancel anytime</p>
+        </div>
       </div>
 
-      {/* Footer links */}
-      <div style={{textAlign:"center",padding:"0 24px 48px",display:"flex",justifyContent:"center",gap:28}}>
-        <span onClick={()=>navigate("/privacy")} style={{fontSize:13,color:C.muted,cursor:"pointer",textDecoration:"none"}}
-          onMouseEnter={e=>e.currentTarget.style.textDecoration="underline"}
-          onMouseLeave={e=>e.currentTarget.style.textDecoration="none"}>
-          Privacy Policy
-        </span>
-        <span onClick={()=>navigate("/terms")} style={{fontSize:13,color:C.muted,cursor:"pointer",textDecoration:"none"}}
-          onMouseEnter={e=>e.currentTarget.style.textDecoration="underline"}
-          onMouseLeave={e=>e.currentTarget.style.textDecoration="none"}>
-          Terms of Service
-        </span>
-      </div>
+      {/* FOOTER */}
+      <footer style={{background:"#060008",borderTop:"1px solid var(--border)",padding:"64px 48px 40px"}}>
+        <div style={{maxWidth:1100,margin:"0 auto"}}>
+          {/* Top grid */}
+          <div className="footer-grid" style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:48}}>
+            {/* Brand column */}
+            <div>
+              <SolvaLogo size={15}/>
+              <p style={{marginTop:14,fontSize:13.5,color:"var(--muted)",lineHeight:1.75,maxWidth:240}}>AI automation for Shopify stores that want to sell more, support better, and scale faster.</p>
+              <div style={{marginTop:24,display:"flex",gap:14}}>
+                {[
+                  {Icon:Linkedin,  href:"#"},
+                  {Icon:Instagram, href:"#"},
+                  {Icon:Twitter,   href:"#"},
+                  {Icon:Youtube,   href:"#"},
+                ].map(({Icon,href},i)=>(
+                  <a key={i} href={href} target="_blank" rel="noreferrer"
+                    style={{width:34,height:34,borderRadius:8,border:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",textDecoration:"none"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="#E55266";e.currentTarget.style.background="rgba(229,82,102,0.08)";e.currentTarget.querySelector("svg").style.color="#E55266";}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="transparent";e.currentTarget.querySelector("svg").style.color="var(--muted)";}}>
+                    <Icon size={15} style={{color:"var(--muted)",transition:"color .15s"}}/>
+                  </a>
+                ))}
+              </div>
+            </div>
+            {/* Link columns */}
+            {[
+              {heading:"Product",   links:[{label:"AI Support Agent"},{label:"Return Deflection"},{label:"Cart Recovery"},{label:"Pricing"},{label:"Changelog"}]},
+              {heading:"Company",   links:[{label:"About"},{label:"Blog"},{label:"Careers"},{label:"Press"},{label:"Contact"}]},
+              {heading:"Resources", links:[{label:"Documentation"},{label:"Help Center"},{label:"Shopify App"},{label:"Privacy Policy",onClick:()=>navigate("/privacy")},{label:"Terms of Service",onClick:()=>navigate("/terms")}]},
+            ].map(col=>(
+              <div key={col.heading}>
+                <p style={{fontSize:11,fontWeight:700,letterSpacing:".10em",color:"var(--text)",textTransform:"uppercase",marginBottom:18}}>{col.heading}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:11}}>
+                  {col.links.map(link=>(
+                    <span key={link.label} onClick={link.onClick||undefined} style={{fontSize:13.5,color:"var(--muted)",cursor:"pointer",transition:"color .14s"}}
+                      onMouseEnter={e=>e.currentTarget.style.color="var(--text)"}
+                      onMouseLeave={e=>e.currentTarget.style.color="var(--muted)"}>
+                      {link.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Divider */}
+          <div style={{marginTop:48,borderTop:"1px solid var(--border)"}}/>
+          {/* Bottom row */}
+          <div style={{marginTop:24,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+            <span style={{fontSize:12,color:"rgba(245,234,242,0.2)"}}>© 2026 Solva Technologies Ltd. All rights reserved.</span>
+            <div style={{display:"flex",gap:20}}>
+              {[{label:"Privacy Policy",onClick:()=>navigate("/privacy")},{label:"Terms of Service",onClick:()=>navigate("/terms")}].map(l=>(
+                <span key={l.label} onClick={l.onClick} style={{fontSize:12,color:"rgba(245,234,242,0.25)",cursor:"pointer",transition:"color .14s"}}
+                  onMouseEnter={e=>e.currentTarget.style.color="var(--muted)"}
+                  onMouseLeave={e=>e.currentTarget.style.color="rgba(245,234,242,0.25)"}>
+                  {l.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
