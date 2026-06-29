@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, ChevronDown } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -80,6 +80,7 @@ function GlobalStyles() {
         .stats-strip-grid > div:nth-child(4){border-top:1px solid var(--border-hi)!important;border-right:none!important;}
         .logo-bar-row{gap:28px!important;}
         .logo-bar-label{font-size:9px!important;}
+        .testimonials-grid{grid-template-columns:1fr!important;}
       }
     `}</style>
   );
@@ -111,6 +112,7 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const [checkoutLoading, setCheckoutLoading] = useState(null);
+  const [openFaq, setOpenFaq] = useState([]);
 
   const VARIANT_IDS = { Starter: '1816146', Growth: '1816190', Scale: '1816290' };
 
@@ -284,6 +286,68 @@ export default function LandingPage() {
           ))}
         </div>
       </div>
+
+      {/* TESTIMONIALS */}
+      <section style={{padding:"80px 40px",maxWidth:1060,margin:"0 auto"}}>
+        <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#E55266",textTransform:"uppercase",marginBottom:12,textAlign:"center"}}>WHAT MERCHANTS SAY</p>
+        <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,3.8vw,44px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:48,textAlign:"center",color:"var(--text)"}}>Results that actually move the needle.</h2>
+        <div className="testimonials-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18}}>
+          {[
+            {quote:"We were losing 3-4 customers a day to unanswered cart emails. Solva recovered $14,000 in the first month alone. It just runs.",name:"Marcus T.",store:"Ashbury Goods",badge:"+$14k recovered",badgeBg:"rgba(94,207,178,0.10)",badgeColor:"#3ECFB2"},
+            {quote:"Our return rate dropped 31% in 6 weeks. The AI offers exchanges automatically and most customers just take the deal. Genuinely shocked.",name:"Priya S.",store:"Velour Collective",badge:"−31% returns",badgeBg:"rgba(240,160,75,0.10)",badgeColor:"#F0A04B"},
+            {quote:"I was paying for Gorgias, Klaviyo, and Loop Returns separately. Solva replaced all three for less money and less headache. Should've switched sooner.",name:"Daniel R.",store:"Kinsfolk Studio",badge:"3 tools replaced",badgeBg:"rgba(91,173,255,0.10)",badgeColor:"#5BADFF"},
+            {quote:"Setup took literally 4 minutes. By the next morning Solva had already resolved 11 support tickets without me touching a single one.",name:"Leila M.",store:"Plume Boutique",badge:"11 tickets, 0 effort",badgeBg:"rgba(229,82,102,0.10)",badgeColor:"#E55266"},
+          ].map((t,i)=>(
+            <div key={i} style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:"28px 26px",display:"flex",flexDirection:"column",gap:16,transition:"border-color .2s"}}
+              onMouseEnter={e=>e.currentTarget.style.borderColor="var(--border-hi)"}
+              onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>
+              <div style={{fontSize:14,color:"#F0A04B",letterSpacing:2}}>★★★★★</div>
+              <p style={{fontSize:14.5,color:"var(--sub)",lineHeight:1.75,fontStyle:"italic",flex:1}}>{t.quote}</p>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
+                <div>
+                  <div style={{fontSize:13.5,fontWeight:700,color:"var(--text)"}}>{t.name}</div>
+                  <div style={{fontSize:12,color:"var(--muted)",marginTop:2}}>{t.store}</div>
+                </div>
+                <div style={{padding:"5px 12px",borderRadius:100,fontSize:11,fontWeight:700,background:t.badgeBg,color:t.badgeColor,whiteSpace:"nowrap"}}>{t.badge}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section style={{padding:"80px 40px",maxWidth:760,margin:"0 auto"}}>
+        <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"var(--muted)",textTransform:"uppercase",marginBottom:12,textAlign:"center"}}>FAQ</p>
+        <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,3.8vw,44px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:48,textAlign:"center",color:"var(--text)"}}>Got questions?</h2>
+        <div>
+          {[
+            {q:"Is Solva really free to start?",a:"Yes — every plan includes a 14-day free trial with no credit card required. You connect your store, configure your AI, and start automating immediately. You only get charged after the trial ends."},
+            {q:"How long does setup actually take?",a:"Most stores are fully live in under 5 minutes. You connect via Shopify OAuth (one click), answer a few questions about your brand, and Solva starts working immediately."},
+            {q:"Will the AI sound like a robot?",a:"No. You set your brand tone during onboarding — formal, friendly, casual, whatever fits your store. The AI writes every response in that voice, using your product knowledge and FAQ library."},
+            {q:"What happens when the AI can't answer something?",a:"Solva escalates to your team automatically. You set the threshold — if confidence is below a certain level, it flags the ticket and notifies your escalation email. Nothing falls through the cracks."},
+            {q:"Does Solva replace my support team?",a:"It handles the repetitive 80% — order status, shipping questions, return requests, cart follow-ups. Your team gets to focus on complex issues that actually need a human. Most stores see ticket volume drop by 50–70%."},
+            {q:"How does cart recovery work?",a:"When a cart is abandoned, Solva triggers a 3-touch sequence — an AI-written email, a follow-up, and a final message — each personalised based on what was in the cart. No templates. Real copy."},
+            {q:"Can I use Solva without coding?",a:"Completely. There is no code involved at any step. You connect your Shopify store with OAuth, configure settings through a visual dashboard, and deploy. Zero technical knowledge required."},
+            {q:"Which Shopify plans does Solva support?",a:"Solva works with all Shopify plans — Basic, Shopify, Advanced, and Plus. As long as you have a Shopify store, you can connect."},
+            {q:"What if I want to cancel?",a:"Cancel anytime from your dashboard — no contracts, no penalties, no awkward cancellation flows. Your data is deleted on request."},
+            {q:"How is Solva different from a chatbot?",a:"Chatbots follow scripts. Solva reasons — it reads the full context of a ticket, checks your product knowledge, and writes a genuine response. It also acts: it deflects returns with offers, recovers carts with personalised copy, and escalates intelligently."},
+          ].map((item,i)=>{
+            const isOpen = openFaq.includes(i);
+            return (
+              <div key={i} style={{borderBottom:"1px solid var(--border)",cursor:"pointer"}}
+                onClick={()=>setOpenFaq(prev=>prev.includes(i)?prev.filter(x=>x!==i):[...prev,i])}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 0",fontSize:15,fontWeight:600,color:"var(--text)"}}>
+                  {item.q}
+                  <ChevronDown size={18} style={{color:"var(--muted)",flexShrink:0,marginLeft:16,transform:isOpen?"rotate(180deg)":"rotate(0deg)",transition:"transform .22s"}}/>
+                </div>
+                {isOpen && (
+                  <div className="fu" style={{padding:"0 0 20px",fontSize:14,color:"var(--sub)",lineHeight:1.78}}>{item.a}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {/* FEATURES */}
       <section id="features" style={{position:"relative",zIndex:1,padding:"56px 40px",maxWidth:1060,margin:"0 auto"}}>
