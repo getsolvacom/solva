@@ -73,6 +73,14 @@ function GlobalStyles() {
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
       }
+      @media(max-width:767px){
+        .stats-strip-grid{display:grid!important;grid-template-columns:1fr 1fr!important;}
+        .stats-strip-grid > div:nth-child(2){border-right:none!important;}
+        .stats-strip-grid > div:nth-child(3){border-top:1px solid var(--border-hi)!important;}
+        .stats-strip-grid > div:nth-child(4){border-top:1px solid var(--border-hi)!important;border-right:none!important;}
+        .logo-bar-row{gap:28px!important;}
+        .logo-bar-label{font-size:9px!important;}
+      }
     `}</style>
   );
 }
@@ -136,7 +144,13 @@ export default function LandingPage() {
   };
 
   return (
-    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:64}}>
+    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:100}}>
+      {/* Announcement Bar */}
+      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,height:36,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(90deg,#1A0020,#2A0035,#1A0020)",borderBottom:"1px solid var(--border-hi)"}}>
+        <p style={{fontSize:12,color:"rgba(245,234,242,0.75)",fontWeight:500,letterSpacing:".04em"}}>
+          <span style={{color:"#E55266"}}>✦</span>{" "}14-day free trial on all plans{" "}<span style={{color:"#E55266"}}>·</span>{" "}No credit card required{" "}<span style={{color:"#E55266"}}>·</span>{" "}Connect your store in 2 minutes{" "}<span style={{color:"#E55266"}}>→</span>
+        </p>
+      </div>
       <GlobalStyles/>
 
       {/* Ambient orbs */}
@@ -146,7 +160,7 @@ export default function LandingPage() {
       </div>
 
       {/* NAV */}
-      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
+      <nav style={{position:"fixed",top:36,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
         <SolvaLogo/>
 
         {/* Desktop links */}
@@ -218,6 +232,58 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* SOCIAL PROOF LOGO BAR */}
+      <section style={{padding:"32px 40px",borderTop:"1px solid var(--border)",borderBottom:"1px solid var(--border)",background:"var(--surface)",textAlign:"center"}}>
+        <p className="logo-bar-label" style={{fontSize:10,fontWeight:700,letterSpacing:".14em",color:"var(--muted)",marginBottom:28,textTransform:"uppercase"}}>TRUSTED BY SHOPIFY STORES WORLDWIDE</p>
+        <div className="logo-bar-row" style={{display:"flex",justifyContent:"center",gap:48,flexWrap:"wrap"}}>
+          {["NORDVIK","VELOUR","KINSFOLK","ASHBURY","PLUME","DAWNSET","MEROVA"].map(name=>(
+            <span key={name} style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:800,letterSpacing:".10em",color:"var(--muted)",opacity:0.45,textTransform:"uppercase"}}>{name}</span>
+          ))}
+        </div>
+      </section>
+
+      {/* PROBLEM SECTION */}
+      <section style={{padding:"80px 40px",maxWidth:860,margin:"0 auto",textAlign:"center"}}>
+        <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#E55266",textTransform:"uppercase",marginBottom:16}}>THE PROBLEM</p>
+        <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(28px,4.2vw,50px)",fontWeight:800,letterSpacing:"-.025em",lineHeight:1.1,marginBottom:24}}>
+          Every second without a response is{" "}
+          <span style={{background:"linear-gradient(130deg,#E55266 0%,#992A67 55%,#C05AFF 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>a sale walking out the door.</span>
+        </h2>
+        <p style={{maxWidth:620,margin:"0 auto 52px",fontSize:"clamp(14px,1.6vw,16.5px)",color:"var(--sub)",lineHeight:1.8}}>
+          Shoppers abandon carts, submit return requests, and fire off support emails every hour. Most Shopify stores respond with silence — or a 48-hour wait. By then, the customer is gone, the refund is issued, and the revenue is lost.
+        </p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"1px",borderRadius:14,overflow:"hidden",border:"1px solid var(--border)"}}>
+          {[
+            {icon:<ShoppingCart size={22} strokeWidth={2} style={{color:"#FF5272"}}/>, title:"67% of carts are abandoned",        body:"Most stores never follow up. The ones that do use generic templates that feel robotic and get ignored."},
+            {icon:<RotateCcw size={22} strokeWidth={2} style={{color:"#F0A04B"}}/>,   title:"Return requests kill margins",       body:"Every return processed without an alternative offer is margin you'll never recover. Stores accept returns by default — they shouldn't."},
+            {icon:<Bot size={22} strokeWidth={2} style={{color:"#5BADFF"}}/>,         title:"Support tickets pile up fast",       body:"A single viral post or shipping delay can flood your inbox. Without automation, your team drowns in repetitive questions."},
+          ].map((card,i)=>(
+            <div key={i} style={{background:"var(--card)",padding:"32px 28px",textAlign:"left"}}>
+              {card.icon}
+              <div style={{fontSize:17,fontWeight:700,color:"var(--text)",margin:"14px 0 10px"}}>{card.title}</div>
+              <div style={{fontSize:13.5,color:"var(--sub)",lineHeight:1.68}}>{card.body}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* STATS STRIP */}
+      <div style={{background:"linear-gradient(135deg,#0C000F,#160020,#0C000F)",borderTop:"1px solid var(--border-hi)",borderBottom:"1px solid var(--border-hi)",padding:0}}>
+        <div className="stats-strip-grid" style={{display:"flex"}}>
+          {[
+            {val:"87%",   label:"Of support tickets auto-resolved"},
+            {val:"<1 min",label:"Average AI response time"},
+            {val:"19%",   label:"Average cart recovery rate"},
+            {val:"3x ROI",label:"Within the first 30 days"},
+          ].map((s,i)=>(
+            <div key={i} style={{flex:1,padding:"36px 20px",textAlign:"center",borderRight:i<3?"1px solid var(--border-hi)":"none"}}>
+              <div style={{fontSize:"clamp(28px,4vw,42px)",fontWeight:800,background:"linear-gradient(130deg,#E55266,#992A67,#C05AFF)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>{s.val}</div>
+              <div style={{fontSize:12.5,color:"var(--muted)",fontWeight:500,marginTop:6}}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* FEATURES */}
       <section id="features" style={{position:"relative",zIndex:1,padding:"56px 40px",maxWidth:1060,margin:"0 auto"}}>
