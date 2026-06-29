@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, ChevronDown, Linkedin, Instagram, Twitter, Youtube } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, ChevronDown, Globe, AtSign, Hash, Play } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -466,10 +466,10 @@ export default function LandingPage() {
               <p style={{marginTop:14,fontSize:13.5,color:"var(--muted)",lineHeight:1.75,maxWidth:240}}>AI automation for Shopify stores that want to sell more, support better, and scale faster.</p>
               <div style={{marginTop:24,display:"flex",gap:14}}>
                 {[
-                  {Icon:Linkedin,  href:"#"},
-                  {Icon:Instagram, href:"#"},
-                  {Icon:Twitter,   href:"#"},
-                  {Icon:Youtube,   href:"#"},
+                  {Icon:Globe,   href:"#"},
+                  {Icon:AtSign,  href:"#"},
+                  {Icon:Hash,    href:"#"},
+                  {Icon:Play,    href:"#"},
                 ].map(({Icon,href},i)=>(
                   <a key={i} href={href} target="_blank" rel="noreferrer"
                     style={{width:34,height:34,borderRadius:8,border:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",textDecoration:"none"}}
