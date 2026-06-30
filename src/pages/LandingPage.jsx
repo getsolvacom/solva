@@ -38,6 +38,8 @@ function GlobalStyles() {
       .nav-actions-desktop{display:flex;gap:10px;align-items:center;}
       .nav-hamburger{display:none;}
       .nav-dropdown{display:none;}
+      .announce-scroll::-webkit-scrollbar{display:none;}
+      .announce-scroll{scrollbar-width:none;}
       @media(max-width:767px){
         .nav-links-desktop{display:none;}
         .nav-actions-desktop{display:none;}
@@ -46,6 +48,8 @@ function GlobalStyles() {
         .nav-dropdown{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);animation:menuSlide .22s cubic-bezier(.16,1,.3,1) both;z-index:99;padding:8px 16px 16px;}
         .features-grid{grid-template-columns:1fr!important;gap:14px!important;}
         .pricing-grid{grid-template-columns:1fr!important;gap:24px!important;}
+        .announce-text{font-size:11.5px!important;}
+        .announce-dismiss{right:10px!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -103,6 +107,7 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const [checkoutLoading, setCheckoutLoading] = useState(null);
+  const [announcementOpen, setAnnouncementOpen] = useState(true);
 
   const VARIANT_IDS = { Starter: '1816146', Growth: '1816190', Scale: '1816290' };
 
@@ -136,12 +141,19 @@ export default function LandingPage() {
   };
 
   return (
-    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:102}}>
+    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:announcementOpen?102:64}}>
       {/* Announcement Bar */}
-      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,height:38,background:C.dim,borderBottom:`1px solid ${C.borderHi}`,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",textAlign:"center"}}>
-        <span style={{fontSize:12.5,color:C.sub,fontWeight:500}}>14-day free trial · No credit card required · Live in 2 minutes</span>
-        <span style={{color:C.coral,fontWeight:700,marginLeft:8,cursor:"pointer"}} onClick={()=>navigate("/onboarding")}>Get Started →</span>
-      </div>
+      {announcementOpen && (
+        <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,height:44,background:C.dim,borderBottom:`1px solid ${C.borderHi}`,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",textAlign:"center"}}>
+          <div className="announce-scroll" style={{display:"flex",alignItems:"center",gap:8,overflowX:"auto",whiteSpace:"nowrap",maxWidth:"calc(100% - 50px)",padding:"0 16px"}}>
+            <span className="announce-text" style={{fontSize:13.5,color:C.sub,fontWeight:500}}>14-day free trial · No credit card required · Live in 2 minutes</span>
+            <span style={{fontSize:13.5,color:C.coral,fontWeight:700,cursor:"pointer"}} onClick={()=>navigate("/onboarding")}>Get Started →</span>
+          </div>
+          <button className="announce-dismiss" onClick={()=>setAnnouncementOpen(false)} style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)",background:"transparent",border:"none",cursor:"pointer",color:C.muted,display:"flex",alignItems:"center",justifyContent:"center",padding:4}} onMouseEnter={e=>e.currentTarget.style.color=C.coral} onMouseLeave={e=>e.currentTarget.style.color=C.muted}>
+            <X size={16}/>
+          </button>
+        </div>
+      )}
 
       <GlobalStyles/>
 
@@ -152,7 +164,7 @@ export default function LandingPage() {
       </div>
 
       {/* NAV */}
-      <nav style={{position:"fixed",top:38,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
+      <nav style={{position:"fixed",top:announcementOpen?"38px":"0",left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
         <SolvaLogo/>
 
         {/* Desktop links */}
