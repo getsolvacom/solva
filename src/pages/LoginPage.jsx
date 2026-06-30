@@ -119,8 +119,9 @@ export default function LoginPage() {
       </div>
 
       {/* Card */}
-      <div style={{width:"100%",maxWidth:480,background:C.surface,borderRadius:22,border:`1px solid ${C.border}`,padding:40,position:"relative",zIndex:1}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",borderRadius:"22px 22px 0 0"}}/>
+      <div style={{width:"100%",maxWidth:480}}>
+        <div style={{height:3,width:"60%",margin:"0 auto 18px",background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",borderRadius:100}}/>
+        <div style={{background:C.surface,borderRadius:22,border:`1px solid ${C.border}`,padding:40,position:"relative",zIndex:1}}>
 
         <h1 className="fu" style={{fontFamily:"'Outfit',sans-serif",fontSize:24,fontWeight:800,letterSpacing:"-.02em",marginBottom:8}}>Welcome back</h1>
         <p className="fu" style={{fontSize:13.5,color:C.sub,lineHeight:1.7,marginBottom:20}}>Sign in to your account</p>
@@ -210,10 +211,17 @@ export default function LoginPage() {
           >
             {loading?"Signing in…":"Sign In →"}
           </button>
-          <p style={{textAlign:"center",fontSize:13,color:C.muted}}>
+          <p style={{textAlign:"center",fontSize:13,color:C.muted,marginBottom:14}}>
             Don't have an account?{" "}
             <span onClick={()=>navigate("/onboarding")} style={{color:C.coral,cursor:"pointer"}}>Get Started</span>
           </p>
+          <p style={{textAlign:"center",fontSize:11.5,color:C.muted,lineHeight:1.6}}>
+            By signing in, you agree to our{" "}
+            <span onClick={() => window.open("/terms", "_blank")} style={{color:C.coral,cursor:"pointer",textDecoration:"underline",textDecorationColor:"rgba(229,82,102,.4)"}}>Terms of Service</span>
+            {" "}and{" "}
+            <span onClick={() => window.open("/privacy", "_blank")} style={{color:C.coral,cursor:"pointer",textDecoration:"underline",textDecorationColor:"rgba(229,82,102,.4)"}}>Privacy Policy</span>
+          </p>
+        </div>
         </div>
       </div>
 

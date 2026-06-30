@@ -48,7 +48,7 @@ function GlobalStyles() {
       @media(max-width:767px){
         .stepbar-circle{width:26px!important;height:26px!important;font-size:11px!important;}
         .stepbar-label{font-size:8.5px!important;white-space:normal!important;text-align:center;max-width:48px;}
-        .stepbar-connector{width:14px!important;margin:-14px 5px 0!important;}
+
       }
     `}</style>
   );
@@ -76,21 +76,31 @@ function SolvaLogo({ size=15 }) {
 function StepBar({ current }) {
   const steps = ["Create Account","Tell Us More","Connect Store","Configure","Go Live"];
   return (
-    <div className="stepbar" style={{display:"flex",alignItems:"center",marginBottom:46}}>
-      {steps.map((s,i) => {
-        const done = i+1 < current, active = i+1 === current;
-        return (
-          <div key={i} style={{display:"flex",alignItems:"center"}}>
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7}}>
-              <div className="stepbar-circle" style={{width:34,height:34,borderRadius:"50%",background:done||active?"linear-gradient(135deg,#E55266,#992A67,#4E0269)":C.dim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12.5,fontWeight:700,color:done||active?"#fff":C.muted,boxShadow:active?"0 0 22px rgba(229,82,102,.30)":"none"}}>
+    <div className="stepbar" style={{position:"relative",marginBottom:46}}>
+      {/* Background track line - spans full width behind circles */}
+      <div style={{position:"absolute",top:17,left:17,right:17,height:2,background:C.dim,zIndex:0}}/>
+      {/* Progress fill line - width based on current step */}
+      <div style={{
+        position:"absolute",top:17,left:17,
+        width:`calc(${((current-1)/(steps.length-1))*100}% - ${((current-1)/(steps.length-1))*34}px)`,
+        height:2,
+        background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",
+        zIndex:0,
+        transition:"width .4s cubic-bezier(.16,1,.3,1)",
+      }}/>
+      <div style={{display:"flex",justifyContent:"space-between",position:"relative",zIndex:1}}>
+        {steps.map((s,i) => {
+          const done = i+1 < current, active = i+1 === current;
+          return (
+            <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7}}>
+              <div className="stepbar-circle" style={{width:34,height:34,borderRadius:"50%",background:done||active?"linear-gradient(135deg,#E55266,#992A67,#4E0269)":C.dim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12.5,fontWeight:700,color:done||active?"#fff":C.muted,boxShadow:active?"0 0 22px rgba(229,82,102,.30)":"none",border:`2px solid ${done||active?"transparent":C.border}`}}>
                 {done?"✓":i+1}
               </div>
               <span className="stepbar-label" style={{fontSize:11,fontWeight:active?600:400,color:active?C.coral:done?C.sub:C.muted,whiteSpace:"nowrap"}}>{s}</span>
             </div>
-            {i<steps.length-1&&<div className="stepbar-connector" style={{width:64,height:1,margin:"-16px 8px 0",background:done?"linear-gradient(135deg,#E55266,#992A67,#4E0269)":C.dim,transition:"background .3s"}}/>}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -105,9 +115,11 @@ function Toggle({ on, onToggle }) {
 
 function CardShell({ children, maxWidth=480 }) {
   return (
-    <div style={{width:"100%",maxWidth,background:C.surface,borderRadius:22,border:`1px solid ${C.border}`,padding:40,position:"relative",zIndex:1}}>
-      <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",borderRadius:"22px 22px 0 0"}}/>
-      {children}
+    <div style={{width:"100%",maxWidth}}>
+      <div style={{height:3,width:"60%",margin:"0 auto 18px",background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",borderRadius:100}}/>
+      <div style={{background:C.surface,borderRadius:22,border:`1px solid ${C.border}`,padding:40,position:"relative",zIndex:1}}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -294,7 +306,12 @@ function Step1({ onNext, onLogin }) {
         <div onClick={()=>setAgreed(!agreed)} style={{width:18,height:18,borderRadius:5,flexShrink:0,border:`1.5px solid ${agreed?C.coral:C.border}`,background:agreed?C.coral:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",marginTop:1}}>
           {agreed&&<span style={{color:"#fff",fontSize:11,fontWeight:700}}>✓</span>}
         </div>
-        <span style={{fontSize:13,color:C.sub,lineHeight:1.6}}>I agree to Solva's <span style={{color:C.coral,cursor:"pointer"}}>Terms of Service</span> and <span style={{color:C.coral,cursor:"pointer"}}>Privacy Policy</span></span>
+        <span style={{fontSize:13,color:C.sub,lineHeight:1.6}}>
+          I agree to Solva's{" "}
+          <span onClick={(e) => { e.stopPropagation(); window.open("/terms", "_blank"); }} style={{color:C.coral,cursor:"pointer",textDecoration:"underline",textDecorationColor:"rgba(229,82,102,.4)"}}>Terms of Service</span>
+          {" "}and{" "}
+          <span onClick={(e) => { e.stopPropagation(); window.open("/privacy", "_blank"); }} style={{color:C.coral,cursor:"pointer",textDecoration:"underline",textDecorationColor:"rgba(229,82,102,.4)"}}>Privacy Policy</span>
+        </span>
       </div>
 
       {duplicateEmail && (
@@ -621,7 +638,7 @@ export default function OnboardingPage() {
       )}
 
       {/* Login / Steps */}
-      <div style={{width:"100%",maxWidth:520,position:"relative",zIndex:1}}>
+      <div style={{width:"100%",maxWidth:520,position:"relative",zIndex:1,marginTop:28}}>
         {mode === "login"  && <LoginForm onSignup={()=>setMode("signup")} goDash={goDash}/>}
         {mode === "signup" && step===1 && <Step1 onNext={()=>setStep(2)} onLogin={()=>navigate("/login")}/>}
         {mode === "signup" && step===2 && <Step1b onNext={()=>setStep(3)} onBack={()=>setStep(1)}/>}
