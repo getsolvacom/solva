@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, ChevronDown, Globe, AtSign, Hash, Play } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -73,19 +73,6 @@ function GlobalStyles() {
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
       }
-      @media(max-width:767px){
-        .stats-strip-grid{display:grid!important;grid-template-columns:1fr 1fr!important;}
-        .stats-strip-grid > div:nth-child(2){border-right:none!important;}
-        .stats-strip-grid > div:nth-child(3){border-top:1px solid var(--border-hi)!important;}
-        .stats-strip-grid > div:nth-child(4){border-top:1px solid var(--border-hi)!important;border-right:none!important;}
-        .logo-bar-row{gap:28px!important;}
-        .logo-bar-label{font-size:9px!important;}
-        .testimonials-grid{grid-template-columns:1fr!important;}
-        .footer-grid{grid-template-columns:1fr 1fr!important;gap:32px!important;}
-        .cta-section-inner{padding:70px 24px 60px!important;}
-        .solution-block{flex-direction:column!important;gap:32px!important;}
-        .solution-block-reverse{flex-direction:column!important;gap:32px!important;}
-      }
     `}</style>
   );
 }
@@ -116,7 +103,6 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const [checkoutLoading, setCheckoutLoading] = useState(null);
-  const [openFaq, setOpenFaq] = useState([]);
 
   const VARIANT_IDS = { Starter: '1816146', Growth: '1816190', Scale: '1816290' };
 
@@ -150,13 +136,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:100}}>
-      {/* Announcement Bar */}
-      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,height:36,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(90deg,#1A0020,#2A0035,#1A0020)",borderBottom:"1px solid var(--border-hi)"}}>
-        <p style={{fontSize:12,color:"rgba(245,234,242,0.75)",fontWeight:500,letterSpacing:".04em"}}>
-          <span style={{color:"#E55266"}}>✦</span>{" "}14-day free trial on all plans{" "}<span style={{color:"#E55266"}}>·</span>{" "}No credit card required{" "}<span style={{color:"#E55266"}}>·</span>{" "}Connect your store in 2 minutes{" "}<span style={{color:"#E55266"}}>→</span>
-        </p>
-      </div>
+    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:64}}>
       <GlobalStyles/>
 
       {/* Ambient orbs */}
@@ -166,7 +146,7 @@ export default function LandingPage() {
       </div>
 
       {/* NAV */}
-      <nav style={{position:"fixed",top:36,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
         <SolvaLogo/>
 
         {/* Desktop links */}
@@ -239,120 +219,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SOCIAL PROOF LOGO BAR */}
-      <section style={{padding:"32px 40px",borderTop:"1px solid var(--border)",borderBottom:"1px solid var(--border)",background:"var(--surface)",textAlign:"center"}}>
-        <p className="logo-bar-label" style={{fontSize:10,fontWeight:700,letterSpacing:".14em",color:"var(--muted)",marginBottom:28,textTransform:"uppercase"}}>TRUSTED BY SHOPIFY STORES WORLDWIDE</p>
-        <div className="logo-bar-row" style={{display:"flex",justifyContent:"center",gap:48,flexWrap:"wrap"}}>
-          {["NORDVIK","VELOUR","KINSFOLK","ASHBURY","PLUME","DAWNSET","MEROVA"].map(name=>(
-            <span key={name} style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:800,letterSpacing:".10em",color:"var(--muted)",opacity:0.45,textTransform:"uppercase"}}>{name}</span>
-          ))}
-        </div>
-      </section>
-
-      {/* PROBLEM SECTION */}
-      <section style={{padding:"80px 40px",maxWidth:860,margin:"0 auto",textAlign:"center"}}>
-        <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#E55266",textTransform:"uppercase",marginBottom:16}}>THE PROBLEM</p>
-        <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(28px,4.2vw,50px)",fontWeight:800,letterSpacing:"-.025em",lineHeight:1.1,marginBottom:24}}>
-          Every second without a response is{" "}
-          <span style={{background:"linear-gradient(130deg,#E55266 0%,#992A67 55%,#C05AFF 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>a sale walking out the door.</span>
-        </h2>
-        <p style={{maxWidth:620,margin:"0 auto 52px",fontSize:"clamp(14px,1.6vw,16.5px)",color:"var(--sub)",lineHeight:1.8}}>
-          Shoppers abandon carts, submit return requests, and fire off support emails every hour. Most Shopify stores respond with silence — or a 48-hour wait. By then, the customer is gone, the refund is issued, and the revenue is lost.
-        </p>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"1px",borderRadius:14,overflow:"hidden",border:"1px solid var(--border)"}}>
-          {[
-            {icon:<ShoppingCart size={22} strokeWidth={2} style={{color:"#FF5272"}}/>, title:"67% of carts are abandoned",        body:"Most stores never follow up. The ones that do use generic templates that feel robotic and get ignored."},
-            {icon:<RotateCcw size={22} strokeWidth={2} style={{color:"#F0A04B"}}/>,   title:"Return requests kill margins",       body:"Every return processed without an alternative offer is margin you'll never recover. Stores accept returns by default — they shouldn't."},
-            {icon:<Bot size={22} strokeWidth={2} style={{color:"#5BADFF"}}/>,         title:"Support tickets pile up fast",       body:"A single viral post or shipping delay can flood your inbox. Without automation, your team drowns in repetitive questions."},
-          ].map((card,i)=>(
-            <div key={i} style={{background:"var(--card)",padding:"32px 28px",textAlign:"left"}}>
-              {card.icon}
-              <div style={{fontSize:17,fontWeight:700,color:"var(--text)",margin:"14px 0 10px"}}>{card.title}</div>
-              <div style={{fontSize:13.5,color:"var(--sub)",lineHeight:1.68}}>{card.body}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* STATS STRIP */}
-      <div style={{background:"linear-gradient(135deg,#0C000F,#160020,#0C000F)",borderTop:"1px solid var(--border-hi)",borderBottom:"1px solid var(--border-hi)",padding:0}}>
-        <div className="stats-strip-grid" style={{display:"flex"}}>
-          {[
-            {val:"87%",   label:"Of support tickets auto-resolved"},
-            {val:"<1 min",label:"Average AI response time"},
-            {val:"19%",   label:"Average cart recovery rate"},
-            {val:"3x ROI",label:"Within the first 30 days"},
-          ].map((s,i)=>(
-            <div key={i} style={{flex:1,padding:"36px 20px",textAlign:"center",borderRight:i<3?"1px solid var(--border-hi)":"none"}}>
-              <div style={{fontSize:"clamp(28px,4vw,42px)",fontWeight:800,background:"linear-gradient(130deg,#E55266,#992A67,#C05AFF)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>{s.val}</div>
-              <div style={{fontSize:12.5,color:"var(--muted)",fontWeight:500,marginTop:6}}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* TESTIMONIALS */}
-      <section style={{padding:"80px 40px",maxWidth:1060,margin:"0 auto"}}>
-        <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#E55266",textTransform:"uppercase",marginBottom:12,textAlign:"center"}}>WHAT MERCHANTS SAY</p>
-        <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,3.8vw,44px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:48,textAlign:"center",color:"var(--text)"}}>Results that actually move the needle.</h2>
-        <div className="testimonials-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18}}>
-          {[
-            {quote:"We were losing 3-4 customers a day to unanswered cart emails. Solva recovered $14,000 in the first month alone. It just runs.",name:"Marcus T.",store:"Ashbury Goods",badge:"+$14k recovered",badgeBg:"rgba(94,207,178,0.10)",badgeColor:"#3ECFB2"},
-            {quote:"Our return rate dropped 31% in 6 weeks. The AI offers exchanges automatically and most customers just take the deal. Genuinely shocked.",name:"Priya S.",store:"Velour Collective",badge:"−31% returns",badgeBg:"rgba(240,160,75,0.10)",badgeColor:"#F0A04B"},
-            {quote:"I was paying for Gorgias, Klaviyo, and Loop Returns separately. Solva replaced all three for less money and less headache. Should've switched sooner.",name:"Daniel R.",store:"Kinsfolk Studio",badge:"3 tools replaced",badgeBg:"rgba(91,173,255,0.10)",badgeColor:"#5BADFF"},
-            {quote:"Setup took literally 4 minutes. By the next morning Solva had already resolved 11 support tickets without me touching a single one.",name:"Leila M.",store:"Plume Boutique",badge:"11 tickets, 0 effort",badgeBg:"rgba(229,82,102,0.10)",badgeColor:"#E55266"},
-          ].map((t,i)=>(
-            <div key={i} style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:"28px 26px",display:"flex",flexDirection:"column",gap:16,transition:"border-color .2s"}}
-              onMouseEnter={e=>e.currentTarget.style.borderColor="var(--border-hi)"}
-              onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>
-              <div style={{fontSize:14,color:"#F0A04B",letterSpacing:2}}>★★★★★</div>
-              <p style={{fontSize:14.5,color:"var(--sub)",lineHeight:1.75,fontStyle:"italic",flex:1}}>{t.quote}</p>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
-                <div>
-                  <div style={{fontSize:13.5,fontWeight:700,color:"var(--text)"}}>{t.name}</div>
-                  <div style={{fontSize:12,color:"var(--muted)",marginTop:2}}>{t.store}</div>
-                </div>
-                <div style={{padding:"5px 12px",borderRadius:100,fontSize:11,fontWeight:700,background:t.badgeBg,color:t.badgeColor,whiteSpace:"nowrap"}}>{t.badge}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section style={{padding:"80px 40px",maxWidth:760,margin:"0 auto"}}>
-        <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"var(--muted)",textTransform:"uppercase",marginBottom:12,textAlign:"center"}}>FAQ</p>
-        <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,3.8vw,44px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:48,textAlign:"center",color:"var(--text)"}}>Got questions?</h2>
-        <div>
-          {[
-            {q:"Is Solva really free to start?",a:"Yes — every plan includes a 14-day free trial with no credit card required. You connect your store, configure your AI, and start automating immediately. You only get charged after the trial ends."},
-            {q:"How long does setup actually take?",a:"Most stores are fully live in under 5 minutes. You connect via Shopify OAuth (one click), answer a few questions about your brand, and Solva starts working immediately."},
-            {q:"Will the AI sound like a robot?",a:"No. You set your brand tone during onboarding — formal, friendly, casual, whatever fits your store. The AI writes every response in that voice, using your product knowledge and FAQ library."},
-            {q:"What happens when the AI can't answer something?",a:"Solva escalates to your team automatically. You set the threshold — if confidence is below a certain level, it flags the ticket and notifies your escalation email. Nothing falls through the cracks."},
-            {q:"Does Solva replace my support team?",a:"It handles the repetitive 80% — order status, shipping questions, return requests, cart follow-ups. Your team gets to focus on complex issues that actually need a human. Most stores see ticket volume drop by 50–70%."},
-            {q:"How does cart recovery work?",a:"When a cart is abandoned, Solva triggers a 3-touch sequence — an AI-written email, a follow-up, and a final message — each personalised based on what was in the cart. No templates. Real copy."},
-            {q:"Can I use Solva without coding?",a:"Completely. There is no code involved at any step. You connect your Shopify store with OAuth, configure settings through a visual dashboard, and deploy. Zero technical knowledge required."},
-            {q:"Which Shopify plans does Solva support?",a:"Solva works with all Shopify plans — Basic, Shopify, Advanced, and Plus. As long as you have a Shopify store, you can connect."},
-            {q:"What if I want to cancel?",a:"Cancel anytime from your dashboard — no contracts, no penalties, no awkward cancellation flows. Your data is deleted on request."},
-            {q:"How is Solva different from a chatbot?",a:"Chatbots follow scripts. Solva reasons — it reads the full context of a ticket, checks your product knowledge, and writes a genuine response. It also acts: it deflects returns with offers, recovers carts with personalised copy, and escalates intelligently."},
-          ].map((item,i)=>{
-            const isOpen = openFaq.includes(i);
-            return (
-              <div key={i} style={{borderBottom:"1px solid var(--border)",cursor:"pointer"}}
-                onClick={()=>setOpenFaq(prev=>prev.includes(i)?prev.filter(x=>x!==i):[...prev,i])}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 0",fontSize:15,fontWeight:600,color:"var(--text)"}}>
-                  {item.q}
-                  <ChevronDown size={18} style={{color:"var(--muted)",flexShrink:0,marginLeft:16,transform:isOpen?"rotate(180deg)":"rotate(0deg)",transition:"transform .22s"}}/>
-                </div>
-                {isOpen && (
-                  <div className="fu" style={{padding:"0 0 20px",fontSize:14,color:"var(--sub)",lineHeight:1.78}}>{item.a}</div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       {/* FEATURES */}
       <section id="features" style={{position:"relative",zIndex:1,padding:"56px 40px",maxWidth:1060,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:50}}>
@@ -374,120 +240,6 @@ export default function LandingPage() {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* SOLUTION DEEP DIVE */}
-      <section style={{padding:"80px 40px",maxWidth:1060,margin:"0 auto"}}>
-        <p style={{textAlign:"center",fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#E55266",textTransform:"uppercase",marginBottom:12}}>THE SOLUTION</p>
-        <h2 style={{textAlign:"center",fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,3.8vw,44px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:16,color:"var(--text)"}}>One platform. Every customer moment covered.</h2>
-        <p style={{textAlign:"center",maxWidth:560,margin:"0 auto 64px",fontSize:15,color:"var(--sub)",lineHeight:1.75}}>SOLVA watches every interaction across your store and acts before problems become losses.</p>
-
-        {/* Block 1 — content left, visual right */}
-        <div className="solution-block" style={{display:"flex",alignItems:"center",gap:64,marginBottom:80}}>
-          <div style={{flex:1}}>
-            <p style={{fontSize:11,fontWeight:800,letterSpacing:".14em",color:"#E55266",marginBottom:12}}>01</p>
-            <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(20px,2.5vw,28px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:16}}>AI resolves support before it becomes a ticket</h3>
-            <p style={{fontSize:14.5,color:"var(--sub)",lineHeight:1.8,marginBottom:24}}>The moment a customer sends a message, SOLVA reads it, checks your knowledge base, and replies instantly — in your brand voice. Order tracking, shipping questions, policy queries — handled without a human in the loop.</p>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {["Instant replies under 60 seconds, 24/7","Trained on your FAQs, policies and products","Auto-escalates when confidence is low","Full conversation history in your dashboard"].map(t=>(
-                <div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-                  <span style={{color:"#3ECFB2",fontSize:14,flexShrink:0,marginTop:2}}>✓</span>
-                  <span style={{fontSize:13.5,color:"var(--sub)"}}>{t}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{flex:1,display:"flex",justifyContent:"center"}}>
-            <div style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:24,maxWidth:420,width:"100%"}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:"#3ECFB2",flexShrink:0}}/>
-                <span style={{fontSize:12,color:"var(--muted)",fontWeight:600}}>AI Support Agent — Live</span>
-              </div>
-              <div style={{display:"flex",flexDirection:"column"}}>
-                <div style={{background:"var(--surface)",borderRadius:"12px 12px 12px 4px",padding:"10px 14px",fontSize:13,color:"var(--sub)",maxWidth:"85%",marginBottom:8}}>Hey, where is my order? It's been 5 days.</div>
-                <div style={{background:"linear-gradient(135deg,rgba(229,82,102,0.15),rgba(78,2,105,0.15))",border:"1px solid rgba(229,82,102,0.2)",borderRadius:"12px 12px 4px 12px",padding:"10px 14px",fontSize:13,color:"var(--text)",maxWidth:"85%",marginLeft:"auto",marginBottom:8}}>Hi Sarah! Your order #4821 shipped yesterday via UPS. Estimated delivery: tomorrow by 8pm. Tracking: 1Z999AA10123456784</div>
-                <div style={{background:"var(--surface)",borderRadius:"12px 12px 12px 4px",padding:"10px 14px",fontSize:13,color:"var(--sub)",maxWidth:"85%"}}>Amazing, thank you! 🙌</div>
-              </div>
-              <div style={{fontSize:11.5,color:"#3ECFB2",fontWeight:600,marginTop:12}}>✓ Resolved in 18 seconds</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Block 2 — content right, visual left */}
-        <div className="solution-block-reverse" style={{display:"flex",flexDirection:"row-reverse",alignItems:"center",gap:64,marginBottom:80}}>
-          <div style={{flex:1}}>
-            <p style={{fontSize:11,fontWeight:800,letterSpacing:".14em",color:"#E55266",marginBottom:12}}>02</p>
-            <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(20px,2.5vw,28px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:16}}>Returns deflected before they drain your margin</h3>
-            <p style={{fontSize:14.5,color:"var(--sub)",lineHeight:1.8,marginBottom:24}}>Before SOLVA processes a return, it intervenes. It reads the reason, checks the order history, and offers a smart alternative — an exchange, a discount, a troubleshooting fix. Most customers take the offer.</p>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {["Intercepts return requests automatically","Offers exchanges, discounts or fixes first","Only processes refunds when truly necessary","Tracks deflection rate in your analytics"].map(t=>(
-                <div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-                  <span style={{color:"#3ECFB2",fontSize:14,flexShrink:0,marginTop:2}}>✓</span>
-                  <span style={{fontSize:13.5,color:"var(--sub)"}}>{t}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{flex:1,display:"flex",justifyContent:"center"}}>
-            <div style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:24,maxWidth:420,width:"100%"}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:"#F0A04B",flexShrink:0}}/>
-                <span style={{fontSize:12,color:"var(--muted)",fontWeight:600}}>Return Deflection — Active</span>
-              </div>
-              <div style={{background:"var(--surface)",borderRadius:10,padding:"12px 16px",marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div>
-                  <div style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>Return Request</div>
-                  <div style={{fontSize:11.5,color:"var(--muted)",marginTop:3}}>Order #3847 · Blue Sneakers · Size 9</div>
-                </div>
-                <div style={{background:"rgba(240,160,75,0.12)",color:"#F0A04B",fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:100,whiteSpace:"nowrap"}}>Intercepted</div>
-              </div>
-              <div style={{background:"linear-gradient(135deg,rgba(240,160,75,0.08),rgba(78,2,105,0.08))",border:"1px solid rgba(240,160,75,0.18)",borderRadius:10,padding:14,fontSize:12.5,color:"var(--sub)",lineHeight:1.7}}>We're sorry to hear that! Before we process your return, we'd love to offer you a free exchange for a different size, or 15% off your next order. Would either of these work for you?</div>
-              <div style={{fontSize:11.5,color:"#F0A04B",fontWeight:600,marginTop:12}}>✓ Refund avoided · Offer accepted</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Block 3 — content left, visual right */}
-        <div className="solution-block" style={{display:"flex",alignItems:"center",gap:64,marginBottom:0}}>
-          <div style={{flex:1}}>
-            <p style={{fontSize:11,fontWeight:800,letterSpacing:".14em",color:"#E55266",marginBottom:12}}>03</p>
-            <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(20px,2.5vw,28px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:16}}>Abandoned carts recovered with real copy</h3>
-            <p style={{fontSize:14.5,color:"var(--sub)",lineHeight:1.8,marginBottom:24}}>When a cart is abandoned, SOLVA doesn't send a template. It reads what was in the cart, writes a personalised sequence, and sends it at the right time. Three touches. Real language. Real results.</p>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {["Triggered automatically on abandonment","Copy written dynamically per cart contents","3-touch sequence: email, follow-up, final call","Recovery rate tracked in real time"].map(t=>(
-                <div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-                  <span style={{color:"#3ECFB2",fontSize:14,flexShrink:0,marginTop:2}}>✓</span>
-                  <span style={{fontSize:13.5,color:"var(--sub)"}}>{t}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{flex:1,display:"flex",justifyContent:"center"}}>
-            <div style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:24,maxWidth:420,width:"100%"}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:"#5BADFF",flexShrink:0}}/>
-                <span style={{fontSize:12,color:"var(--muted)",fontWeight:600}}>Cart Recovery — Sequence Active</span>
-              </div>
-              <div>
-                {[
-                  {n:"1",title:"Email 1 — Sent",sub:"2 mins after abandonment",badge:"Opened",badgeBg:"rgba(62,207,178,0.1)",badgeColor:"#3ECFB2"},
-                  {n:"2",title:"Email 2 — Sent",sub:"24 hours later",          badge:"Clicked",badgeBg:"rgba(62,207,178,0.1)",badgeColor:"#3ECFB2"},
-                  {n:"3",title:"Email 3 — Sent",sub:"72 hours later",          badge:"Converted",badgeBg:"rgba(229,82,102,0.1)",badgeColor:"#E55266"},
-                ].map((row,i,arr)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<arr.length-1?"1px solid var(--border)":"none"}}>
-                    <div style={{width:24,height:24,borderRadius:"50%",background:"rgba(91,173,255,0.12)",color:"#5BADFF",fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{row.n}</div>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{row.title}</div>
-                      <div style={{fontSize:11.5,color:"var(--muted)"}}>{row.sub}</div>
-                    </div>
-                    <div style={{background:row.badgeBg,color:row.badgeColor,fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:100,whiteSpace:"nowrap"}}>{row.badge}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{fontSize:11.5,color:"#5BADFF",fontWeight:600,marginTop:12}}>✓ Cart recovered · $127 saved</div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -548,91 +300,30 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER CTA */}
-      <div style={{margin:"16px 36px 0",borderRadius:"22px 22px 0 0",background:"linear-gradient(135deg,#1C0022 0%,#2E0040 40%,#1A0030 70%,#0C000F 100%)",border:"1px solid var(--border-hi)",borderBottom:"none",padding:0,textAlign:"center",position:"relative",overflow:"hidden"}}>
-        {/* Orbs */}
-        <div style={{position:"absolute",width:500,height:500,top:-200,left:"50%",transform:"translateX(-50%)",background:"radial-gradient(circle,rgba(229,82,102,0.18),transparent 70%)",borderRadius:"50%",filter:"blur(1px)",pointerEvents:"none"}}/>
-        <div style={{position:"absolute",width:300,height:300,bottom:-100,left:-80,background:"radial-gradient(circle,rgba(78,2,105,0.35),transparent 70%)",borderRadius:"50%",filter:"blur(1px)",pointerEvents:"none"}}/>
-        <div style={{position:"absolute",width:300,height:300,bottom:-100,right:-80,background:"radial-gradient(circle,rgba(153,42,103,0.25),transparent 70%)",borderRadius:"50%",filter:"blur(1px)",pointerEvents:"none"}}/>
-        {/* Content */}
-        <div className="cta-section-inner" style={{position:"relative",zIndex:1,padding:"100px 48px 80px"}}>
-          <p style={{fontSize:10,letterSpacing:".16em",color:"rgba(229,82,102,0.7)",fontWeight:700,marginBottom:20,textTransform:"uppercase"}}>JOIN THOUSANDS OF BRANDS</p>
-          <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(32px,5vw,64px)",fontWeight:800,letterSpacing:"-.03em",lineHeight:1.05,color:"#fff",marginBottom:18}}>Turn every interaction into revenue.</h2>
-          <p style={{fontSize:"clamp(14px,1.8vw,18px)",color:"rgba(245,234,242,0.6)",marginBottom:44,lineHeight:1.7}}>Support. Returns. Cart recovery. All automated. All intelligent. All on autopilot.</p>
-          <div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
-            <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"16px 36px",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15.5}}>Connect Your Store — It's Free →</button>
-            <button onClick={()=>navigate("/dashboard")}
-              style={{padding:"16px 28px",borderRadius:12,border:"1px solid rgba(255,255,255,0.15)",background:"transparent",color:"rgba(255,255,255,0.7)",fontSize:15,fontWeight:500,cursor:"pointer",transition:"all .15s",fontFamily:"'Outfit',sans-serif"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(229,82,102,0.5)";e.currentTarget.style.color="#fff";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.15)";e.currentTarget.style.color="rgba(255,255,255,0.7)";}}>
-              View Live Demo ↗
-            </button>
-          </div>
-          <p style={{marginTop:20,fontSize:12,color:"rgba(245,234,242,0.35)",letterSpacing:".03em"}}>14-day free trial · No credit card required · Cancel anytime</p>
-        </div>
+      <div className="cta-section" style={{margin:"16px 36px 52px",borderRadius:22,background:`linear-gradient(160deg,${C.surface} 0%,${C.dim} 100%)`,border:`1px solid ${C.border}`,borderTop:`1px solid ${C.borderHi}`,padding:"68px 40px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",inset:0,pointerEvents:"none",background:"radial-gradient(ellipse 60% 90% at 50% 0%,rgba(229,82,102,.13),transparent)"}}/>
+        <h2 className="cta-heading" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(28px,4.5vw,50px)",fontWeight:800,letterSpacing:"-.025em",marginBottom:14,position:"relative"}}>
+          Ready to solve everything<br/>on autopilot?
+        </h2>
+        <p className="cta-sub" style={{color:C.sub,fontSize:15.5,marginBottom:32,position:"relative"}}>Built for Shopify stores that want to automate support, returns, and cart recovery — all in one place.</p>
+        <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"16px 36px",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15.5,position:"relative"}}>
+          Connect Your Store — It's Free →
+        </button>
       </div>
 
-      {/* FOOTER */}
-      <footer style={{background:"#060008",borderTop:"1px solid var(--border)",padding:"64px 48px 40px"}}>
-        <div style={{maxWidth:1100,margin:"0 auto"}}>
-          {/* Top grid */}
-          <div className="footer-grid" style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:48}}>
-            {/* Brand column */}
-            <div>
-              <SolvaLogo size={15}/>
-              <p style={{marginTop:14,fontSize:13.5,color:"var(--muted)",lineHeight:1.75,maxWidth:240}}>AI automation for Shopify stores that want to sell more, support better, and scale faster.</p>
-              <div style={{marginTop:24,display:"flex",gap:14}}>
-                {[
-                  {Icon:Globe,   href:"#"},
-                  {Icon:AtSign,  href:"#"},
-                  {Icon:Hash,    href:"#"},
-                  {Icon:Play,    href:"#"},
-                ].map(({Icon,href},i)=>(
-                  <a key={i} href={href} target="_blank" rel="noreferrer"
-                    style={{width:34,height:34,borderRadius:8,border:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",textDecoration:"none"}}
-                    onMouseEnter={e=>{e.currentTarget.style.borderColor="#E55266";e.currentTarget.style.background="rgba(229,82,102,0.08)";e.currentTarget.querySelector("svg").style.color="#E55266";}}
-                    onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="transparent";e.currentTarget.querySelector("svg").style.color="var(--muted)";}}>
-                    <Icon size={15} style={{color:"var(--muted)",transition:"color .15s"}}/>
-                  </a>
-                ))}
-              </div>
-            </div>
-            {/* Link columns */}
-            {[
-              {heading:"Product",   links:[{label:"AI Support Agent"},{label:"Return Deflection"},{label:"Cart Recovery"},{label:"Pricing"},{label:"Changelog"}]},
-              {heading:"Company",   links:[{label:"About"},{label:"Blog"},{label:"Careers"},{label:"Press"},{label:"Contact"}]},
-              {heading:"Resources", links:[{label:"Documentation"},{label:"Help Center"},{label:"Shopify App"},{label:"Privacy Policy",onClick:()=>navigate("/privacy")},{label:"Terms of Service",onClick:()=>navigate("/terms")}]},
-            ].map(col=>(
-              <div key={col.heading}>
-                <p style={{fontSize:11,fontWeight:700,letterSpacing:".10em",color:"var(--text)",textTransform:"uppercase",marginBottom:18}}>{col.heading}</p>
-                <div style={{display:"flex",flexDirection:"column",gap:11}}>
-                  {col.links.map(link=>(
-                    <span key={link.label} onClick={link.onClick||undefined} style={{fontSize:13.5,color:"var(--muted)",cursor:"pointer",transition:"color .14s"}}
-                      onMouseEnter={e=>e.currentTarget.style.color="var(--text)"}
-                      onMouseLeave={e=>e.currentTarget.style.color="var(--muted)"}>
-                      {link.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Divider */}
-          <div style={{marginTop:48,borderTop:"1px solid var(--border)"}}/>
-          {/* Bottom row */}
-          <div style={{marginTop:24,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
-            <span style={{fontSize:12,color:"rgba(245,234,242,0.2)"}}>© 2026 Solva Technologies Ltd. All rights reserved.</span>
-            <div style={{display:"flex",gap:20}}>
-              {[{label:"Privacy Policy",onClick:()=>navigate("/privacy")},{label:"Terms of Service",onClick:()=>navigate("/terms")}].map(l=>(
-                <span key={l.label} onClick={l.onClick} style={{fontSize:12,color:"rgba(245,234,242,0.25)",cursor:"pointer",transition:"color .14s"}}
-                  onMouseEnter={e=>e.currentTarget.style.color="var(--muted)"}
-                  onMouseLeave={e=>e.currentTarget.style.color="rgba(245,234,242,0.25)"}>
-                  {l.label}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Footer links */}
+      <div style={{textAlign:"center",padding:"0 24px 48px",display:"flex",justifyContent:"center",gap:28}}>
+        <span onClick={()=>navigate("/privacy")} style={{fontSize:13,color:C.muted,cursor:"pointer",textDecoration:"none"}}
+          onMouseEnter={e=>e.currentTarget.style.textDecoration="underline"}
+          onMouseLeave={e=>e.currentTarget.style.textDecoration="none"}>
+          Privacy Policy
+        </span>
+        <span onClick={()=>navigate("/terms")} style={{fontSize:13,color:C.muted,cursor:"pointer",textDecoration:"none"}}
+          onMouseEnter={e=>e.currentTarget.style.textDecoration="underline"}
+          onMouseLeave={e=>e.currentTarget.style.textDecoration="none"}>
+          Terms of Service
+        </span>
+      </div>
     </div>
   );
 }
