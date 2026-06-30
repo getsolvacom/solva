@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, MessageSquare, Check } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -80,6 +80,11 @@ function GlobalStyles() {
         .cta-heading{font-size:clamp(34px,5vw,62px)!important;}
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
+      }
+      @keyframes typeDot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+      @media(max-width:900px){
+        .hero-grid{grid-template-columns:1fr!important;padding:40px 20px 50px!important;}
+        .hero-widget-wrap{max-width:100%!important;margin-left:0!important;}
       }
     `}</style>
   );
@@ -213,31 +218,80 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section className="hero-section" style={{position:"relative",zIndex:1,textAlign:"center",padding:"48px 40px 80px"}}>
-        <div className="fu" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:100,background:"rgba(229,82,102,.08)",border:"1px solid rgba(229,82,102,.22)",marginBottom:28}}>
-          <span style={{width:6,height:6,borderRadius:"50%",background:C.coral,display:"inline-block"}}/>
-          <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".07em"}}>SOLVA — AI AUTOMATION FOR SHOPIFY STORES</span>
-        </div>
-        <h1 className="fu fu1" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(42px,6.5vw,78px)",fontWeight:800,lineHeight:1.05,letterSpacing:"-.03em",marginBottom:24}}>
-          Every Problem.<br/>
-          <span style={{background:"linear-gradient(130deg,#E55266 0%,#992A67 55%,#C05AFF 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Solved.</span>
-        </h1>
-        <p className="fu fu2" style={{fontSize:"clamp(14px,1.8vw,17.5px)",color:C.sub,maxWidth:480,margin:"0 auto 42px",lineHeight:1.75}}>
-          Connect your Shopify store in 2 minutes. Solva handles every support ticket, deflects returns, and recovers abandoned carts — automatically, 24/7.
-        </p>
-        <div className="fu fu3" style={{display:"flex",gap:12,justifyContent:"center",marginBottom:64}}>
-          <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
-          <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>View Live Demo <ArrowUpRight size={18} strokeWidth={2}/></button>
-        </div>
+      <section className="hero-section" style={{position:"relative",zIndex:1,overflow:"hidden"}}>
+        {/* Ambient orbs */}
+        <div style={{position:"absolute",width:460,height:460,top:-80,left:-120,background:"rgba(153,42,103,0.18)",borderRadius:"50%",filter:"blur(90px)",pointerEvents:"none",zIndex:0}}/>
+        <div style={{position:"absolute",width:380,height:380,top:80,right:-120,background:"rgba(78,2,105,0.22)",borderRadius:"50%",filter:"blur(90px)",pointerEvents:"none",zIndex:0}}/>
 
-        {/* Stats bar */}
-        <div className="fu fu4" style={{display:"flex",maxWidth:560,margin:"0 auto",borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`}}>
-          {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"]].map(([v,l],i)=>(
-            <div key={i} className={i<2?"stats-cell stats-divider":"stats-cell"} style={{flex:1,padding:"20px 14px",background:C.surface,textAlign:"center",borderRight:i<2?`1px solid ${C.border}`:"none"}}>
-              <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
-              <div className="stats-label" style={{fontSize:11.5,color:C.muted,fontWeight:500}}>{l}</div>
+        <div className="hero-grid" style={{display:"grid",gridTemplateColumns:"1.1fr 0.9fr",gap:56,alignItems:"center",maxWidth:1180,margin:"0 auto",padding:"70px 40px 60px",position:"relative"}}>
+
+          {/* LEFT COLUMN */}
+          <div style={{position:"relative",zIndex:1,textAlign:"center"}}>
+            <div className="fu" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:100,background:"rgba(229,82,102,.08)",border:"1px solid rgba(229,82,102,.22)",marginBottom:28}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:C.coral,display:"inline-block"}}/>
+              <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".07em"}}>SOLVA — AI AUTOMATION FOR SHOPIFY STORES</span>
             </div>
-          ))}
+            <h1 className="fu fu1" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(42px,6.5vw,78px)",fontWeight:800,lineHeight:1.05,letterSpacing:"-.03em",marginBottom:24}}>
+              Every Problem.<br/>
+              <span style={{background:"linear-gradient(130deg,#E55266 0%,#992A67 55%,#C05AFF 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Solved.</span>
+            </h1>
+            <p className="fu fu2" style={{fontSize:"clamp(14px,1.8vw,17.5px)",color:C.sub,maxWidth:480,margin:"0 auto 42px",lineHeight:1.75}}>
+              Connect your Shopify store in 2 minutes. Solva handles every support ticket, deflects returns, and recovers abandoned carts — automatically, 24/7.
+            </p>
+            <div className="fu fu3" style={{display:"flex",gap:12,justifyContent:"center",marginBottom:64}}>
+              <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
+              <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>View Live Demo <ArrowUpRight size={18} strokeWidth={2}/></button>
+            </div>
+
+            {/* Stats bar */}
+            <div className="fu fu4" style={{display:"flex",maxWidth:560,margin:"0 auto",borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`}}>
+              {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"]].map(([v,l],i)=>(
+                <div key={i} className={i<2?"stats-cell stats-divider":"stats-cell"} style={{flex:1,padding:"20px 14px",background:C.surface,textAlign:"center",borderRight:i<2?`1px solid ${C.border}`:"none"}}>
+                  <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
+                  <div className="stats-label" style={{fontSize:11.5,color:C.muted,fontWeight:500}}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div style={{position:"relative",zIndex:1}}>
+            <div className="hero-widget-wrap" style={{position:"relative",maxWidth:420,marginLeft:"auto",width:"100%"}}>
+              {/* Widget card */}
+              <div style={{background:C.surface,border:`1px solid ${C.borderHi}`,borderRadius:18,overflow:"hidden",boxShadow:"0 30px 80px rgba(0,0,0,.35)"}}>
+                {/* Widget header */}
+                <div style={{background:C.grad,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <MessageSquare size={18} color="white"/>
+                  </div>
+                  <div>
+                    <div style={{fontSize:13.5,fontWeight:700,color:"white"}}>SOLVA Support</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.8)"}}>Typically replies instantly</div>
+                  </div>
+                </div>
+                {/* Widget body */}
+                <div style={{background:C.bg,padding:20,display:"flex",flexDirection:"column",gap:14,minHeight:200}}>
+                  <div style={{alignSelf:"flex-end",maxWidth:"78%",background:C.grad,color:"white",padding:"12px 16px",borderRadius:"14px 14px 4px 14px",fontSize:13.5,lineHeight:1.55}}>
+                    Where is my order? It's been 5 days...
+                  </div>
+                  <div style={{alignSelf:"flex-start",maxWidth:"85%",background:C.card,border:`1px solid ${C.border}`,color:C.text,padding:"12px 16px",borderRadius:"14px 14px 14px 4px",fontSize:13.5,lineHeight:1.55}}>
+                    Hi! Your order shipped yesterday via UPS — tracking 1Z999AA10123456784. Estimated delivery is tomorrow between 2–6 PM 📦
+                  </div>
+                  <div style={{alignSelf:"flex-start",background:C.card,border:`1px solid ${C.border}`,padding:"12px 16px",borderRadius:"14px 14px 14px 4px",display:"flex",gap:5,width:"fit-content"}}>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:C.muted,animation:"typeDot 1.2s ease-in-out 0s infinite"}}/>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:C.muted,animation:"typeDot 1.2s ease-in-out 0.18s infinite"}}/>
+                    <div style={{width:6,height:6,borderRadius:"50%",background:C.muted,animation:"typeDot 1.2s ease-in-out 0.36s infinite"}}/>
+                  </div>
+                </div>
+              </div>
+              {/* Floating badge */}
+              <div style={{position:"absolute",bottom:-16,left:-16,background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:12,padding:"10px 16px",fontSize:12.5,fontWeight:700,color:C.teal,boxShadow:"0 8px 24px rgba(0,0,0,.25)",display:"flex",alignItems:"center",gap:8,zIndex:2}}>
+                <Check size={14}/>
+                Resolved in 4 seconds
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
