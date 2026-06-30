@@ -38,8 +38,9 @@ function GlobalStyles() {
       .nav-actions-desktop{display:flex;gap:10px;align-items:center;}
       .nav-hamburger{display:none;}
       .nav-dropdown{display:none;}
-      .announce-scroll::-webkit-scrollbar{display:none;}
-      .announce-scroll{scrollbar-width:none;}
+      .announce-text-short{display:none;}
+      .announce-dismiss{transition:all .15s;}
+      .announce-dismiss:hover{background:rgba(229,82,102,.10)!important;border-radius:6px;}
       @media(max-width:767px){
         .nav-links-desktop{display:none;}
         .nav-actions-desktop{display:none;}
@@ -48,8 +49,11 @@ function GlobalStyles() {
         .nav-dropdown{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);animation:menuSlide .22s cubic-bezier(.16,1,.3,1) both;z-index:99;padding:8px 16px 16px;}
         .features-grid{grid-template-columns:1fr!important;gap:14px!important;}
         .pricing-grid{grid-template-columns:1fr!important;gap:24px!important;}
-        .announce-text{font-size:11.5px!important;}
-        .announce-dismiss{right:10px!important;}
+        .announce-text-full{display:none!important;}
+        .announce-text-short{display:inline!important;font-size:12.5px!important;font-weight:500;}
+        .announce-get-started{font-size:12.5px!important;}
+        .announce-content{padding:0 44px 0 16px!important;}
+        .announce-dismiss{right:12px!important;padding:6px!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -144,13 +148,14 @@ export default function LandingPage() {
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:announcementOpen?102:64}}>
       {/* Announcement Bar */}
       {announcementOpen && (
-        <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,height:44,background:C.dim,borderBottom:`1px solid ${C.borderHi}`,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",textAlign:"center"}}>
-          <div className="announce-scroll" style={{display:"flex",alignItems:"center",gap:8,overflowX:"auto",whiteSpace:"nowrap",maxWidth:"calc(100% - 50px)",padding:"0 16px"}}>
-            <span className="announce-text" style={{fontSize:13.5,color:C.sub,fontWeight:500}}>14-day free trial · No credit card required · Live in 2 minutes</span>
-            <span style={{fontSize:13.5,color:C.coral,fontWeight:700,cursor:"pointer"}} onClick={()=>navigate("/onboarding")}>Get Started →</span>
+        <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,height:46,background:C.dim,borderBottom:`1px solid ${C.borderHi}`,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 50px",textAlign:"center"}}>
+          <div className="announce-content" style={{display:"flex",alignItems:"center",justifyContent:"center",flexWrap:"nowrap",gap:6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+            <span className="announce-text-full" style={{fontSize:14.5,color:C.sub,fontWeight:500}}>14-day free trial · No credit card required · Live in 2 minutes</span>
+            <span className="announce-text-short" style={{color:C.sub}}>14-day free trial · No credit card required</span>
+            <span className="announce-get-started" style={{fontSize:14.5,color:C.coral,fontWeight:700,cursor:"pointer",marginLeft:8}} onClick={()=>navigate("/onboarding")}>Get Started →</span>
           </div>
-          <button className="announce-dismiss" onClick={()=>setAnnouncementOpen(false)} style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)",background:"transparent",border:"none",cursor:"pointer",color:C.muted,display:"flex",alignItems:"center",justifyContent:"center",padding:4}} onMouseEnter={e=>e.currentTarget.style.color=C.coral} onMouseLeave={e=>e.currentTarget.style.color=C.muted}>
-            <X size={16}/>
+          <button className="announce-dismiss" onClick={()=>setAnnouncementOpen(false)} style={{position:"absolute",right:24,top:"50%",transform:"translateY(-50%)",background:"transparent",border:"none",cursor:"pointer",color:C.muted,display:"flex",alignItems:"center",justifyContent:"center",padding:8}} onMouseEnter={e=>e.currentTarget.style.color=C.coral} onMouseLeave={e=>e.currentTarget.style.color=C.muted}>
+            <X size={18}/>
           </button>
         </div>
       )}
