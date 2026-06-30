@@ -120,8 +120,7 @@ export default function LoginPage() {
 
       {/* Card */}
       <div style={{width:"100%",maxWidth:480}}>
-        <div style={{height:3,width:"60%",margin:"0 auto 18px",background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",borderRadius:100}}/>
-        <div style={{background:C.surface,borderRadius:22,border:`1px solid ${C.border}`,padding:40,position:"relative",zIndex:1}}>
+<div style={{background:C.surface,borderRadius:22,border:`1px solid ${C.border}`,padding:40,position:"relative",zIndex:1}}>
 
         <h1 className="fu" style={{fontFamily:"'Outfit',sans-serif",fontSize:24,fontWeight:800,letterSpacing:"-.02em",marginBottom:8}}>Welcome back</h1>
         <p className="fu" style={{fontSize:13.5,color:C.sub,lineHeight:1.7,marginBottom:20}}>Sign in to your account</p>

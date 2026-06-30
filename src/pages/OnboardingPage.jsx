@@ -92,11 +92,11 @@ function StepBar({ current }) {
         {steps.map((s,i) => {
           const done = i+1 < current, active = i+1 === current;
           return (
-            <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7}}>
+            <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:7,flex:"1 1 0",minWidth:0}}>
               <div className="stepbar-circle" style={{width:34,height:34,borderRadius:"50%",background:done||active?"linear-gradient(135deg,#E55266,#992A67,#4E0269)":C.dim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12.5,fontWeight:700,color:done||active?"#fff":C.muted,boxShadow:active?"0 0 22px rgba(229,82,102,.30)":"none",border:`2px solid ${done||active?"transparent":C.border}`}}>
                 {done?"✓":i+1}
               </div>
-              <span className="stepbar-label" style={{fontSize:11,fontWeight:active?600:400,color:active?C.coral:done?C.sub:C.muted,whiteSpace:"nowrap"}}>{s}</span>
+              <span className="stepbar-label" style={{fontSize:10.5,fontWeight:active?600:400,color:active?C.coral:done?C.sub:C.muted,whiteSpace:"normal",textAlign:"center",maxWidth:64,lineHeight:1.3}}>{s}</span>
             </div>
           );
         })}
@@ -116,7 +116,6 @@ function Toggle({ on, onToggle }) {
 function CardShell({ children, maxWidth=480 }) {
   return (
     <div style={{width:"100%",maxWidth}}>
-      <div style={{height:3,width:"60%",margin:"0 auto 18px",background:"linear-gradient(135deg,#E55266,#992A67,#4E0269)",borderRadius:100}}/>
       <div style={{background:C.surface,borderRadius:22,border:`1px solid ${C.border}`,padding:40,position:"relative",zIndex:1}}>
         {children}
       </div>
@@ -638,7 +637,7 @@ export default function OnboardingPage() {
       )}
 
       {/* Login / Steps */}
-      <div style={{width:"100%",maxWidth:520,position:"relative",zIndex:1,marginTop:28}}>
+      <div style={{width:"100%",maxWidth:520,position:"relative",zIndex:1,marginTop:36}}>
         {mode === "login"  && <LoginForm onSignup={()=>setMode("signup")} goDash={goDash}/>}
         {mode === "signup" && step===1 && <Step1 onNext={()=>setStep(2)} onLogin={()=>navigate("/login")}/>}
         {mode === "signup" && step===2 && <Step1b onNext={()=>setStep(3)} onBack={()=>setStep(1)}/>}
