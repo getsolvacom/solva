@@ -82,6 +82,7 @@ function GlobalStyles() {
         .hero-section{padding-top:60px!important;}
       }
       @keyframes typeDot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+      @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
       @media(max-width:900px){
         .hero-grid{grid-template-columns:1fr!important;padding:40px 20px 50px!important;}
         .hero-widget-wrap{max-width:100%!important;margin-left:0!important;}
@@ -223,7 +224,7 @@ export default function LandingPage() {
         <div style={{position:"absolute",width:460,height:460,top:-80,left:-120,background:"rgba(153,42,103,0.18)",borderRadius:"50%",filter:"blur(90px)",pointerEvents:"none",zIndex:0}}/>
         <div style={{position:"absolute",width:380,height:380,top:80,right:-120,background:"rgba(78,2,105,0.22)",borderRadius:"50%",filter:"blur(90px)",pointerEvents:"none",zIndex:0}}/>
 
-        <div className="hero-grid" style={{display:"grid",gridTemplateColumns:"1.1fr 0.9fr",gap:56,alignItems:"center",maxWidth:1180,margin:"0 auto",padding:"70px 40px 60px",position:"relative"}}>
+        <div className="hero-grid" style={{display:"grid",gridTemplateColumns:"1.1fr 0.9fr",gap:56,alignItems:"center",maxWidth:1180,margin:"0 auto",padding:"70px 40px 40px",position:"relative"}}>
 
           {/* LEFT COLUMN */}
           <div style={{position:"relative",zIndex:1,textAlign:"center"}}>
@@ -238,9 +239,17 @@ export default function LandingPage() {
             <p className="fu fu2" style={{fontSize:"clamp(14px,1.8vw,17.5px)",color:C.sub,maxWidth:480,margin:"0 auto 42px",lineHeight:1.75}}>
               Connect your Shopify store in 2 minutes. Solva handles every support ticket, deflects returns, and recovers abandoned carts — automatically, 24/7.
             </p>
-            <div className="fu fu3" style={{display:"flex",gap:12,justifyContent:"center",marginBottom:64}}>
+            <div className="fu fu3" style={{display:"flex",gap:12,justifyContent:"center",marginBottom:0}}>
               <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
               <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>View Live Demo <ArrowUpRight size={18} strokeWidth={2}/></button>
+            </div>
+            <div style={{display:"flex",gap:22,flexWrap:"wrap",marginTop:20,justifyContent:"center",marginBottom:28}}>
+              {["No credit card required","Cancel anytime","Live in 2 minutes"].map((text,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,color:C.muted}}>
+                  <Check size={15} color={C.teal} style={{flexShrink:0}}/>
+                  {text}
+                </div>
+              ))}
             </div>
 
             {/* Stats bar */}
@@ -258,7 +267,7 @@ export default function LandingPage() {
           <div style={{position:"relative",zIndex:1}}>
             <div className="hero-widget-wrap" style={{position:"relative",maxWidth:420,marginLeft:"auto",width:"100%"}}>
               {/* Widget card */}
-              <div style={{background:C.surface,border:`1px solid ${C.borderHi}`,borderRadius:18,overflow:"hidden",boxShadow:"0 30px 80px rgba(0,0,0,.35)"}}>
+              <div style={{background:C.surface,border:`1px solid ${C.borderHi}`,borderRadius:18,overflow:"hidden",boxShadow:"0 30px 80px rgba(0,0,0,.35)",animation:"float 5s ease-in-out infinite"}}>
                 {/* Widget header */}
                 <div style={{background:C.grad,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
                   <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -270,7 +279,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* Widget body */}
-                <div style={{background:C.bg,padding:20,display:"flex",flexDirection:"column",gap:14,minHeight:200}}>
+                <div style={{background:C.bg,padding:20,display:"flex",flexDirection:"column",gap:12,minHeight:180}}>
                   <div style={{alignSelf:"flex-end",maxWidth:"78%",background:C.grad,color:"white",padding:"12px 16px",borderRadius:"14px 14px 4px 14px",fontSize:13.5,lineHeight:1.55}}>
                     Where is my order? It's been 5 days...
                   </div>
