@@ -48,12 +48,12 @@ function GlobalStyles() {
         .nav-dropdown{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);animation:menuSlide .22s cubic-bezier(.16,1,.3,1) both;z-index:99;padding:8px 16px 16px;}
         .features-grid{grid-template-columns:1fr!important;gap:14px!important;}
         .pricing-grid{grid-template-columns:1fr!important;gap:24px!important;}
-        .announce-main-text{font-size:13px!important;}
-        .announce-get-started{font-size:13px!important;}
+        .announce-bar{padding:16px 44px!important;}
+        .announce-para{font-size:16px!important;line-height:1.6!important;}
         .announce-dismiss{right:12px!important;padding:6px!important;}
         .announce-close{top:12px!important;transform:none!important;}
-        .main-nav{top:64px!important;}
-        .page-wrapper{padding-top:128px!important;}
+        .main-nav{top:86px!important;}
+        .page-wrapper{padding-top:150px!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -148,11 +148,11 @@ export default function LandingPage() {
     <div className={announcementOpen?"page-wrapper":undefined} style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:announcementOpen?102:64}}>
       {/* Announcement Bar */}
       {announcementOpen && (
-        <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,minHeight:46,background:C.dim,borderBottom:`1px solid ${C.borderHi}`,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 50px",textAlign:"center"}}>
-          <div className="announce-content" style={{display:"flex",alignItems:"center",justifyContent:"center",flexWrap:"wrap",gap:"6px 8px",padding:"10px 0",maxWidth:"calc(100% - 20px)",margin:"0 auto",textAlign:"center"}}>
-            <span className="announce-main-text" style={{fontSize:14.5,color:C.sub,fontWeight:500}}>14-day free trial · No credit card required · Live in 2 minutes</span>
-            <span className="announce-get-started" style={{fontSize:14.5,color:C.coral,fontWeight:700,cursor:"pointer"}} onClick={()=>navigate("/onboarding")}>Get Started →</span>
-          </div>
+        <div className="announce-bar" style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,background:C.dim,borderBottom:`1px solid ${C.borderHi}`,display:"flex",alignItems:"center",justifyContent:"center",padding:"14px 50px",textAlign:"center"}}>
+          <p className="announce-para" style={{display:"block",textAlign:"center",lineHeight:1.5,fontSize:15.5,color:C.sub,fontWeight:500,maxWidth:"calc(100% - 20px)",margin:"0 auto"}}>
+            14-day free trial · No credit card required · Live in 2 minutes{" "}
+            <span style={{color:C.coral,fontWeight:700,cursor:"pointer"}} onClick={()=>navigate("/onboarding")}>Get Started →</span>
+          </p>
           <button className="announce-dismiss announce-close" onClick={()=>setAnnouncementOpen(false)} style={{position:"absolute",right:24,top:"50%",transform:"translateY(-50%)",background:"transparent",border:"none",cursor:"pointer",color:C.muted,display:"flex",alignItems:"center",justifyContent:"center",padding:8}} onMouseEnter={e=>e.currentTarget.style.color=C.coral} onMouseLeave={e=>e.currentTarget.style.color=C.muted}>
             <X size={18}/>
           </button>
