@@ -76,7 +76,7 @@ function SolvaLogo({ size=15 }) {
 function StepBar({ current }) {
   const steps = ["Create Account","Tell Us More","Connect Store","Configure","Go Live"];
   return (
-    <div className="stepbar" style={{position:"relative",marginBottom:46}}>
+    <div className="stepbar" style={{position:"relative",marginBottom:46,width:"100%",padding:"0 8px",boxSizing:"border-box"}}>
       {/* Background track line - spans full width behind circles */}
       <div style={{position:"absolute",top:17,left:17,right:17,height:2,background:C.dim,zIndex:0}}/>
       {/* Progress fill line - width based on current step */}
@@ -113,7 +113,7 @@ function Toggle({ on, onToggle }) {
   );
 }
 
-function CardShell({ children, maxWidth=480 }) {
+function CardShell({ children, maxWidth=520 }) {
   return (
     <div style={{width:"100%",maxWidth}}>
       <div style={{background:C.surface,borderRadius:22,border:`1px solid ${C.border}`,padding:40,position:"relative",zIndex:1}}>
@@ -545,7 +545,7 @@ function Step3({ onNext, onBack }) {
 // ── STEP 4 ──
 function Step4({ goDash }) {
   return (
-    <CardShell maxWidth={500}>
+    <CardShell maxWidth={520}>
       {/* Confetti */}
       <div style={{position:"absolute",inset:0,overflow:"hidden",borderRadius:22,pointerEvents:"none"}}>
         {CONFETTI_PIECES.map(c=>(
@@ -631,7 +631,7 @@ export default function OnboardingPage() {
 
       {/* Step bar — hidden in login mode */}
       {mode === "signup" && (
-        <div style={{position:"relative",zIndex:1}}>
+        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:520,margin:"0 auto"}}>
           <StepBar current={step}/>
         </div>
       )}
