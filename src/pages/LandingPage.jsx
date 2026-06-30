@@ -136,7 +136,13 @@ export default function LandingPage() {
   };
 
   return (
-    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:64}}>
+    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:102}}>
+      {/* Announcement Bar */}
+      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,height:38,background:C.dim,borderBottom:`1px solid ${C.borderHi}`,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",textAlign:"center"}}>
+        <span style={{fontSize:12.5,color:C.sub,fontWeight:500}}>14-day free trial · No credit card required · Live in 2 minutes</span>
+        <span style={{color:C.coral,fontWeight:700,marginLeft:8,cursor:"pointer"}} onClick={()=>navigate("/onboarding")}>Get Started →</span>
+      </div>
+
       <GlobalStyles/>
 
       {/* Ambient orbs */}
@@ -146,7 +152,7 @@ export default function LandingPage() {
       </div>
 
       {/* NAV */}
-      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
+      <nav style={{position:"fixed",top:38,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
         <SolvaLogo/>
 
         {/* Desktop links */}
