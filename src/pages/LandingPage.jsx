@@ -86,12 +86,18 @@ function GlobalStyles() {
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
         .hero-grid{display:flex!important;flex-direction:column!important;text-align:center!important;}
-        .hero-mock{margin-top:44px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;}
+        .hero-mock{margin-top:64px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;}
+        .trust-row{margin-bottom:20px!important;}
+        .stats-cell{padding:14px 8px!important;}
+        .stats-number{font-size:19px!important;}
+        .stats-label{font-size:10px!important;}
       }
       @media(min-width:768px){
         .hero-grid{display:grid!important;grid-template-columns:1.1fr .9fr!important;gap:56px!important;align-items:center!important;text-align:left!important;}
         .hero-copy{align-items:flex-start!important;}
         .trust-row{justify-content:flex-start!important;}
+        .mock-widget-card{transform:scale(1.08);transform-origin:top right;}
+        .hero-mock{padding-right:10px;}
       }
       /* ── light-mode overrides (dark mode completely unaffected) ── */
       html.light .nav-scrolled{--nav-shadow:0 8px 24px rgba(0,0,0,.12);}
@@ -276,7 +282,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="fu hero-mock" style={{position:"relative"}}>
+          <div className="fu hero-mock" style={{position:"relative",animation:"float 5s ease-in-out infinite"}}>
             <div className="mock-widget-card">
               <div style={{background:C.grad,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -310,8 +316,8 @@ export default function LandingPage() {
       {/* STATS BAR — moved out of hero into its own section */}
       <section style={{position:"relative",zIndex:1,padding:"20px 40px 56px"}}>
         <div className="fu" style={{display:"flex",maxWidth:560,margin:"0 auto",borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`}}>
-          {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"]].map(([v,l],i)=>(
-            <div key={i} className={i<2?"stats-cell stats-divider":"stats-cell"} style={{flex:1,padding:"20px 14px",background:C.surface,textAlign:"center",borderRight:i<2?`1px solid ${C.border}`:"none"}}>
+          {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"],["3 systems","One Platform"]].map(([v,l],i)=>(
+            <div key={i} className={i<3?"stats-cell stats-divider":"stats-cell"} style={{flex:1,padding:"20px 14px",background:C.surface,textAlign:"center",borderRight:i<3?`1px solid ${C.border}`:"none"}}>
               <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
               <div className="stats-label" style={{fontSize:11.5,color:C.muted,fontWeight:500}}>{l}</div>
             </div>
