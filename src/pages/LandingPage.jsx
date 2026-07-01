@@ -24,6 +24,7 @@ function GlobalStyles() {
       @keyframes orbPulse{0%,100%{transform:scale(1);opacity:.40;}50%{transform:scale(1.08);opacity:.62;}}
       @keyframes menuSlide{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
       @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+      @keyframes floatMobile{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
       @keyframes typeDot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
       .hero-mock{animation:float 5s ease-in-out infinite;}
       .mock-widget-card{background:var(--surface);border:1px solid var(--border-hi);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);}
@@ -59,7 +60,6 @@ function GlobalStyles() {
         .nav-dropdown{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);animation:menuSlide .22s cubic-bezier(.16,1,.3,1) both;z-index:99;padding:8px 16px 16px;}
         .features-grid{grid-template-columns:1fr!important;gap:14px!important;}
         .pricing-grid{grid-template-columns:1fr!important;gap:24px!important;}
-        .hero-badge{top:auto!important;bottom:-14px!important;right:auto!important;left:16px!important;}
         .stats-bar-grid{grid-template-columns:1fr 1fr!important;}
         .stats-cell{border-right:1px solid var(--border)!important;border-bottom:1px solid var(--border)!important;padding:16px 10px!important;}
         .stats-cell:nth-child(2n){border-right:none!important;}
@@ -91,7 +91,7 @@ function GlobalStyles() {
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
         .hero-grid{display:flex!important;flex-direction:column!important;text-align:center!important;}
-        .hero-mock{margin-top:80px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;}
+        .hero-mock{margin-top:130px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;animation:floatMobile 5s ease-in-out infinite!important;}
         .trust-row{margin-bottom:20px!important;}
         .stats-cell{padding:14px 8px!important;}
         .stats-number{font-size:19px!important;}
@@ -106,9 +106,9 @@ function GlobalStyles() {
         .stats-bar-grid{grid-template-columns:repeat(4,1fr)!important;}
         .stats-cell{border-right:1px solid var(--border)!important;}
         .stats-cell:last-child{border-right:none!important;}
-        .stats-cell{padding:32px 22px!important;}
-        .stats-number{font-size:36px!important;}
-        .stats-label{font-size:13.5px!important;}
+        .stats-cell{padding:40px 24px!important;}
+        .stats-number{font-size:46px!important;font-weight:800!important;letter-spacing:-.02em!important;margin-bottom:8px!important;}
+        .stats-label{font-size:14px!important;font-weight:600!important;}
       }
       /* ── light-mode overrides (dark mode completely unaffected) ── */
       html.light .nav-scrolled{--nav-shadow:0 8px 24px rgba(0,0,0,.12);}
@@ -326,7 +326,7 @@ export default function LandingPage() {
 
       {/* STATS BAR — moved out of hero into its own section */}
       <section style={{position:"relative",zIndex:1,padding:"20px 40px 56px"}}>
-        <div className="fu stats-bar-grid" style={{display:"grid",maxWidth:640,margin:"0 auto",borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`}}>
+        <div className="fu stats-bar-grid" style={{display:"grid",maxWidth:760,margin:"0 auto",borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`}}>
           {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"],["3 systems","One Platform"]].map(([v,l],i)=>(
             <div key={i} className="stats-cell" style={{padding:"20px 14px",background:C.surface,textAlign:"center"}}>
               <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
