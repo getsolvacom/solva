@@ -16,7 +16,7 @@ function GlobalStyles() {
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       html, body { background: var(--bg, #060008) !important; }
       :root{--orb-1:rgba(229,82,102,.10);--orb-2:rgba(78,2,105,.20);--eyebrow-border:rgba(229,82,102,.22);--eyebrow-bg:rgba(229,82,102,.08);--nav-border-strong:var(--border-hi);--nav-shadow:none;}
-      html.light{--orb-1:rgba(229,82,102,.18);--orb-2:rgba(153,42,103,.16);--eyebrow-border:rgba(229,82,102,.38);--eyebrow-bg:rgba(229,82,102,.12);--nav-border-strong:rgba(78,2,105,.16);--nav-shadow:0 1px 12px rgba(0,0,0,.05);}
+      html.light{--orb-1:rgba(229,82,102,.45);--orb-2:rgba(153,42,103,.40);--eyebrow-border:rgba(229,82,102,.55);--eyebrow-bg:rgba(229,82,102,.20);--nav-border-strong:rgba(78,2,105,.16);--nav-shadow:0 1px 12px rgba(0,0,0,.05);}
       ::-webkit-scrollbar{width:3px;}
       ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
       @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
