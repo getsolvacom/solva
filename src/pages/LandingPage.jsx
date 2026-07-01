@@ -15,6 +15,8 @@ function GlobalStyles() {
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       html, body { background: var(--bg, #060008) !important; }
+      :root{--orb-1:rgba(229,82,102,.10);--orb-2:rgba(78,2,105,.20);--eyebrow-border:rgba(229,82,102,.22);--eyebrow-bg:rgba(229,82,102,.08);--nav-border-strong:var(--border-hi);--nav-shadow:none;}
+      html.light{--orb-1:rgba(229,82,102,.18);--orb-2:rgba(153,42,103,.16);--eyebrow-border:rgba(229,82,102,.38);--eyebrow-bg:rgba(229,82,102,.12);--nav-border-strong:rgba(78,2,105,.16);--nav-shadow:0 1px 12px rgba(0,0,0,.05);}
       ::-webkit-scrollbar{width:3px;}
       ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
       @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
@@ -30,7 +32,7 @@ function GlobalStyles() {
       p{font-weight:500;}
       .nav-link{cursor:pointer;transition:color .15s ease;font-weight:600;}
       .nav-link:hover{color:#E55266!important;}
-      .nav-scrolled{box-shadow:0 8px 24px rgba(0,0,0,.35);border-bottom-color:var(--border-hi)!important;}
+      .nav-scrolled{--nav-shadow:0 8px 24px rgba(0,0,0,.35);border-bottom-color:var(--border-hi)!important;}
       .card-hover{transition:transform .22s ease,box-shadow .22s ease;}
       .card-hover:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.5);}
       .grad-border{position:relative;}
@@ -77,12 +79,8 @@ function GlobalStyles() {
         .hero-section{padding-top:60px!important;}
       }
       /* ── light-mode overrides (dark mode completely unaffected) ── */
-      html.light nav{border-bottom-color:rgba(78,2,105,.14)!important;box-shadow:0 1px 12px rgba(0,0,0,.05);}
-      html.light .nav-scrolled{box-shadow:0 8px 24px rgba(0,0,0,.12);}
-      html.light .orb-top{background:rgba(229,82,102,.16)!important;}
-      html.light .orb-btm{background:rgba(153,42,103,.14)!important;}
+      html.light .nav-scrolled{--nav-shadow:0 8px 24px rgba(0,0,0,.12);}
       html.light .hero-section{background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(229,82,102,.06),transparent);}
-      html.light .hero-eyebrow{background:rgba(229,82,102,.10)!important;border-color:rgba(229,82,102,.35)!important;}
     `}</style>
   );
 }
@@ -172,8 +170,8 @@ export default function LandingPage() {
 
       {/* Ambient orbs */}
       <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
-        <div className="orb orb-top" style={{width:600,height:600,top:"-180px",left:"50%",transform:"translateX(-50%)",background:"rgba(229,82,102,.10)"}}/>
-        <div className="orb orb-btm" style={{width:400,height:400,bottom:"5%",right:"-100px",background:"rgba(78,2,105,.20)",animationDelay:"3s"}}/>
+        <div className="orb orb-top" style={{width:600,height:600,top:"-180px",left:"50%",transform:"translateX(-50%)",background:"var(--orb-1)"}}/>
+        <div className="orb orb-btm" style={{width:400,height:400,bottom:"5%",right:"-100px",background:"var(--orb-2)",animationDelay:"3s"}}/>
       </div>
 
       {/* ANNOUNCEMENT BAR */}
@@ -190,7 +188,7 @@ export default function LandingPage() {
       )}
 
       {/* NAV */}
-      <nav className={scrolled?"nav-scrolled":""} style={{position:"fixed",top:annBarVisible?annBarHeight:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)",transition:"top .22s ease,box-shadow .22s ease"}}>
+      <nav className={scrolled?"nav-scrolled":""} style={{position:"fixed",top:annBarVisible?annBarHeight:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:"1px solid var(--nav-border-strong)",backdropFilter:"blur(20px)",boxShadow:"var(--nav-shadow)",transition:"top .22s ease,box-shadow .22s ease"}}>
         <SolvaLogo/>
 
         {/* Desktop links */}
@@ -237,7 +235,7 @@ export default function LandingPage() {
       {/* HERO */}
       <section className="hero-section" style={{position:"relative",zIndex:1,padding:"70px 40px 60px",textAlign:"center"}}>
         <div style={{maxWidth:720,margin:"0 auto"}}>
-          <div className="fu hero-eyebrow" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:100,background:"rgba(229,82,102,.08)",border:"1px solid rgba(229,82,102,.22)",marginBottom:28}}>
+          <div className="fu hero-eyebrow" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:100,background:"var(--eyebrow-bg)",border:"1px solid var(--eyebrow-border)",marginBottom:28}}>
             <span style={{width:6,height:6,borderRadius:"50%",background:C.coral,display:"inline-block"}}/>
             <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".07em"}}>SOLVA — AI AUTOMATION FOR SHOPIFY STORES</span>
           </div>
