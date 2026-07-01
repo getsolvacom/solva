@@ -95,7 +95,7 @@ function GlobalStyles() {
         .hero-grid{display:flex!important;flex-direction:column!important;text-align:center!important;}
         .hero-mock{max-width:380px!important;margin-left:auto!important;margin-right:auto!important;}
         .trust-row{margin-bottom:20px!important;}
-        .stats-cell{padding:14px 8px!important;}
+        .stats-cell{padding:14px 10px!important;}
         .stats-number{font-size:19px!important;}
         .stats-label{font-size:10px!important;}
       }
@@ -106,7 +106,7 @@ function GlobalStyles() {
         .stats-bar-grid{grid-template-columns:repeat(4,1fr)!important;}
         .stats-cell{border-right:1px solid var(--border)!important;}
         .stats-cell:last-child{border-right:none!important;}
-        .stats-cell{padding:40px 24px!important;}
+        .stats-cell{padding:22px 24px!important;}
         .stats-number{font-size:46px!important;font-weight:800!important;letter-spacing:-.02em!important;margin-bottom:8px!important;}
         .stats-label{font-size:14px!important;font-weight:600!important;}
       }
@@ -332,8 +332,8 @@ export default function LandingPage() {
       </section>
 
       {/* STATS BAR — moved out of hero into its own section */}
-      <section style={{position:"relative",zIndex:1,padding:"20px 40px 56px"}}>
-        <div className="fu stats-bar-grid" style={{display:"grid",maxWidth:760,margin:"0 auto",borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`}}>
+      <section style={{position:"relative",zIndex:1,padding:"0 40px"}}>
+        <div className="fu stats-bar-grid" style={{display:"grid",width:"100%",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`}}>
           {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"],["3 systems","One Platform"]].map(([v,l],i)=>(
             <div key={i} className="stats-cell" style={{padding:"20px 14px",background:C.surface,textAlign:"center"}}>
               <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
