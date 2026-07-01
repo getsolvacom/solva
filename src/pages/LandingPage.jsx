@@ -60,7 +60,8 @@ function GlobalStyles() {
         .features-grid{grid-template-columns:1fr!important;gap:14px!important;}
         .pricing-grid{grid-template-columns:1fr!important;gap:24px!important;}
         .hero-section{padding-left:24px!important;padding-right:24px!important;}
-        .hero-ctas-row button{flex:0 1 auto!important;}
+        .hero-ctas-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;}
+        .hero-ctas-row button{white-space:normal!important;text-align:center!important;padding:12px 14px!important;font-size:13.5px!important;line-height:1.3!important;justify-content:center!important;}
         .stats-bar-grid{grid-template-columns:1fr 1fr!important;}
         .stats-cell{border-right:1px solid var(--border)!important;border-bottom:1px solid var(--border)!important;padding:16px 10px!important;}
         .stats-cell:nth-child(2n){border-right:none!important;}
@@ -286,7 +287,7 @@ export default function LandingPage() {
             <p className="fu fu2" style={{fontSize:"clamp(14px,1.8vw,17.5px)",color:C.sub,maxWidth:480,marginBottom:36,lineHeight:1.75}}>
               Connect your Shopify store in 2 minutes. Solva handles every support ticket, deflects returns, and recovers abandoned carts — automatically, 24/7.
             </p>
-            <div className="fu fu3 hero-ctas-row" style={{display:"flex",gap:12,justifyContent:"flex-start",flexWrap:"wrap",marginBottom:26}}>
+            <div className="fu fu3 hero-ctas-row" style={{display:"flex",gap:12,justifyContent:"flex-start",marginBottom:26}}>
               <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
               <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>View Live Demo <ArrowUpRight size={18} strokeWidth={2}/></button>
             </div>
