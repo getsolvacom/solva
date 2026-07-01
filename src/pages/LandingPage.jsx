@@ -91,7 +91,7 @@ function GlobalStyles() {
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
         .hero-grid{display:flex!important;flex-direction:column!important;text-align:center!important;}
-        .hero-mock{margin-top:130px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;animation:floatMobile 5s ease-in-out infinite!important;}
+        .hero-mock{margin-top:150px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;animation:floatMobile 5s ease-in-out infinite!important;}
         .trust-row{margin-bottom:20px!important;}
         .stats-cell{padding:14px 8px!important;}
         .stats-number{font-size:19px!important;}
@@ -293,7 +293,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="fu hero-mock" style={{position:"relative",animation:"float 5s ease-in-out infinite"}}>
+          <div className="fu hero-mock" style={{position:"relative"}}>
             <div className="mock-widget-card">
               <div style={{background:C.grad,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
