@@ -15,8 +15,8 @@ function GlobalStyles() {
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
       html, body { background: var(--bg, #060008) !important; }
-      :root{--orb-1:rgba(229,82,102,.10);--orb-2:rgba(78,2,105,.20);--eyebrow-border:rgba(229,82,102,.22);--eyebrow-bg:rgba(229,82,102,.08);--nav-border-strong:var(--border-hi);--nav-shadow:none;}
-      html.light{--orb-1:rgba(229,82,102,.28);--orb-2:rgba(153,42,103,.24);--eyebrow-border:rgba(229,82,102,.40);--eyebrow-bg:rgba(229,82,102,.14);--nav-border-strong:rgba(78,2,105,.16);--nav-shadow:0 1px 12px rgba(0,0,0,.05);}
+      :root{--orb-1:rgba(229,82,102,.10);--orb-2:rgba(78,2,105,.20);--eyebrow-border:rgba(229,82,102,.22);--eyebrow-bg:rgba(229,82,102,.08);--nav-border-strong:var(--border-hi);--nav-shadow:none;--announce-bg:#000;--announce-text:var(--sub);--announce-border:var(--border);}
+      html.light{--orb-1:rgba(229,82,102,.28);--orb-2:rgba(153,42,103,.24);--eyebrow-border:rgba(229,82,102,.40);--eyebrow-bg:rgba(229,82,102,.14);--nav-border-strong:rgba(78,2,105,.16);--nav-shadow:0 1px 12px rgba(0,0,0,.05);--announce-bg:#FFF5F8;--announce-text:#7A3060;--announce-border:rgba(78,2,105,.12);}
       ::-webkit-scrollbar{width:3px;}
       ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
       @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
@@ -176,12 +176,12 @@ export default function LandingPage() {
 
       {/* ANNOUNCEMENT BAR */}
       {annBarVisible && (
-        <div ref={annBarRef} className="ann-bar" style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,background:"#000",padding:"10px 24px",fontSize:13,color:C.sub,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div ref={annBarRef} className="ann-bar" style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,background:"var(--announce-bg)",padding:"10px 24px",fontSize:13,color:"var(--announce-text)",borderBottom:"1px solid var(--announce-border)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <span style={{flex:1,textAlign:"center"}}>
             14-day free trial · No credit card required · Live in 2 minutes{" "}
             <span onClick={()=>navigate("/onboarding")} style={{color:C.coral,cursor:"pointer",fontWeight:600}}>Start free trial →</span>
           </span>
-          <button onClick={()=>setAnnBarVisible(false)} style={{background:"transparent",border:"none",cursor:"pointer",color:C.sub,padding:"2px 4px",display:"flex",alignItems:"center",flexShrink:0,marginLeft:8}} aria-label="Dismiss announcement">
+          <button onClick={()=>setAnnBarVisible(false)} style={{background:"transparent",border:"none",cursor:"pointer",color:"var(--announce-text)",padding:"2px 4px",display:"flex",alignItems:"center",flexShrink:0,marginLeft:8}} aria-label="Dismiss announcement">
             <X size={16} strokeWidth={2}/>
           </button>
         </div>
