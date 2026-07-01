@@ -90,7 +90,7 @@ function GlobalStyles() {
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
         .hero-grid{display:flex!important;flex-direction:column!important;text-align:center!important;}
-        .hero-mock{margin-top:130px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;}
+        .hero-mock{max-width:380px!important;margin-left:auto!important;margin-right:auto!important;}
         .trust-row{margin-bottom:20px!important;}
         .stats-cell{padding:14px 8px!important;}
         .stats-number{font-size:19px!important;}
@@ -142,6 +142,13 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
   const [annBarVisible, setAnnBarVisible] = useState(true);
   const annBarRef = useRef(null);
   const [annBarHeight, setAnnBarHeight] = useState(38);
@@ -292,7 +299,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="fu hero-mock" style={{position:"relative",animation:"float 5s ease-in-out infinite"}}>
+          <div className="fu hero-mock" style={{position:"relative",animation:"float 5s ease-in-out infinite",marginTop:isMobile?160:0}}>
             <div className="mock-widget-card">
               <div style={{background:C.grad,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
