@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -23,6 +23,14 @@ function GlobalStyles() {
       @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
       @keyframes orbPulse{0%,100%{transform:scale(1);opacity:.40;}50%{transform:scale(1.08);opacity:.62;}}
       @keyframes menuSlide{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+      @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+      @keyframes typeDot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+      .hero-mock{animation:float 5s ease-in-out infinite;}
+      .mock-widget-card{background:var(--surface);border:1px solid var(--border-hi);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);}
+      html.light .mock-widget-card{box-shadow:0 24px 60px rgba(78,2,105,.14);}
+      .mock-typing-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block;animation:typeDot 1.2s ease-in-out infinite;}
+      .mock-typing-dot:nth-child(2){animation-delay:.18s;}
+      .mock-typing-dot:nth-child(3){animation-delay:.36s;}
       .fu{animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both;}
       .fu1{animation-delay:.08s;}.fu2{animation-delay:.16s;}.fu3{animation-delay:.24s;}.fu4{animation-delay:.32s;}
       .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;font-weight:700;}
@@ -77,6 +85,13 @@ function GlobalStyles() {
         .cta-heading{font-size:clamp(34px,5vw,62px)!important;}
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
+        .hero-grid{display:flex!important;flex-direction:column!important;text-align:center!important;}
+        .hero-mock{margin-top:44px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;}
+      }
+      @media(min-width:768px){
+        .hero-grid{display:grid!important;grid-template-columns:1.1fr .9fr!important;gap:56px!important;align-items:center!important;text-align:left!important;}
+        .hero-copy{align-items:flex-start!important;}
+        .trust-row{justify-content:flex-start!important;}
       }
       /* ── light-mode overrides (dark mode completely unaffected) ── */
       html.light .nav-scrolled{--nav-shadow:0 8px 24px rgba(0,0,0,.12);}
@@ -233,31 +248,74 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section className="hero-section" style={{position:"relative",zIndex:1,padding:"70px 40px 60px",textAlign:"center"}}>
-        <div style={{maxWidth:720,margin:"0 auto"}}>
-          <div className="fu hero-eyebrow" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:100,background:"var(--eyebrow-bg)",border:"1px solid var(--eyebrow-border)",marginBottom:28}}>
-            <span style={{width:6,height:6,borderRadius:"50%",background:C.coral,display:"inline-block"}}/>
-            <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".07em"}}>SOLVA — AI AUTOMATION FOR SHOPIFY STORES</span>
+      <section className="hero-section" style={{position:"relative",zIndex:1,padding:"70px 40px 40px",maxWidth:1180,margin:"0 auto"}}>
+        <div className="hero-grid" style={{display:"flex",flexDirection:"column",textAlign:"center"}}>
+
+          <div className="hero-copy" style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+            <div className="fu hero-eyebrow" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:100,background:"var(--eyebrow-bg)",border:"1px solid var(--eyebrow-border)",marginBottom:28}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:C.coral,display:"inline-block"}}/>
+              <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".07em"}}>SOLVA — AI AUTOMATION FOR SHOPIFY STORES</span>
+            </div>
+            <h1 className="fu fu1" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(42px,6.5vw,72px)",fontWeight:800,lineHeight:1.05,letterSpacing:"-.03em",marginBottom:24}}>
+              Every Problem.<br/>
+              <span style={{background:"linear-gradient(130deg,#E55266 0%,#992A67 55%,#C05AFF 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Solved.</span>
+            </h1>
+            <p className="fu fu2" style={{fontSize:"clamp(14px,1.8vw,17.5px)",color:C.sub,maxWidth:480,marginBottom:36,lineHeight:1.75}}>
+              Connect your Shopify store in 2 minutes. Solva handles every support ticket, deflects returns, and recovers abandoned carts — automatically, 24/7.
+            </p>
+            <div className="fu fu3" style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:26}}>
+              <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
+              <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>View Live Demo <ArrowUpRight size={18} strokeWidth={2}/></button>
+            </div>
+            <div className="fu fu4 trust-row" style={{display:"flex",gap:20,flexWrap:"wrap",justifyContent:"center",fontSize:13,color:C.muted}}>
+              {["No credit card required","Cancel anytime","Live in 2 minutes"].map((t,i)=>(
+                <span key={i} style={{display:"flex",alignItems:"center",gap:6}}>
+                  <Check size={15} strokeWidth={2.5} color={C.teal}/>{t}
+                </span>
+              ))}
+            </div>
           </div>
-          <h1 className="fu fu1" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(42px,6.5vw,78px)",fontWeight:800,lineHeight:1.05,letterSpacing:"-.03em",marginBottom:24}}>
-            Every Problem.<br/>
-            <span style={{background:"linear-gradient(130deg,#E55266 0%,#992A67 55%,#C05AFF 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Solved.</span>
-          </h1>
-          <p className="fu fu2" style={{fontSize:"clamp(14px,1.8vw,17.5px)",color:C.sub,maxWidth:480,margin:"0 auto 42px",lineHeight:1.75}}>
-            Connect your Shopify store in 2 minutes. Solva handles every support ticket, deflects returns, and recovers abandoned carts — automatically, 24/7.
-          </p>
-          <div className="fu fu3" style={{display:"flex",gap:12,justifyContent:"center",marginBottom:40}}>
-            <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
-            <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>View Live Demo <ArrowUpRight size={18} strokeWidth={2}/></button>
-          </div>
-          <div className="fu fu4" style={{display:"flex",maxWidth:560,margin:"0 auto",borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`}}>
-            {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"]].map(([v,l],i)=>(
-              <div key={i} className={i<2?"stats-cell stats-divider":"stats-cell"} style={{flex:1,padding:"20px 14px",background:C.surface,textAlign:"center",borderRight:i<2?`1px solid ${C.border}`:"none"}}>
-                <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
-                <div className="stats-label" style={{fontSize:11.5,color:C.muted,fontWeight:500}}>{l}</div>
+
+          <div className="fu hero-mock" style={{position:"relative"}}>
+            <div className="mock-widget-card">
+              <div style={{background:C.grad,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
+                <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <Bot size={19} strokeWidth={2} color="#fff"/>
+                </div>
+                <div style={{textAlign:"left"}}>
+                  <div style={{fontSize:13.5,fontWeight:700,color:"#fff"}}>Solva AI Agent</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.75)"}}>Online now</div>
+                </div>
               </div>
-            ))}
+              <div style={{padding:20,display:"flex",flexDirection:"column",gap:14,background:C.bg,minHeight:230}}>
+                <div style={{alignSelf:"flex-start",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomLeftRadius:4,background:C.card,border:`1px solid ${C.border}`,fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
+                  Hi! I noticed your order shipped 3 days ago — want me to pull up the tracking details?
+                </div>
+                <div style={{alignSelf:"flex-end",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomRightRadius:4,background:C.grad,color:"#fff",fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
+                  Yes please, I haven't received it yet
+                </div>
+                <div style={{alignSelf:"flex-start",display:"flex",gap:5,padding:"12px 16px",borderRadius:14,borderBottomLeftRadius:4,background:C.card,border:`1px solid ${C.border}`}}>
+                  <span className="mock-typing-dot"/><span className="mock-typing-dot"/><span className="mock-typing-dot"/>
+                </div>
+              </div>
+            </div>
+            <div style={{position:"absolute",top:-14,right:-14,background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:12,padding:"9px 14px",fontSize:12,fontWeight:700,boxShadow:"0 8px 24px rgba(0,0,0,.25)",display:"flex",alignItems:"center",gap:7,color:C.text}}>
+              <Check size={14} strokeWidth={2.5} color={C.teal}/> Resolved in 12s
+            </div>
           </div>
+
+        </div>
+      </section>
+
+      {/* STATS BAR — moved out of hero into its own section */}
+      <section style={{position:"relative",zIndex:1,padding:"20px 40px 56px"}}>
+        <div className="fu" style={{display:"flex",maxWidth:560,margin:"0 auto",borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`}}>
+          {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"]].map(([v,l],i)=>(
+            <div key={i} className={i<2?"stats-cell stats-divider":"stats-cell"} style={{flex:1,padding:"20px 14px",background:C.surface,textAlign:"center",borderRight:i<2?`1px solid ${C.border}`:"none"}}>
+              <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
+              <div className="stats-label" style={{fontSize:11.5,color:C.muted,fontWeight:500}}>{l}</div>
+            </div>
+          ))}
         </div>
       </section>
 
