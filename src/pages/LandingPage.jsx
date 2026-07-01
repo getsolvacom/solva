@@ -59,6 +59,8 @@ function GlobalStyles() {
         .nav-dropdown{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);animation:menuSlide .22s cubic-bezier(.16,1,.3,1) both;z-index:99;padding:8px 16px 16px;}
         .features-grid{grid-template-columns:1fr!important;gap:14px!important;}
         .pricing-grid{grid-template-columns:1fr!important;gap:24px!important;}
+        .hero-section{padding-left:24px!important;padding-right:24px!important;}
+        .hero-ctas-row button{flex:0 1 auto!important;}
         .stats-bar-grid{grid-template-columns:1fr 1fr!important;}
         .stats-cell{border-right:1px solid var(--border)!important;border-bottom:1px solid var(--border)!important;padding:16px 10px!important;}
         .stats-cell:nth-child(2n){border-right:none!important;}
@@ -98,8 +100,6 @@ function GlobalStyles() {
       }
       @media(min-width:768px){
         .hero-grid{display:grid!important;grid-template-columns:1.1fr .9fr!important;gap:56px!important;align-items:center!important;text-align:left!important;}
-        .hero-copy{align-items:flex-start!important;}
-        .trust-row{justify-content:flex-start!important;}
         .mock-widget-card{transform:scale(1.08);transform-origin:top right;}
         .hero-mock{padding-right:10px;}
         .stats-bar-grid{grid-template-columns:repeat(4,1fr)!important;}
@@ -272,9 +272,9 @@ export default function LandingPage() {
 
       {/* HERO */}
       <section className="hero-section" style={{position:"relative",zIndex:1,padding:"70px 40px 40px",maxWidth:1180,margin:"0 auto"}}>
-        <div className="hero-grid" style={{display:"flex",flexDirection:"column",textAlign:"center"}}>
+        <div className="hero-grid" style={{display:"flex",flexDirection:"column",textAlign:"left"}}>
 
-          <div className="hero-copy" style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div className="hero-copy" style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}>
             <div className="fu hero-eyebrow" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:100,background:"var(--eyebrow-bg)",border:"1px solid var(--eyebrow-border)",marginBottom:28}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:C.coral,display:"inline-block"}}/>
               <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".07em"}}>SOLVA — AI AUTOMATION FOR SHOPIFY STORES</span>
@@ -286,11 +286,11 @@ export default function LandingPage() {
             <p className="fu fu2" style={{fontSize:"clamp(14px,1.8vw,17.5px)",color:C.sub,maxWidth:480,marginBottom:36,lineHeight:1.75}}>
               Connect your Shopify store in 2 minutes. Solva handles every support ticket, deflects returns, and recovers abandoned carts — automatically, 24/7.
             </p>
-            <div className="fu fu3" style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:26}}>
+            <div className="fu fu3 hero-ctas-row" style={{display:"flex",gap:12,justifyContent:"flex-start",flexWrap:"wrap",marginBottom:26}}>
               <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
               <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>View Live Demo <ArrowUpRight size={18} strokeWidth={2}/></button>
             </div>
-            <div className="fu fu4 trust-row" style={{display:"flex",gap:20,flexWrap:"wrap",justifyContent:"center",fontSize:13,color:C.muted}}>
+            <div className="fu fu4 trust-row" style={{display:"flex",gap:20,flexWrap:"wrap",justifyContent:"flex-start",fontSize:13,color:C.muted}}>
               {["No credit card required","Cancel anytime","Live in 2 minutes"].map((t,i)=>(
                 <span key={i} style={{display:"flex",alignItems:"center",gap:6}}>
                   <Check size={15} strokeWidth={2.5} color={C.teal}/>{t}
