@@ -24,7 +24,6 @@ function GlobalStyles() {
       @keyframes orbPulse{0%,100%{transform:scale(1);opacity:.40;}50%{transform:scale(1.08);opacity:.62;}}
       @keyframes menuSlide{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
       @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
-      @keyframes floatMobile{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
       @keyframes typeDot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
       .hero-mock{animation:float 5s ease-in-out infinite;}
       .mock-widget-card{background:var(--surface);border:1px solid var(--border-hi);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);}
@@ -91,7 +90,7 @@ function GlobalStyles() {
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
         .hero-grid{display:flex!important;flex-direction:column!important;text-align:center!important;}
-        .hero-mock{margin-top:150px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;animation:floatMobile 5s ease-in-out infinite!important;}
+        .hero-mock{margin-top:130px!important;max-width:380px!important;margin-left:auto!important;margin-right:auto!important;}
         .trust-row{margin-bottom:20px!important;}
         .stats-cell{padding:14px 8px!important;}
         .stats-number{font-size:19px!important;}
@@ -293,7 +292,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="fu hero-mock" style={{position:"relative"}}>
+          <div className="fu hero-mock" style={{position:"relative",animation:"float 5s ease-in-out infinite"}}>
             <div className="mock-widget-card">
               <div style={{background:C.grad,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
