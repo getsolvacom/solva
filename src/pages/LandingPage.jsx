@@ -76,6 +76,13 @@ function GlobalStyles() {
         .cta-sub{font-size:17px!important;}
         .hero-section{padding-top:60px!important;}
       }
+      /* ── light-mode overrides (dark mode completely unaffected) ── */
+      html.light nav{border-bottom-color:rgba(78,2,105,.14)!important;box-shadow:0 1px 12px rgba(0,0,0,.05);}
+      html.light .nav-scrolled{box-shadow:0 8px 24px rgba(0,0,0,.12);}
+      html.light .orb-top{background:rgba(229,82,102,.16)!important;}
+      html.light .orb-btm{background:rgba(153,42,103,.14)!important;}
+      html.light .hero-section{background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(229,82,102,.06),transparent);}
+      html.light .hero-eyebrow{background:rgba(229,82,102,.10)!important;border-color:rgba(229,82,102,.35)!important;}
     `}</style>
   );
 }
@@ -165,8 +172,8 @@ export default function LandingPage() {
 
       {/* Ambient orbs */}
       <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
-        <div className="orb" style={{width:600,height:600,top:"-180px",left:"50%",transform:"translateX(-50%)",background:"rgba(229,82,102,.10)"}}/>
-        <div className="orb" style={{width:400,height:400,bottom:"5%",right:"-100px",background:"rgba(78,2,105,.20)",animationDelay:"3s"}}/>
+        <div className="orb orb-top" style={{width:600,height:600,top:"-180px",left:"50%",transform:"translateX(-50%)",background:"rgba(229,82,102,.10)"}}/>
+        <div className="orb orb-btm" style={{width:400,height:400,bottom:"5%",right:"-100px",background:"rgba(78,2,105,.20)",animationDelay:"3s"}}/>
       </div>
 
       {/* ANNOUNCEMENT BAR */}
@@ -230,7 +237,7 @@ export default function LandingPage() {
       {/* HERO */}
       <section className="hero-section" style={{position:"relative",zIndex:1,padding:"70px 40px 60px",textAlign:"center"}}>
         <div style={{maxWidth:720,margin:"0 auto"}}>
-          <div className="fu" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:100,background:"rgba(229,82,102,.08)",border:"1px solid rgba(229,82,102,.22)",marginBottom:28}}>
+          <div className="fu hero-eyebrow" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 16px",borderRadius:100,background:"rgba(229,82,102,.08)",border:"1px solid rgba(229,82,102,.22)",marginBottom:28}}>
             <span style={{width:6,height:6,borderRadius:"50%",background:C.coral,display:"inline-block"}}/>
             <span style={{fontSize:11.5,color:C.coral,fontWeight:700,letterSpacing:".07em"}}>SOLVA — AI AUTOMATION FOR SHOPIFY STORES</span>
           </div>
