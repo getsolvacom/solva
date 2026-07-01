@@ -299,7 +299,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="fu hero-mock" style={{position:"relative",animation:"float 5s ease-in-out infinite",marginTop:isMobile?160:0}}>
+          <div className="fu hero-mock" style={{position:"relative",animation:"float 5s ease-in-out infinite",marginTop:isMobile?44:0}}>
             <div className="mock-widget-card">
               <div style={{background:C.grad,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
