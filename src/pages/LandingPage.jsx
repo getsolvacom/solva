@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
 import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight } from "lucide-react";
@@ -23,12 +23,14 @@ function GlobalStyles() {
       @keyframes menuSlide{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
       .fu{animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both;}
       .fu1{animation-delay:.08s;}.fu2{animation-delay:.16s;}.fu3{animation-delay:.24s;}.fu4{animation-delay:.32s;}
-      .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;}
+      .btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;font-weight:700;}
       .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(229,82,102,.28);}
       .btn-ghost{cursor:pointer;border:none;outline:none;transition:all .14s;font-family:'Outfit',sans-serif;background:transparent;}
       .btn-ghost:hover{background:rgba(229,82,102,.07)!important;color:#E55266!important;}
-      .nav-link{cursor:pointer;transition:color .15s ease;}
+      p{font-weight:500;}
+      .nav-link{cursor:pointer;transition:color .15s ease;font-weight:600;}
       .nav-link:hover{color:#E55266!important;}
+      .nav-scrolled{box-shadow:0 8px 24px rgba(0,0,0,.35);border-bottom-color:var(--border-hi)!important;}
       .card-hover{transition:transform .22s ease,box-shadow .22s ease;}
       .card-hover:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.5);}
       .grad-border{position:relative;}
@@ -39,6 +41,7 @@ function GlobalStyles() {
       .nav-hamburger{display:none;}
       .nav-dropdown{display:none;}
       @media(max-width:767px){
+        .ann-bar{font-size:11.5px!important;padding:8px 16px!important;}
         .nav-links-desktop{display:none;}
         .nav-actions-desktop{display:none;}
         .nav-hamburger{display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;border:1px solid var(--border);border-radius:8px;width:38px;height:38px;font-size:18px;color:var(--text);transition:border-color .15s,color .15s;}
@@ -102,6 +105,27 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [annBarVisible, setAnnBarVisible] = useState(true);
+  const annBarRef = useRef(null);
+  const [annBarHeight, setAnnBarHeight] = useState(38);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!annBarVisible || !annBarRef.current) return;
+    const el = annBarRef.current;
+    const update = () => setAnnBarHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [annBarVisible]);
+
   const [checkoutLoading, setCheckoutLoading] = useState(null);
 
   const VARIANT_IDS = { Starter: '1816146', Growth: '1816190', Scale: '1816290' };
@@ -136,7 +160,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:64}}>
+    <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text,overflowX:"hidden",paddingTop:64+(annBarVisible?annBarHeight:0)}}>
       <GlobalStyles/>
 
       {/* Ambient orbs */}
@@ -145,14 +169,27 @@ export default function LandingPage() {
         <div className="orb" style={{width:400,height:400,bottom:"5%",right:"-100px",background:"rgba(78,2,105,.20)",animationDelay:"3s"}}/>
       </div>
 
+      {/* ANNOUNCEMENT BAR */}
+      {annBarVisible && (
+        <div ref={annBarRef} className="ann-bar" style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,background:"#000",padding:"10px 24px",fontSize:13,color:C.sub,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <span style={{flex:1,textAlign:"center"}}>
+            14-day free trial · No credit card required · Live in 2 minutes{" "}
+            <span onClick={()=>navigate("/onboarding")} style={{color:C.coral,cursor:"pointer",fontWeight:600}}>Start free trial →</span>
+          </span>
+          <button onClick={()=>setAnnBarVisible(false)} style={{background:"transparent",border:"none",cursor:"pointer",color:C.sub,padding:"2px 4px",display:"flex",alignItems:"center",flexShrink:0,marginLeft:8}} aria-label="Dismiss announcement">
+            <X size={16} strokeWidth={2}/>
+          </button>
+        </div>
+      )}
+
       {/* NAV */}
-      <nav style={{position:"fixed",top:"0",left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)"}}>
+      <nav className={scrolled?"nav-scrolled":""} style={{position:"fixed",top:annBarVisible?annBarHeight:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:`1px solid ${C.borderHi}`,backdropFilter:"blur(20px)",transition:"top .22s ease,box-shadow .22s ease"}}>
         <SolvaLogo/>
 
         {/* Desktop links */}
         <div className="nav-links-desktop">
           {["Features","How It Works","Pricing","Docs"].map(l=>(
-            <span key={l} className="nav-link" onClick={()=>scrollTo(l)} style={{fontSize:14,color:C.text,fontWeight:500}}>{l}</span>
+            <span key={l} className="nav-link" onClick={()=>{ if(l==="Docs") return; /* TODO: /docs route not built yet */ scrollTo(l); }} style={{fontSize:14,color:C.text,fontWeight:600}}>{l}</span>
           ))}
         </div>
 
@@ -171,8 +208,8 @@ export default function LandingPage() {
         {menuOpen && (
           <div className="nav-dropdown">
             {["Features","How It Works","Pricing","Docs"].map(l=>(
-              <span key={l} className="nav-link" onClick={()=>{ closeMenu(); scrollTo(l); }}
-                style={{fontSize:15,color:C.text,fontWeight:500,padding:"13px 8px",borderBottom:`1px solid ${C.border}`}}>
+              <span key={l} className="nav-link" onClick={()=>{ closeMenu(); if(l==="Docs") return; /* TODO: /docs route not built yet */ scrollTo(l); }}
+                style={{fontSize:15,color:C.text,fontWeight:600,padding:"13px 8px",borderBottom:`1px solid ${C.border}`}}>
                 {l}
               </span>
             ))}
