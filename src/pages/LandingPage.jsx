@@ -66,6 +66,7 @@ function GlobalStyles() {
         .stats-cell{border-right:1px solid var(--border)!important;border-bottom:1px solid var(--border)!important;padding:16px 10px!important;}
         .stats-cell:nth-child(2n){border-right:none!important;}
         .stats-cell:nth-child(3),.stats-cell:nth-child(4){border-bottom:none!important;}
+        .problem-section-mobile{padding:60px 24px 30px!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -341,6 +342,20 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* PROBLEM */}
+      <section className="problem-section-mobile" style={{position:"relative",zIndex:1,padding:"90px 40px 40px",maxWidth:740,margin:"0 auto",textAlign:"center"}}>
+        <p className="fu" style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:16,textTransform:"uppercase"}}>The Problem</p>
+        <h2 className="fu fu1" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,4.2vw,42px)",fontWeight:800,letterSpacing:"-.02em",lineHeight:1.18,marginBottom:26}}>
+          Most stores go silent when customers need them most
+        </h2>
+        <p className="fu fu2" style={{fontSize:15.5,color:C.sub,lineHeight:1.8,marginBottom:14}}>
+          Every day, shoppers hit friction — a delayed order, a return they're unsure about, a cart they almost finish. They need an answer right then. Most Shopify stores can't give them one.
+        </p>
+        <p className="fu fu3" style={{fontSize:15.5,color:C.sub,lineHeight:1.8}}>
+          Support tickets pile up overnight. Returns get processed instead of prevented. Carts go cold. By the time a human responds, the sale — or the customer — is already gone.
+        </p>
       </section>
 
       {/* FEATURES */}
