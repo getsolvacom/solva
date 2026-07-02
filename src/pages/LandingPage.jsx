@@ -549,10 +549,10 @@ export default function LandingPage() {
       </section>
 
       {/* PRICING */}
-      <section id="pricing" style={{padding:"56px 40px",maxWidth:900,margin:"0 auto"}}>
+      <section id="pricing" style={{padding:LAYOUT.sectionPadding.compact,maxWidth:LAYOUT.maxWidthMedium,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:46}}>
-          <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:10,textTransform:"uppercase"}}>Pricing</p>
-          <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(24px,4vw,42px)",fontWeight:800,letterSpacing:"-.02em"}}>Simple, Transparent Pricing</h2>
+          <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>Pricing</p>
+          <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Simple, Transparent Pricing</h2>
         </div>
         <div className="pricing-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
           {PLANS.map((plan,i)=>(

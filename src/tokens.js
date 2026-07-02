@@ -21,6 +21,7 @@ export const C = {
 export const LAYOUT = {
   maxWidth: 1200,
   maxWidthNarrow: 760,
+  maxWidthMedium: 960,
   space: { xs:8, sm:16, md:24, lg:32, xl:48, xxl:64, xxxl:96 },
   sectionPadding: {
     compact: "56px 40px",
