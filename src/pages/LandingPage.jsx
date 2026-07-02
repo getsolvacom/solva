@@ -83,7 +83,7 @@ function GlobalStyles() {
         .hiw-connector{height:3px!important;opacity:.45!important;top:31px!important;}
         .hiw-step-title{font-size:19px!important;}
         .hiw-step-desc{font-size:15px!important;}
-        .feat-card{padding:36px!important;}
+        .feat-card{padding:32px 34px!important;min-height:auto!important;}
         .feat-icon{margin-bottom:24px!important;}
         .feat-title{font-size:19px!important;font-weight:800!important;margin-bottom:14px!important;}
         .feat-desc{font-size:15px!important;margin-bottom:24px!important;}
@@ -392,21 +392,21 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section id="features" style={{position:"relative",zIndex:1,padding:"56px 40px",maxWidth:1060,margin:"0 auto"}}>
-        <div style={{textAlign:"center",marginBottom:50}}>
+      <section id="features" style={{position:"relative",zIndex:1,padding:"56px 40px",maxWidth:1240,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:40}}>
           <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:10,textTransform:"uppercase"}}>Core Systems</p>
           <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,4vw,44px)",fontWeight:800,letterSpacing:"-.02em"}}>Three automations. Zero manual work.</h2>
           <p style={{fontSize:14.5,color:C.sub,lineHeight:1.7,maxWidth:520,margin:"14px auto 0"}}>
             Every team in your store works from the same AI brain — one unified system instead of three disconnected tools.
           </p>
         </div>
-        <div className="features-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
+        <div className="features-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:22}}>
           {[
             {icon:<Bot size={28} strokeWidth={2}/>,         title:"AI Support Agent",  color:C.teal,  stat:"Resolves tickets instantly",desc:"Handles order inquiries, shipping questions, and FAQs automatically. Only escalates what truly needs a human."},
             {icon:<RotateCcw size={28} strokeWidth={2}/>,   title:"Return Deflection",  color:C.amber, stat:"Deflects before refunds", desc:"Before a return is processed, our AI offers smart alternatives — exchanges, discounts, troubleshooting."},
             {icon:<ShoppingCart size={28} strokeWidth={2}/>,title:"Cart Recovery",      color:C.blue,  stat:"3-touch recovery sequence",desc:"A 3-touch AI sequence — email, SMS, and a personalised follow-up — written dynamically based on cart contents."},
           ].map((f,i)=>(
-            <div key={i} className="card-hover feat-card" style={{padding:28,borderRadius:16,background:C.card,border:`1px solid ${C.border}`,display:"flex",flexDirection:"column"}}>
+            <div key={i} className="card-hover feat-card" style={{padding:"30px 30px",borderRadius:16,background:C.card,border:`1px solid ${C.border}`,display:"flex",flexDirection:"column"}}>
               <div className="feat-icon" style={{width:48,height:48,borderRadius:13,marginBottom:18,background:`${f.color}1F`,color:f.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{f.icon}</div>
               <h3 className="feat-title" style={{fontFamily:"'Outfit',sans-serif",fontSize:17.5,fontWeight:700,marginBottom:10}}>{f.title}</h3>
               <p className="feat-desc" style={{fontSize:13.5,color:C.sub,lineHeight:1.68,marginBottom:18,flex:1}}>{f.desc}</p>
