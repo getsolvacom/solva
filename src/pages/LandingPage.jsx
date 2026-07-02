@@ -37,7 +37,6 @@ function GlobalStyles() {
       .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(229,82,102,.28);}
       .btn-ghost{cursor:pointer;border:none;outline:none;transition:all .14s;font-family:'Outfit',sans-serif;background:transparent;}
       .btn-ghost:hover{background:rgba(229,82,102,.07)!important;color:#E55266!important;}
-      p{font-weight:500;}
       .nav-link{cursor:pointer;transition:color .15s ease;font-weight:600;}
       .nav-link:hover{color:#E55266!important;}
       .nav-scrolled{--nav-shadow:0 8px 24px rgba(0,0,0,.35);border-bottom-color:var(--border-hi)!important;}
@@ -285,7 +284,7 @@ export default function LandingPage() {
               Every Problem.<br/>
               <span style={{background:"linear-gradient(130deg,#E55266 0%,#992A67 55%,#C05AFF 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Solved.</span>
             </h1>
-            <p className="fu fu2" style={{fontSize:"clamp(14px,1.8vw,17.5px)",color:C.sub,maxWidth:480,marginBottom:36,lineHeight:1.75}}>
+            <p className="fu fu2" style={{fontSize:"clamp(14px,1.8vw,17.5px)",color:C.sub,maxWidth:480,marginBottom:36,lineHeight:1.75,fontWeight:500}}>
               Connect your Shopify store in 2 minutes. Solva handles every support ticket, deflects returns, and recovers abandoned carts — automatically, 24/7.
             </p>
             <div className="fu fu3 hero-ctas-row" style={{display:"flex",gap:12,justifyContent:"flex-start",marginBottom:26}}>
@@ -350,10 +349,10 @@ export default function LandingPage() {
         <h2 className="fu fu1" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,4.2vw,42px)",fontWeight:800,letterSpacing:"-.02em",lineHeight:1.18,marginBottom:26}}>
           Most stores go silent when customers need them most
         </h2>
-        <p className="fu fu2" style={{fontSize:15.5,color:C.sub,lineHeight:1.8,marginBottom:14,fontWeight:400}}>
+        <p className="fu fu2" style={{fontSize:15.5,color:C.sub,lineHeight:1.8,marginBottom:14}}>
           Every day, shoppers hit friction — a delayed order, a return they're unsure about, a cart they almost finish. They need an answer right then. Most Shopify stores can't give them one.
         </p>
-        <p className="fu fu3" style={{fontSize:15.5,color:C.sub,lineHeight:1.8,fontWeight:400}}>
+        <p className="fu fu3" style={{fontSize:15.5,color:C.sub,lineHeight:1.8}}>
           Support tickets pile up overnight. Returns get processed instead of prevented. Carts go cold. By the time a human responds, the sale — or the customer — is already gone.
         </p>
       </section>
@@ -444,7 +443,7 @@ export default function LandingPage() {
         <h2 className="cta-heading" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(28px,4.5vw,50px)",fontWeight:800,letterSpacing:"-.025em",marginBottom:14,position:"relative"}}>
           Ready to solve everything<br/>on autopilot?
         </h2>
-        <p className="cta-sub" style={{color:C.sub,fontSize:15.5,marginBottom:32,position:"relative"}}>Built for Shopify stores that want to automate support, returns, and cart recovery — all in one place.</p>
+        <p className="cta-sub" style={{color:C.sub,fontSize:15.5,marginBottom:32,position:"relative",fontWeight:500}}>Built for Shopify stores that want to automate support, returns, and cart recovery — all in one place.</p>
         <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"16px 36px",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15.5,position:"relative"}}>
           Connect Your Store — It's Free →
         </button>
