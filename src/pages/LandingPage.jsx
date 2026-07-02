@@ -350,10 +350,10 @@ export default function LandingPage() {
         <h2 className="fu fu1" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,4.2vw,42px)",fontWeight:800,letterSpacing:"-.02em",lineHeight:1.18,marginBottom:26}}>
           Most stores go silent when customers need them most
         </h2>
-        <p className="fu fu2" style={{fontSize:15.5,color:C.sub,lineHeight:1.8,marginBottom:14}}>
+        <p className="fu fu2" style={{fontSize:15.5,color:C.sub,lineHeight:1.8,marginBottom:14,fontWeight:400}}>
           Every day, shoppers hit friction — a delayed order, a return they're unsure about, a cart they almost finish. They need an answer right then. Most Shopify stores can't give them one.
         </p>
-        <p className="fu fu3" style={{fontSize:15.5,color:C.sub,lineHeight:1.8}}>
+        <p className="fu fu3" style={{fontSize:15.5,color:C.sub,lineHeight:1.8,fontWeight:400}}>
           Support tickets pile up overnight. Returns get processed instead of prevented. Carts go cold. By the time a human responds, the sale — or the customer — is already gone.
         </p>
       </section>
