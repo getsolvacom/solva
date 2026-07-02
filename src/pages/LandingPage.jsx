@@ -79,10 +79,10 @@ function GlobalStyles() {
         .stats-number{font-size:32px!important;}
         .stats-label{font-size:13px!important;color:var(--muted)!important;}
         .stats-divider{border-right:1px solid var(--border-hi)!important;}
-        .pricing-card{padding:36px!important;}
+        .pricing-card{padding:32px 36px!important;}
         .pricing-plan-name{font-size:14.5px!important;color:var(--text)!important;}
         .pricing-price{font-size:48px!important;}
-        .pricing-features{gap:14px!important;}
+        .pricing-features{gap:12px!important;}
         .pricing-feature-text{font-size:15px!important;}
         .feat-card{padding:32px 34px!important;min-height:auto!important;}
         .feat-icon{margin-bottom:24px!important;}
@@ -549,10 +549,11 @@ export default function LandingPage() {
       </section>
 
       {/* PRICING */}
-      <section id="pricing" style={{padding:LAYOUT.sectionPadding.compact,maxWidth:LAYOUT.maxWidthMedium,margin:"0 auto"}}>
+      <section id="pricing" style={{padding:LAYOUT.sectionPadding.compact,maxWidth:1100,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:46}}>
           <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>Pricing</p>
           <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Simple, Transparent Pricing</h2>
+          <p style={{fontSize:14.5,color:C.sub,marginTop:14}}>14-day free trial on every plan. No credit card required to start.</p>
         </div>
         <div className="pricing-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
           {PLANS.map((plan,i)=>(
@@ -560,7 +561,7 @@ export default function LandingPage() {
               style={{padding:28,borderRadius:16,position:"relative",background:plan.popular?"linear-gradient(160deg,#1C001E 0%,#2A0035 55%,#1A001A 100%)":C.card,border:plan.popular?"none":`1px solid ${C.border}`}}>
               {plan.popular&&<div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",padding:"4px 16px",borderRadius:100,background:C.grad,color:"#fff",fontSize:10.5,fontWeight:700,whiteSpace:"nowrap"}}>MOST POPULAR</div>}
               <p className="pricing-plan-name" style={{fontSize:12.5,color:plan.popular?"#fff":C.sub,fontWeight:600,marginBottom:8}}>{plan.name}</p>
-              <div style={{display:"flex",alignItems:"baseline",gap:2,marginBottom:20}}>
+              <div style={{display:"flex",alignItems:"baseline",gap:2,marginBottom:16}}>
                 <span className="pricing-price" style={{fontFamily:"'Outfit',sans-serif",fontSize:38,fontWeight:800,...(plan.popular?{color:"#fff"}:{color:C.text})}}>{plan.price}</span>
                 <span style={{fontSize:13,color:plan.popular?"rgba(255,255,255,.55)":C.muted}}>/mo</span>
               </div>
