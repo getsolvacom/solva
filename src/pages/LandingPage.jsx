@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C, LAYOUT } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp, Link2, Settings2, Sparkles, ShoppingBag, Mail, MessageSquare, Webhook, CreditCard, XCircle, Lock, ChevronDown } from "lucide-react";
+import { supabase } from "../lib/supabase";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp, Link2, Settings2, Sparkles, ShoppingBag, Mail, MessageSquare, Webhook, CreditCard, XCircle, Lock, ChevronDown, Send } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -74,6 +75,7 @@ function GlobalStyles() {
         .integrations-grid{grid-template-columns:1fr 1fr!important;gap:12px!important;}
         .trust-grid{grid-template-columns:1fr!important;gap:14px!important;}
         .faq-grid{grid-template-columns:1fr!important;gap:0!important;}
+        .footer-grid{grid-template-columns:1fr!important;gap:32px!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -139,6 +141,43 @@ function SolvaLogo({ size=16 }) {
   );
 }
 
+function IconInstagram({ size=16, strokeWidth=2 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    </svg>
+  );
+}
+
+function IconTwitter({ size=16, strokeWidth=2 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+    </svg>
+  );
+}
+
+function IconLinkedin({ size=16, strokeWidth=2 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+      <rect x="2" y="9" width="4" height="12"/>
+      <circle cx="4" cy="4" r="2"/>
+    </svg>
+  );
+}
+
+function IconYoutube({ size=16, strokeWidth=2 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
+      <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+    </svg>
+  );
+}
+
 const NAV_IDS = { "Features":"features", "How It Works":"how-it-works", "Pricing":"pricing" };
 
 export default function LandingPage() {
@@ -175,8 +214,23 @@ export default function LandingPage() {
 
   const [checkoutLoading, setCheckoutLoading] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState("idle"); // idle | loading | success | error
 
   const VARIANT_IDS = { Starter: '1816146', Growth: '1816190', Scale: '1816290' };
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    if (!newsletterEmail || !newsletterEmail.includes("@")) return;
+    setNewsletterStatus("loading");
+    const { error } = await supabase.from("newsletter_subscribers").insert({ email: newsletterEmail });
+    if (error && error.code !== "23505") { // 23505 = unique violation, treat as success (already subscribed)
+      setNewsletterStatus("error");
+      return;
+    }
+    setNewsletterStatus("success");
+    setNewsletterEmail("");
+  };
 
   const handleCheckout = async (planName) => {
     setCheckoutLoading(planName);
@@ -627,19 +681,83 @@ export default function LandingPage() {
         </button>
       </div>
 
-      {/* Footer links */}
-      <div style={{textAlign:"center",padding:"0 24px 48px",display:"flex",justifyContent:"center",gap:28}}>
-        <span onClick={()=>navigate("/privacy")} style={{fontSize:13,color:C.muted,cursor:"pointer",textDecoration:"none"}}
-          onMouseEnter={e=>e.currentTarget.style.textDecoration="underline"}
-          onMouseLeave={e=>e.currentTarget.style.textDecoration="none"}>
-          Privacy Policy
-        </span>
-        <span onClick={()=>navigate("/terms")} style={{fontSize:13,color:C.muted,cursor:"pointer",textDecoration:"none"}}
-          onMouseEnter={e=>e.currentTarget.style.textDecoration="underline"}
-          onMouseLeave={e=>e.currentTarget.style.textDecoration="none"}>
-          Terms of Service
-        </span>
-      </div>
+      {/* FOOTER */}
+      <footer style={{position:"relative",zIndex:1,borderTop:`1px solid ${C.border}`,padding:"64px 40px 32px"}}>
+        <div style={{maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
+          <div className="footer-grid" style={{display:"grid",gridTemplateColumns:"1.4fr 1fr 1fr 1fr",gap:40,marginBottom:48}}>
+            <div>
+              <div style={{marginBottom:14}}><SolvaLogo/></div>
+              <p style={{fontSize:13,color:C.sub,lineHeight:1.7,marginBottom:20,maxWidth:280}}>
+                AI automation for Shopify stores. Support, returns, and cart recovery — solved automatically.
+              </p>
+              <p style={{fontSize:12.5,fontWeight:700,marginBottom:10}}>Get product updates</p>
+              <form onSubmit={handleNewsletterSubmit} style={{display:"flex",gap:8,maxWidth:280}}>
+                <input
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(e)=>setNewsletterEmail(e.target.value)}
+                  placeholder="Your email"
+                  style={{flex:1,padding:"10px 14px",borderRadius:8,border:`1px solid ${C.border}`,background:C.card,color:C.text,fontSize:13,fontFamily:"'Outfit',sans-serif",outline:"none"}}
+                />
+                <button type="submit" disabled={newsletterStatus==="loading"} className="btn-primary" style={{width:40,height:40,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,opacity:newsletterStatus==="loading"?.6:1}}>
+                  <Send size={15} strokeWidth={2} color="#fff"/>
+                </button>
+              </form>
+              {newsletterStatus==="success" && <p style={{fontSize:11.5,color:C.teal,marginTop:8}}>You're on the list.</p>}
+              {newsletterStatus==="error" && <p style={{fontSize:11.5,color:C.red,marginTop:8}}>Something went wrong — try again.</p>}
+            </div>
+
+            {[
+              {title:"Product", items:[
+                {label:"Features", anchor:"features"},
+                {label:"How It Works", anchor:"how-it-works"},
+                {label:"Pricing", anchor:"pricing"},
+                {label:"Docs", soon:true},
+              ]},
+              {title:"Resources", items:[
+                {label:"FAQ", anchor:"faq"},
+                {label:"Help Center", soon:true},
+                {label:"Blog", soon:true},
+              ]},
+              {title:"Company", items:[
+                {label:"About", soon:true},
+                {label:"Contact", soon:true},
+              ]},
+            ].map((col,i)=>(
+              <div key={i}>
+                <p style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:16,textTransform:"uppercase",letterSpacing:".04em"}}>{col.title}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                  {col.items.map((item,j)=>(
+                    item.soon ? (
+                      <span key={j} style={{fontSize:13,color:C.muted,display:"flex",alignItems:"center",gap:6}}>
+                        {item.label}<span style={{fontSize:9,fontWeight:700,color:C.muted,border:`1px solid ${C.border}`,borderRadius:4,padding:"1px 5px"}}>SOON</span>
+                      </span>
+                    ) : (
+                      <span key={j} style={{fontSize:13,color:C.sub,cursor:"pointer"}} onClick={()=>{const el=document.getElementById(item.anchor);if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-64,behavior:"smooth"});}}>
+                        {item.label}
+                      </span>
+                    )
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:20,paddingTop:28,borderTop:`1px solid ${C.border}`}}>
+            <span style={{fontSize:12.5,color:C.muted}}>© 2026 SOLVA.AI. All rights reserved.</span>
+            <div style={{display:"flex",gap:22,alignItems:"center"}}>
+              <span onClick={()=>navigate("/privacy")} style={{fontSize:12.5,color:C.muted,cursor:"pointer"}}>Privacy Policy</span>
+              <span onClick={()=>navigate("/terms")} style={{fontSize:12.5,color:C.muted,cursor:"pointer"}}>Terms of Service</span>
+              <div style={{display:"flex",gap:14}}>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{color:C.muted}}><IconInstagram size={16} strokeWidth={2}/></a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{color:C.muted}}><IconTwitter size={16} strokeWidth={2}/></a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={{color:C.muted}}><IconLinkedin size={16} strokeWidth={2}/></a>
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" style={{color:C.muted}}><IconYoutube size={16} strokeWidth={2}/></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
