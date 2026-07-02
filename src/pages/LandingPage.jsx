@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C, LAYOUT } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp, Link2, Settings2, Sparkles } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -69,6 +69,8 @@ function GlobalStyles() {
         .solution-card{grid-template-columns:1fr!important;padding:32px 24px!important;gap:32px!important;text-align:left!important;}
         .colored-row{grid-template-columns:1fr!important;padding:28px 24px!important;gap:18px!important;text-align:left!important;}
         .colored-row-right{min-width:0!important;}
+        .hiw-row{grid-template-columns:1fr!important;direction:ltr!important;gap:24px!important;}
+        .hiw-line{left:24px!important;transform:none!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -80,11 +82,6 @@ function GlobalStyles() {
         .pricing-price{font-size:48px!important;}
         .pricing-features{gap:14px!important;}
         .pricing-feature-text{font-size:15px!important;}
-        .hiw-section{padding:80px 40px!important;}
-        .hiw-step-circle{width:62px!important;height:62px!important;font-size:18px!important;}
-        .hiw-connector{height:3px!important;opacity:.45!important;top:31px!important;}
-        .hiw-step-title{font-size:19px!important;}
-        .hiw-step-desc{font-size:15px!important;}
         .feat-card{padding:32px 34px!important;min-height:auto!important;}
         .feat-icon{margin-bottom:24px!important;}
         .feat-title{font-size:19px!important;font-weight:800!important;margin-bottom:14px!important;}
@@ -466,20 +463,37 @@ export default function LandingPage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="hiw-section" style={{padding:"56px 40px",maxWidth:820,margin:"0 auto",textAlign:"center"}}>
-        <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.magenta,marginBottom:10,textTransform:"uppercase"}}>Setup in Minutes</p>
-        <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(24px,4vw,42px)",fontWeight:800,letterSpacing:"-.02em",marginBottom:52}}>How Solva Works</h2>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:34,position:"relative"}}>
-          <div className="hiw-connector" style={{position:"absolute",top:24,left:"17%",right:"17%",height:1,background:`linear-gradient(90deg,${C.coral},${C.violet})`,opacity:.25,pointerEvents:"none"}}/>
+      <section id="how-it-works" style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:LAYOUT.sectionPadding.standard}}>
+        <div style={{textAlign:"center",marginBottom:64}}>
+          <p style={{...LAYOUT.eyebrow,color:C.magenta,marginBottom:14}}>Setup In Minutes</p>
+          <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>How Solva Works</h2>
+        </div>
+        <div style={{position:"relative"}}>
+          <div className="hiw-line" style={{position:"absolute",left:"50%",top:0,bottom:0,width:2,background:`linear-gradient(180deg,${C.coral},${C.magenta},${C.violet})`,opacity:.25,transform:"translateX(-50%)"}}/>
           {[
-            {n:"01",title:"Connect Your Store",  desc:"Link your Shopify store with one click. No code, no complexity."},
-            {n:"02",title:"Configure Your AI",   desc:"Set your brand tone, escalation rules, and recovery preferences."},
-            {n:"03",title:"Go Live Instantly",   desc:"Flip the switch. Automation starts from the very first minute."},
-          ].map((s,i)=>(
-            <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
-              <div className="hiw-step-circle" style={{width:50,height:50,borderRadius:"50%",position:"relative",zIndex:1,background:C.card,border:`1px solid ${C.borderHi}`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit',sans-serif",fontWeight:800,fontSize:14,color:C.coral}}>{s.n}</div>
-              <h3 className="hiw-step-title" style={{fontFamily:"'Outfit',sans-serif",fontSize:16.5,fontWeight:700}}>{s.title}</h3>
-              <p className="hiw-step-desc" style={{fontSize:13.5,color:C.sub,lineHeight:1.68}}>{s.desc}</p>
+            {n:"01",icon:<Link2 size={20} strokeWidth={2}/>,title:"Connect Your Store",desc:"Link your Shopify store with one click. No code, no complexity — Solva reads your catalog and order history instantly.",mock:{label:"Solva Setup",bubbles:[{who:"ai",text:"Store connected ✓ Reading your catalog..."}]}},
+            {n:"02",icon:<Settings2 size={20} strokeWidth={2}/>,title:"Configure Your AI",desc:"Set your brand tone, escalation rules, and recovery preferences — or let Solva suggest smart defaults from your store data.",mock:{label:"AI Config",bubbles:[{who:"user",text:"Use a friendly, casual tone"},{who:"ai",text:"Got it — applied across all channels."}]}},
+            {n:"03",icon:<Sparkles size={20} strokeWidth={2}/>,title:"Go Live Instantly",desc:"Flip the switch. Support, returns, and cart recovery start working from the very first minute — automatically.",mock:{label:"Solva AI Agent",bubbles:[{who:"ai",text:"Live and monitoring your store 24/7."}]}},
+          ].map((step,i)=>(
+            <div key={i} className="hiw-row" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:56,alignItems:"center",marginBottom:i<2?72:0,direction:i%2===1?"rtl":"ltr"}}>
+              <div style={{direction:"ltr"}}>
+                <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
+                  <div style={{width:44,height:44,borderRadius:12,background:C.grad,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",flexShrink:0}}>{step.icon}</div>
+                  <span style={{fontSize:13,fontWeight:800,color:C.coral,letterSpacing:".04em"}}>STEP {step.n}</span>
+                </div>
+                <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(20px,2.4vw,26px)",fontWeight:800,marginBottom:12,letterSpacing:"-.01em"}}>{step.title}</h3>
+                <p style={{fontSize:14.5,color:C.sub,lineHeight:1.7}}>{step.desc}</p>
+              </div>
+              <div style={{direction:"ltr"}}>
+                <div style={{background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:16,overflow:"hidden",boxShadow:"0 20px 50px rgba(0,0,0,.3)"}}>
+                  <div style={{background:C.grad,padding:"12px 18px",fontSize:12.5,fontWeight:700,color:"#fff"}}>{step.mock.label}</div>
+                  <div style={{padding:18,display:"flex",flexDirection:"column",gap:10,minHeight:100,background:C.bg}}>
+                    {step.mock.bubbles.map((b,j)=>(
+                      <div key={j} style={{alignSelf:b.who==="user"?"flex-end":"flex-start",maxWidth:"85%",padding:"10px 14px",borderRadius:12,fontSize:12.5,lineHeight:1.5,...(b.who==="user"?{background:C.grad,color:"#fff",borderBottomRightRadius:4}:{background:C.surface,border:`1px solid ${C.border}`,borderBottomLeftRadius:4})}}>{b.text}</div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
