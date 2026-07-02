@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { C } from "../tokens";
+import { C, LAYOUT } from "../tokens";
 import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2 } from "lucide-react";
 
 const PLANS = [
@@ -273,7 +273,7 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section className="hero-section" style={{position:"relative",zIndex:1,padding:"70px 40px 40px",maxWidth:1180,margin:"0 auto"}}>
+      <section className="hero-section" style={{position:"relative",zIndex:1,padding:LAYOUT.sectionPadding.hero,maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
         <div className="hero-grid" style={{display:"flex",flexDirection:"column",textAlign:"left"}}>
 
           <div className="hero-copy" style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}>
@@ -345,9 +345,9 @@ export default function LandingPage() {
       </section>
 
       {/* PROBLEM */}
-      <section className="problem-section-mobile" style={{position:"relative",zIndex:1,padding:"90px 40px 40px",maxWidth:740,margin:"0 auto",textAlign:"center"}}>
-        <p className="fu" style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:16,textTransform:"uppercase"}}>The Problem</p>
-        <h2 className="fu fu1" style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,4.2vw,42px)",fontWeight:800,letterSpacing:"-.02em",lineHeight:1.18,marginBottom:26}}>
+      <section className="problem-section-mobile" style={{position:"relative",zIndex:1,padding:"90px 40px 40px",maxWidth:LAYOUT.maxWidthNarrow,margin:"0 auto",textAlign:"center"}}>
+        <p className="fu" style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:16}}>The Problem</p>
+        <h2 className="fu fu1" style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif",lineHeight:1.18,marginBottom:26}}>
           Most stores go silent when customers need them most
         </h2>
         <p className="fu fu2" style={{fontSize:15.5,color:C.sub,lineHeight:1.8,marginBottom:14}}>
@@ -359,11 +359,11 @@ export default function LandingPage() {
       </section>
 
       {/* SOLUTION */}
-      <section style={{position:"relative",zIndex:1,padding:"70px 40px",maxWidth:1180,margin:"0 auto"}}>
+      <section style={{position:"relative",zIndex:1,padding:"70px 40px",maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
         <div className="solution-card fu" style={{background:"linear-gradient(160deg,var(--card) 0%,var(--dim) 100%)",border:`1px solid ${C.borderHi}`,borderRadius:24,padding:54,display:"grid",gridTemplateColumns:"1.1fr .9fr",gap:48,alignItems:"center"}}>
           <div>
-            <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:16,textTransform:"uppercase"}}>The Solution</p>
-            <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(24px,3.2vw,32px)",fontWeight:800,lineHeight:1.22,letterSpacing:"-.015em",marginBottom:18}}>
+            <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:16}}>The Solution</p>
+            <h3 style={{...LAYOUT.h3,fontFamily:"'Outfit',sans-serif",lineHeight:1.22,marginBottom:18}}>
               Solva makes your store proactive
             </h3>
             <p style={{fontSize:15,color:C.sub,lineHeight:1.75,marginBottom:28}}>
@@ -392,10 +392,10 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section id="features" style={{position:"relative",zIndex:1,padding:"56px 40px",maxWidth:1240,margin:"0 auto"}}>
+      <section id="features" style={{position:"relative",zIndex:1,padding:"56px 40px",maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:40}}>
-          <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:10,textTransform:"uppercase"}}>Core Systems</p>
-          <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,4vw,44px)",fontWeight:800,letterSpacing:"-.02em"}}>Three automations. Zero manual work.</h2>
+          <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:10}}>Core Systems</p>
+          <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Three automations. Zero manual work.</h2>
           <p style={{fontSize:14.5,color:C.sub,lineHeight:1.7,maxWidth:520,margin:"14px auto 0"}}>
             Every team in your store works from the same AI brain — one unified system instead of three disconnected tools.
           </p>
