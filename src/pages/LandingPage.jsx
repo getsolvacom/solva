@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2 } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -66,6 +66,7 @@ function GlobalStyles() {
         .stats-cell:nth-child(2n){border-right:none!important;}
         .stats-cell:nth-child(3),.stats-cell:nth-child(4){border-bottom:none!important;}
         .problem-section-mobile{padding:60px 24px 30px!important;}
+        .solution-card{grid-template-columns:1fr!important;padding:32px 24px!important;gap:32px!important;text-align:left!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -355,6 +356,39 @@ export default function LandingPage() {
         <p className="fu fu3" style={{fontSize:15.5,color:C.sub,lineHeight:1.8}}>
           Support tickets pile up overnight. Returns get processed instead of prevented. Carts go cold. By the time a human responds, the sale — or the customer — is already gone.
         </p>
+      </section>
+
+      {/* SOLUTION */}
+      <section style={{position:"relative",zIndex:1,padding:"70px 40px",maxWidth:1180,margin:"0 auto"}}>
+        <div className="solution-card fu" style={{background:"linear-gradient(160deg,var(--card) 0%,var(--dim) 100%)",border:`1px solid ${C.borderHi}`,borderRadius:24,padding:54,display:"grid",gridTemplateColumns:"1.1fr .9fr",gap:48,alignItems:"center"}}>
+          <div>
+            <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:16,textTransform:"uppercase"}}>The Solution</p>
+            <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(24px,3.2vw,32px)",fontWeight:800,lineHeight:1.22,letterSpacing:"-.015em",marginBottom:18}}>
+              Solva makes your store proactive
+            </h3>
+            <p style={{fontSize:15,color:C.sub,lineHeight:1.75,marginBottom:28}}>
+              One AI brain handles support, returns, and cart recovery together — not three disconnected tools bolted onto your storefront. It detects what a shopper needs, responds instantly, and resolves it before a human ever has to step in.
+            </p>
+            <button className="btn-primary" onClick={()=>{const el=document.getElementById('how-it-works');if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-64,behavior:"smooth"});}} style={{padding:"13px 26px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14}}>
+              See How It Works
+            </button>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:22}}>
+            {[
+              {icon:<Radar size={18} strokeWidth={2}/>,        title:"Detects intent",       desc:"Reads order status, hesitation, and support signals in real time."},
+              {icon:<MessageCircle size={18} strokeWidth={2}/>,title:"Starts conversations", desc:"Reaches out with context — no generic greeting, no wasted back-and-forth."},
+              {icon:<CheckCircle2 size={18} strokeWidth={2}/>, title:"Resolves automatically",desc:"Closes the loop — refund, reorder, or recovery — without waiting on a human."},
+            ].map((b,i)=>(
+              <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+                <div style={{width:36,height:36,borderRadius:10,background:"rgba(229,82,102,.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:C.coral}}>{b.icon}</div>
+                <div>
+                  <b style={{fontSize:14,fontWeight:700,display:"block",marginBottom:3}}>{b.title}</b>
+                  <span style={{fontSize:12.5,color:C.muted,lineHeight:1.5}}>{b.desc}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* FEATURES */}
