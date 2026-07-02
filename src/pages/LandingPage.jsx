@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C, LAYOUT } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp, Link2, Settings2, Sparkles, ShoppingBag, Mail, MessageSquare, Webhook } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp, Link2, Settings2, Sparkles, ShoppingBag, Mail, MessageSquare, Webhook, CreditCard, XCircle, Lock } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -72,6 +72,7 @@ function GlobalStyles() {
         .hiw-row{grid-template-columns:1fr!important;direction:ltr!important;gap:24px!important;}
         .hiw-line{display:none!important;}
         .integrations-grid{grid-template-columns:1fr 1fr!important;gap:12px!important;}
+        .trust-grid{grid-template-columns:1fr!important;gap:14px!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -518,6 +519,30 @@ export default function LandingPage() {
               <div style={{color:item.color}}>{item.icon}</div>
               <span style={{fontSize:14.5,fontWeight:700}}>{item.name}</span>
               {!item.live && <span style={{fontSize:10.5,fontWeight:700,color:item.color,letterSpacing:".04em",textTransform:"uppercase"}}>Coming soon</span>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* TRUST GRID */}
+      <section style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:LAYOUT.sectionPadding.compact}}>
+        <div style={{textAlign:"center",marginBottom:48}}>
+          <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>Zero Risk</p>
+          <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Try Solva with nothing to lose</h2>
+        </div>
+        <div className="trust-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
+          {[
+            {icon:<CreditCard size={20} strokeWidth={2}/>,title:"14 days free",desc:"Full access, no credit card required to start."},
+            {icon:<XCircle size={20} strokeWidth={2}/>,title:"Cancel anytime",desc:"No annual lock-in. Leave whenever you want."},
+            {icon:<Zap size={20} strokeWidth={2}/>,title:"Live in 2 minutes",desc:"Connect your Shopify store and Solva starts working immediately."},
+            {icon:<ShieldCheck size={20} strokeWidth={2}/>,title:"Shopify-native",desc:"Reads your real catalog and order history — no manual setup."},
+            {icon:<Lock size={20} strokeWidth={2}/>,title:"GDPR compliant",desc:"Built with proper data handling from day one, not bolted on later."},
+            {icon:<ShieldCheck size={20} strokeWidth={2}/>,title:"Your data, protected",desc:"We never sell customer data. Full stop."},
+          ].map((item,i)=>(
+            <div key={i} style={{border:`1px solid ${C.border}`,borderRadius:16,padding:"28px 26px",background:C.card}}>
+              <div style={{width:40,height:40,borderRadius:11,background:"rgba(229,82,102,.12)",display:"flex",alignItems:"center",justifyContent:"center",color:C.coral,marginBottom:16}}>{item.icon}</div>
+              <h3 style={{fontSize:15.5,fontWeight:700,marginBottom:8}}>{item.title}</h3>
+              <p style={{fontSize:13,color:C.sub,lineHeight:1.6}}>{item.desc}</p>
             </div>
           ))}
         </div>
