@@ -446,8 +446,8 @@ export default function LandingPage() {
               cta:"Explore Cart Recovery →"
             },
           ].map((row,i)=>(
-            <div key={i} className="colored-row" style={{background:row.grad,borderRadius:20,padding:"44px 48px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:36,alignItems:"center"}}>
-              <span style={{fontSize:15,fontWeight:800,color:"rgba(255,255,255,.55)",fontFamily:"'Outfit',sans-serif"}}>{row.n}</span>
+            <div key={i} className="colored-row" style={{background:row.grad,borderRadius:20,padding:"44px 48px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:36,alignItems:"start"}}>
+              <span style={{fontSize:17,fontWeight:800,color:"rgba(255,255,255,.85)",fontFamily:"'Outfit',sans-serif",WebkitTextStroke:"0.5px rgba(255,255,255,.3)",paddingTop:4}}>{row.n}</span>
               <div>
                 <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(19px,2.2vw,24px)",fontWeight:800,color:"#fff",lineHeight:1.28,marginBottom:10,letterSpacing:"-.01em"}}>{row.title}</h3>
                 <p style={{fontSize:13.5,color:"rgba(255,255,255,.82)",lineHeight:1.65,maxWidth:520}}>{row.desc}</p>
@@ -458,7 +458,7 @@ export default function LandingPage() {
                     <Check size={14} strokeWidth={2.5} style={{marginTop:1,flexShrink:0,color:"rgba(255,255,255,.7)"}}/>{b}
                   </div>
                 ))}
-                <span style={{fontSize:12.5,fontWeight:700,color:"#fff",marginTop:6,cursor:"pointer"}}>{row.cta}</span>
+                <span onClick={()=>{const el=document.getElementById('features');if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-64,behavior:"smooth"});}} style={{fontSize:12.5,fontWeight:700,color:"#fff",marginTop:6,cursor:"pointer"}}>{row.cta}</span>
               </div>
             </div>
           ))}
