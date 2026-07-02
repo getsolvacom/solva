@@ -70,7 +70,7 @@ function GlobalStyles() {
         .colored-row{grid-template-columns:1fr!important;padding:28px 24px!important;gap:18px!important;text-align:left!important;}
         .colored-row-right{min-width:0!important;}
         .hiw-row{grid-template-columns:1fr!important;direction:ltr!important;gap:24px!important;}
-        .hiw-line{left:24px!important;transform:none!important;}
+        .hiw-line{display:none!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
