@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C, LAYOUT } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp, Link2, Settings2, Sparkles, ShoppingBag, Mail, MessageSquare, Webhook, CreditCard, XCircle, Lock } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp, Link2, Settings2, Sparkles, ShoppingBag, Mail, MessageSquare, Webhook, CreditCard, XCircle, Lock, ChevronDown } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -73,6 +73,7 @@ function GlobalStyles() {
         .hiw-line{display:none!important;}
         .integrations-grid{grid-template-columns:1fr 1fr!important;gap:12px!important;}
         .trust-grid{grid-template-columns:1fr!important;gap:14px!important;}
+        .faq-grid{grid-template-columns:1fr!important;gap:0!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -173,6 +174,7 @@ export default function LandingPage() {
   }, [annBarVisible]);
 
   const [checkoutLoading, setCheckoutLoading] = useState(null);
+  const [openFaq, setOpenFaq] = useState(null);
 
   const VARIANT_IDS = { Starter: '1816146', Growth: '1816190', Scale: '1816290' };
 
@@ -580,6 +582,34 @@ export default function LandingPage() {
                 style={{width:"100%",padding:"11px",borderRadius:9,color:"#fff",fontWeight:600,fontSize:13.5,opacity:checkoutLoading===plan.name?.65:1}}>
                 {checkoutLoading === plan.name ? "Loading..." : "Get Started →"}
               </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidthMedium,margin:"0 auto",padding:LAYOUT.sectionPadding.standard}}>
+        <div style={{textAlign:"center",marginBottom:48}}>
+          <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>FAQ</p>
+          <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Got questions?</h2>
+        </div>
+        <div className="faq-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 40px"}}>
+          {[
+            {q:"What does Solva actually automate?",a:"Solva automates three things: AI support ticket resolution, return request deflection, and abandoned cart recovery — all from one connected platform, reading directly from your Shopify store."},
+            {q:"How long does setup take?",a:"About 2 minutes. Connect your Shopify store with one click, configure your brand tone, and you're live."},
+            {q:"Do I need a credit card to start?",a:"No. The 14-day free trial requires no credit card. You only add payment details if you choose to continue."},
+            {q:"Can I customize the AI's tone?",a:"Yes. You can set a tone that matches your brand, add custom FAQs, and give the AI global instructions it always follows."},
+            {q:"What happens when the AI can't resolve something?",a:"It escalates to your team automatically with full context, so nothing falls through the cracks."},
+            {q:"Is my customer data secure?",a:"Yes — Solva is built GDPR-compliant from day one, and we never sell or share your customer data."},
+          ].map((item,i)=>(
+            <div key={i} style={{borderBottom:`1px solid ${C.border}`,padding:"20px 0",cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?null:i)}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
+                <span style={{fontSize:14.5,fontWeight:700}}>{item.q}</span>
+                <ChevronDown size={18} strokeWidth={2} style={{flexShrink:0,color:C.muted,transition:"transform .25s",transform:openFaq===i?"rotate(180deg)":"rotate(0)"}}/>
+              </div>
+              <div style={{maxHeight:openFaq===i?200:0,opacity:openFaq===i?1:0,overflow:"hidden",transition:"max-height .3s ease,opacity .25s ease,margin-top .3s ease",marginTop:openFaq===i?12:0}}>
+                <p style={{fontSize:13.5,color:C.sub,lineHeight:1.7}}>{item.a}</p>
+              </div>
             </div>
           ))}
         </div>
