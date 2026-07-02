@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C, LAYOUT } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp, Link2, Settings2, Sparkles } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp, Link2, Settings2, Sparkles, ShoppingBag, Mail, MessageSquare, Webhook } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -71,6 +71,7 @@ function GlobalStyles() {
         .colored-row-right{min-width:0!important;}
         .hiw-row{grid-template-columns:1fr!important;direction:ltr!important;gap:24px!important;}
         .hiw-line{display:none!important;}
+        .integrations-grid{grid-template-columns:1fr 1fr!important;gap:12px!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -494,6 +495,29 @@ export default function LandingPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* INTEGRATIONS */}
+      <section style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:LAYOUT.sectionPadding.compact,textAlign:"center"}}>
+        <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>Integrations</p>
+        <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif",marginBottom:16}}>Built on Shopify. Ready to connect.</h2>
+        <p style={{fontSize:14.5,color:C.sub,maxWidth:480,margin:"0 auto 48px",lineHeight:1.7}}>
+          Solva reads your Shopify catalog and orders natively. Email, SMS, and helpdesk integrations are on the roadmap.
+        </p>
+        <div className="integrations-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16}}>
+          {[
+            {icon:<ShoppingBag size={22} strokeWidth={1.8}/>,name:"Shopify",live:true},
+            {icon:<Mail size={22} strokeWidth={1.8}/>,name:"Email",live:false},
+            {icon:<MessageSquare size={22} strokeWidth={1.8}/>,name:"SMS",live:false},
+            {icon:<Webhook size={22} strokeWidth={1.8}/>,name:"Helpdesk",live:false},
+          ].map((item,i)=>(
+            <div key={i} style={{border:`1px solid ${C.border}`,borderRadius:14,padding:"28px 16px",background:C.card,display:"flex",flexDirection:"column",alignItems:"center",gap:10,opacity:item.live?1:0.55}}>
+              <div style={{color:item.live?C.coral:C.muted}}>{item.icon}</div>
+              <span style={{fontSize:13,fontWeight:700}}>{item.name}</span>
+              {!item.live && <span style={{fontSize:10,color:C.muted,letterSpacing:".04em",textTransform:"uppercase"}}>Coming soon</span>}
             </div>
           ))}
         </div>
