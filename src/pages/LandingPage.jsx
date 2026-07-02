@@ -509,15 +509,15 @@ export default function LandingPage() {
         </p>
         <div className="integrations-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16}}>
           {[
-            {icon:<ShoppingBag size={22} strokeWidth={1.8}/>,name:"Shopify",live:true},
-            {icon:<Mail size={22} strokeWidth={1.8}/>,name:"Email",live:false},
-            {icon:<MessageSquare size={22} strokeWidth={1.8}/>,name:"SMS",live:false},
-            {icon:<Webhook size={22} strokeWidth={1.8}/>,name:"Helpdesk",live:false},
+            {icon:<ShoppingBag size={26} strokeWidth={1.8}/>,name:"Shopify",live:true,color:"#95BF47"},
+            {icon:<Mail size={26} strokeWidth={1.8}/>,name:"Email",live:false,color:"#8B7591"},
+            {icon:<MessageSquare size={26} strokeWidth={1.8}/>,name:"SMS",live:false,color:"#8B7591"},
+            {icon:<Webhook size={26} strokeWidth={1.8}/>,name:"Helpdesk",live:false,color:"#8B7591"},
           ].map((item,i)=>(
-            <div key={i} style={{border:`1px solid ${C.border}`,borderRadius:14,padding:"28px 16px",background:C.card,display:"flex",flexDirection:"column",alignItems:"center",gap:10,opacity:item.live?1:0.55}}>
-              <div style={{color:item.live?C.coral:C.muted}}>{item.icon}</div>
-              <span style={{fontSize:13,fontWeight:700}}>{item.name}</span>
-              {!item.live && <span style={{fontSize:10,color:C.muted,letterSpacing:".04em",textTransform:"uppercase"}}>Coming soon</span>}
+            <div key={i} style={{border:`1px solid ${item.live?item.color+'40':C.border}`,borderRadius:14,padding:"34px 18px",background:C.card,display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
+              <div style={{color:item.color}}>{item.icon}</div>
+              <span style={{fontSize:14.5,fontWeight:700}}>{item.name}</span>
+              {!item.live && <span style={{fontSize:10.5,fontWeight:700,color:item.color,letterSpacing:".04em",textTransform:"uppercase"}}>Coming soon</span>}
             </div>
           ))}
         </div>
