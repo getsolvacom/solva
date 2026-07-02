@@ -396,6 +396,9 @@ export default function LandingPage() {
         <div style={{textAlign:"center",marginBottom:50}}>
           <p style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:C.coral,marginBottom:10,textTransform:"uppercase"}}>Core Systems</p>
           <h2 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(26px,4vw,44px)",fontWeight:800,letterSpacing:"-.02em"}}>Three automations. Zero manual work.</h2>
+          <p style={{fontSize:14.5,color:C.sub,lineHeight:1.7,maxWidth:520,margin:"14px auto 0"}}>
+            Every team in your store works from the same AI brain — one unified system instead of three disconnected tools.
+          </p>
         </div>
         <div className="features-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
           {[
@@ -404,10 +407,10 @@ export default function LandingPage() {
             {icon:<ShoppingCart size={28} strokeWidth={2}/>,title:"Cart Recovery",      color:C.blue,  stat:"3-touch recovery sequence",desc:"A 3-touch AI sequence — email, SMS, and a personalised follow-up — written dynamically based on cart contents."},
           ].map((f,i)=>(
             <div key={i} className="card-hover feat-card" style={{padding:28,borderRadius:16,background:C.card,border:`1px solid ${C.border}`,display:"flex",flexDirection:"column"}}>
-              <div className="feat-icon" style={{width:48,height:48,borderRadius:13,marginBottom:18,background:`${f.color}14`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{f.icon}</div>
+              <div className="feat-icon" style={{width:48,height:48,borderRadius:13,marginBottom:18,background:`${f.color}1F`,color:f.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{f.icon}</div>
               <h3 className="feat-title" style={{fontFamily:"'Outfit',sans-serif",fontSize:17.5,fontWeight:700,marginBottom:10}}>{f.title}</h3>
               <p className="feat-desc" style={{fontSize:13.5,color:C.sub,lineHeight:1.68,marginBottom:18,flex:1}}>{f.desc}</p>
-              <div className="feat-badge" style={{padding:"7px 13px",borderRadius:8,background:`${f.color}10`,border:`1px solid ${f.color}26`}}>
+              <div className="feat-badge" style={{padding:"7px 13px",borderRadius:8,background:`${f.color}18`,border:`1px solid ${f.color}35`}}>
                 <span className="feat-badge-text" style={{fontSize:11.5,color:f.color,fontWeight:600,display:"inline-flex",alignItems:"center",gap:5}}><BarChart3 size={14} strokeWidth={2}/>{f.stat}</span>
               </div>
             </div>
