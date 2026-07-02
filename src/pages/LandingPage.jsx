@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { C, LAYOUT } from "../tokens";
-import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2 } from "lucide-react";
+import { Menu, X, Bot, RotateCcw, ShoppingCart, BarChart3, ArrowUpRight, Check, Radar, MessageCircle, CheckCircle2, Zap, ShieldCheck, TrendingUp } from "lucide-react";
 
 const PLANS = [
   { name:"Starter", price:"$19", popular:false, features:["AI Support Agent","1,000 tickets/mo","Basic cart recovery","Email support"] },
@@ -67,6 +67,8 @@ function GlobalStyles() {
         .stats-cell:nth-child(3),.stats-cell:nth-child(4){border-bottom:none!important;}
         .problem-section-mobile{padding:60px 24px 30px!important;}
         .solution-card{grid-template-columns:1fr!important;padding:32px 24px!important;gap:32px!important;text-align:left!important;}
+        .colored-row{grid-template-columns:1fr!important;padding:28px 24px!important;gap:18px!important;text-align:left!important;}
+        .colored-row-right{min-width:0!important;}
       }
       @media(min-width:768px){
         .stats-cell{padding:28px 20px!important;}
@@ -412,6 +414,51 @@ export default function LandingPage() {
               <p className="feat-desc" style={{fontSize:13.5,color:C.sub,lineHeight:1.68,marginBottom:18,flex:1}}>{f.desc}</p>
               <div className="feat-badge" style={{padding:"7px 13px",borderRadius:8,background:`${f.color}18`,border:`1px solid ${f.color}35`}}>
                 <span className="feat-badge-text" style={{fontSize:11.5,color:f.color,fontWeight:600,display:"inline-flex",alignItems:"center",gap:5}}><BarChart3 size={14} strokeWidth={2}/>{f.stat}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* COLORED FEATURE ROWS */}
+      <section style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:"0 40px"}}>
+        <div style={{display:"flex",flexDirection:"column",gap:20,marginBottom:LAYOUT.space.xxxl}}>
+          {[
+            {
+              n:"01", grad:"linear-gradient(135deg,#3ECFB2,#1a8a70)",
+              title:"AI Support Agent resolves before tickets pile up",
+              desc:"Handles order inquiries, shipping questions, and FAQs automatically — escalating only what genuinely needs a human.",
+              bullets:["Answers instantly across chat and email","Understands order status and context","Learns your brand tone and policies","Reduces ticket volume from day one"],
+              cta:"Explore AI Support →"
+            },
+            {
+              n:"02", grad:"linear-gradient(135deg,#F0A04B,#a8621f)",
+              title:"Return Deflection protects margin before refunds happen",
+              desc:"Before a return is processed, Solva offers smart alternatives — exchanges, discounts, troubleshooting — automatically.",
+              bullets:["Detects return intent early","Offers exchanges and store credit first","Reduces refund rate measurably","Surfaces return reason patterns"],
+              cta:"Explore Return Deflection →"
+            },
+            {
+              n:"03", grad:"linear-gradient(135deg,#5BADFF,#1f5aa8)",
+              title:"Cart Recovery brings shoppers back automatically",
+              desc:"A 3-touch AI sequence — written dynamically based on what's actually in the cart — recovers revenue while you sleep.",
+              bullets:["Personalized to real cart contents","3-touch email sequence, fully automated","No manual segmentation required","Recovers revenue 24/7"],
+              cta:"Explore Cart Recovery →"
+            },
+          ].map((row,i)=>(
+            <div key={i} className="colored-row" style={{background:row.grad,borderRadius:20,padding:"44px 48px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:36,alignItems:"center"}}>
+              <span style={{fontSize:15,fontWeight:800,color:"rgba(255,255,255,.55)",fontFamily:"'Outfit',sans-serif"}}>{row.n}</span>
+              <div>
+                <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(19px,2.2vw,24px)",fontWeight:800,color:"#fff",lineHeight:1.28,marginBottom:10,letterSpacing:"-.01em"}}>{row.title}</h3>
+                <p style={{fontSize:13.5,color:"rgba(255,255,255,.82)",lineHeight:1.65,maxWidth:520}}>{row.desc}</p>
+              </div>
+              <div className="colored-row-right" style={{display:"flex",flexDirection:"column",gap:10,minWidth:240}}>
+                {row.bullets.map((b,j)=>(
+                  <div key={j} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12.5,color:"rgba(255,255,255,.9)"}}>
+                    <Check size={14} strokeWidth={2.5} style={{marginTop:1,flexShrink:0,color:"rgba(255,255,255,.7)"}}/>{b}
+                  </div>
+                ))}
+                <span style={{fontSize:12.5,fontWeight:700,color:"#fff",marginTop:6,cursor:"pointer"}}>{row.cta}</span>
               </div>
             </div>
           ))}
