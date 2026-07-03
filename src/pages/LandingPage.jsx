@@ -684,7 +684,7 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer style={{position:"relative",zIndex:1,borderTop:`1px solid ${C.border}`,padding:"64px 40px 32px"}}>
         <div style={{maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
-          <div className="footer-grid" style={{display:"grid",gridTemplateColumns:"1.4fr 1fr 1fr 1fr",gap:40,marginBottom:48}}>
+          <div className="footer-grid" style={{display:"grid",gridTemplateColumns:"1.4fr 1fr 1fr 1fr 1fr",gap:40,marginBottom:48}}>
             <div>
               <div style={{marginBottom:14}}><SolvaLogo/></div>
               <p style={{fontSize:13,color:C.sub,lineHeight:1.7,marginBottom:20,maxWidth:280}}>
@@ -723,12 +723,22 @@ export default function LandingPage() {
                 {label:"About", soon:true},
                 {label:"Contact", soon:true},
               ]},
+              {title:"Follow Us", social:true, items:[
+                {label:"Instagram", href:"https://instagram.com", icon:<IconInstagram size={15} strokeWidth={2}/>},
+                {label:"X", href:"https://twitter.com", icon:<IconTwitter size={15} strokeWidth={2}/>},
+                {label:"LinkedIn", href:"https://linkedin.com", icon:<IconLinkedin size={15} strokeWidth={2}/>},
+                {label:"YouTube", href:"https://youtube.com", icon:<IconYoutube size={15} strokeWidth={2}/>},
+              ]},
             ].map((col,i)=>(
               <div key={i}>
                 <p style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:16,textTransform:"uppercase",letterSpacing:".04em"}}>{col.title}</p>
                 <div style={{display:"flex",flexDirection:"column",gap:12}}>
                   {col.items.map((item,j)=>(
-                    item.soon ? (
+                    col.social ? (
+                      <a key={j} href={item.href} target="_blank" rel="noopener noreferrer" style={{fontSize:13,color:C.sub,display:"flex",alignItems:"center",gap:8}}>
+                        <span style={{color:C.muted,display:"flex"}}>{item.icon}</span>{item.label}
+                      </a>
+                    ) : item.soon ? (
                       <span key={j} style={{fontSize:13,color:C.muted,display:"flex",alignItems:"center",gap:6}}>
                         {item.label}<span style={{fontSize:9,fontWeight:700,color:C.muted,border:`1px solid ${C.border}`,borderRadius:4,padding:"1px 5px"}}>SOON</span>
                       </span>
@@ -748,12 +758,6 @@ export default function LandingPage() {
             <div style={{display:"flex",gap:22,alignItems:"center"}}>
               <span onClick={()=>navigate("/privacy")} style={{fontSize:12.5,color:C.muted,cursor:"pointer"}}>Privacy Policy</span>
               <span onClick={()=>navigate("/terms")} style={{fontSize:12.5,color:C.muted,cursor:"pointer"}}>Terms of Service</span>
-              <div style={{display:"flex",gap:14}}>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{color:C.muted}}><IconInstagram size={16} strokeWidth={2}/></a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{color:C.muted}}><IconTwitter size={16} strokeWidth={2}/></a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" style={{color:C.muted}}><IconLinkedin size={16} strokeWidth={2}/></a>
-                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" style={{color:C.muted}}><IconYoutube size={16} strokeWidth={2}/></a>
-              </div>
             </div>
           </div>
         </div>
