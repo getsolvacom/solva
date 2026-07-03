@@ -225,6 +225,7 @@ export default function LandingPage() {
     setNewsletterStatus("loading");
     const { error } = await supabase.from("newsletter_subscribers").insert({ email: newsletterEmail });
     if (error && error.code !== "23505") { // 23505 = unique violation, treat as success (already subscribed)
+      console.error("Newsletter signup error:", error);
       setNewsletterStatus("error");
       return;
     }
