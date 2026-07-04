@@ -1,13 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { supabase } from '../lib/supabase';
+import { DemoContext } from '../context/DemoContext';
 
 export function useDashboardStats() {
+  const { isDemoMode } = useContext(DemoContext);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        if (isDemoMode) return;
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setLoading(false); return; }
 

@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
-import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, Menu, Users } from "lucide-react";
+import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, Menu, Users, ArrowRight } from "lucide-react";
 import AppSidebar       from "./AppSidebar";
 import { useStore }     from "../../hooks/useStore";
+import { DemoContext }  from "../../context/DemoContext";
 import OverviewView     from "./OverviewView";
 import TicketsView      from "./TicketsView";
 import CartRecoveryView from "./CartRecoveryView";
@@ -66,16 +67,19 @@ function DrawerLogo({ small }) {
 
 const BRIGHTNESS_KEY   = "solva-brightness";
 const BRIGHTNESS_EVENT = "solva-brightness-change";
+const DEMO_BANNER_HEIGHT = 44;
 
 export default function DashboardShell({ fixedView }) {
   const navigate             = useNavigate();
   const { view: viewParam }  = useParams();
   const view                 = fixedView || viewParam || "overview";
-  const setView              = (key) => navigate(`/dashboard/${key}`);
+  const { isDemoMode }       = useContext(DemoContext);
+  const basePath             = isDemoMode ? "/demo" : "/dashboard";
+  const setView              = (key) => navigate(`${basePath}/${key}`);
   const goLanding            = () => navigate("/");
   const { store }            = useStore();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const navTo                = (key) => { navigate(`/dashboard/${key}`); setDrawerOpen(false); };
+  const navTo                = (key) => { navigate(`${basePath}/${key}`); setDrawerOpen(false); };
 
   const [brightness, setBrightness] = useState(() => {
     const saved = localStorage.getItem(BRIGHTNESS_KEY);
@@ -101,7 +105,32 @@ export default function DashboardShell({ fixedView }) {
     : undefined;
 
   return (
-    <div className={`dash-root${isMobile && isLandscape ? " ls-mob" : ""}`} style={{display:"flex",height:"100dvh",background:C.bg,overflow:"hidden",overflowX:"hidden",filter:brightnessFilter}}>
+    <div
+      className={`dash-root${isMobile && isLandscape ? " ls-mob" : ""}${isDemoMode ? " demo-mode" : ""}`}
+      style={{display:"flex",height:"100dvh",background:C.bg,overflow:"hidden",overflowX:"hidden",filter:brightnessFilter,boxSizing:"border-box",paddingTop:isDemoMode?DEMO_BANNER_HEIGHT:0}}
+    >
+      {isDemoMode && (
+        <div style={{
+          position:"fixed", top:0, left:0, right:0, height:DEMO_BANNER_HEIGHT,
+          zIndex:10005, display:"flex", alignItems:"center", justifyContent:"center",
+          gap:14, padding:"0 16px", background:C.card, borderBottom:`1px solid ${C.borderHi}`,
+          boxSizing:"border-box", flexWrap:"wrap", fontFamily:"'Outfit',sans-serif",
+        }}>
+          <span style={{fontSize:13, fontWeight:500, color:C.sub, textAlign:"center"}}>
+            You're viewing a demo with sample data
+          </span>
+          <button
+            onClick={()=>navigate("/onboarding")}
+            style={{
+              padding:"6px 16px", borderRadius:8, color:"#fff", fontWeight:700, fontSize:12.5,
+              display:"flex", alignItems:"center", gap:6, flexShrink:0, border:"none", outline:"none",
+              cursor:"pointer", background:C.grad, fontFamily:"'Outfit',sans-serif",
+            }}
+          >
+            Start Free Trial <ArrowRight size={14} strokeWidth={2}/>
+          </button>
+        </div>
+      )}
       <style>{`
         html, body { background: var(--bg) !important; margin: 0; padding: 0; }
         @keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
@@ -129,6 +158,8 @@ export default function DashboardShell({ fixedView }) {
         .ls-mob .mob-nav-item{padding:7px 10px!important;font-size:12.5px!important;}
         .ls-mob.dash-root{height:100dvh!important;overflow:hidden!important;}
         .ls-mob .dash-main-col{overflow:hidden!important;height:100dvh!important;padding-top:var(--mob-h,44px)!important;}
+        .demo-mode .mob-header{top:${DEMO_BANNER_HEIGHT}px!important;}
+        .demo-mode .mob-drawer{top:${DEMO_BANNER_HEIGHT}px!important;height:calc(100dvh - ${DEMO_BANNER_HEIGHT}px)!important;}
       `}</style>
 
       {/* Desktop sidebar */}

@@ -186,11 +186,18 @@ export default function LandingPage() {
   const closeMenu = () => setMenuOpen(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
   }, []);
   const [annBarVisible, setAnnBarVisible] = useState(true);
   const annBarRef = useRef(null);
@@ -348,7 +355,7 @@ export default function LandingPage() {
             </p>
             <div className="fu fu3 hero-ctas-row" style={{display:"flex",gap:12,justifyContent:"flex-start",marginBottom:26}}>
               <button className="btn-primary" onClick={()=>navigate("/onboarding")} style={{padding:"14px 30px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:15}}>Connect Your Store Free →</button>
-              <button className="btn-ghost" onClick={()=>navigate("/dashboard")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>View Live Demo <ArrowUpRight size={18} strokeWidth={2}/></button>
+              <button className="btn-ghost" onClick={()=>navigate(isAuthenticated ? "/dashboard" : "/demo")} style={{padding:"14px 30px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontWeight:500,fontSize:15,display:"flex",alignItems:"center",gap:8}}>{isAuthenticated ? "Go to Dashboard" : "View Live Demo"} <ArrowUpRight size={18} strokeWidth={2}/></button>
             </div>
             <div className="fu fu4 trust-row" style={{display:"flex",gap:20,flexWrap:"wrap",justifyContent:"flex-start",fontSize:13,color:C.muted}}>
               {["No credit card required","Cancel anytime","Live in 2 minutes"].map((t,i)=>(

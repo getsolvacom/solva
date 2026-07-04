@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../../tokens";
 import {
@@ -8,6 +8,7 @@ import {
 import { DollarSign, Inbox, RotateCcw, Clock, TrendingUp, Bot, BarChart3, Zap, UserPlus, CheckCircle2, ShoppingCart } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useDashboardStats } from '../../hooks/useDashboardStats';
+import { DemoContext } from "../../context/DemoContext";
 
 function GlobalStyles() {
   return (
@@ -72,6 +73,8 @@ function SkeletonBlock({ width = "100%", height = 16, radius = 8, style = {} }) 
 
 export default function OverviewView({ setView, isLandscape, isMobile }) {
   const navigate = useNavigate();
+  const { isDemoMode } = useContext(DemoContext);
+  const basePath = isDemoMode ? "/demo" : "/dashboard";
   const [activeChart, setActiveChart] = useState("revenue");
   const [hoveredRow, setHoveredRow] = useState(null);
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -308,17 +311,21 @@ export default function OverviewView({ setView, isLandscape, isMobile }) {
           <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:15,fontWeight:700,color:C.text,marginBottom:16}}>Quick Actions</h3>
           <div className="actions-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
             {[
-              {label:"Configure AI Tone", icon:<Bot size={22} strokeWidth={2}/>,      color:C.coral,   path:"/dashboard/settings/ai"  },
-              {label:"View Full Reports", icon:<BarChart3 size={22} strokeWidth={2}/>, color:C.blue,    path:"/dashboard/analytics"    },
-              {label:"Test Automation",   icon:<Zap size={22} strokeWidth={2}/>,       color:C.magenta, path:"/dashboard/settings/automations"},
-              {label:"Add Team Member",   icon:<UserPlus size={22} strokeWidth={2}/>,  color:C.amber,   path:"/dashboard/settings/team"},
-            ].map((a,i)=>(
-              <button key={i} className="action-card" onClick={()=>navigate(a.path)}
-                style={{padding:"14px 10px",borderRadius:10,border:`1px solid ${C.borderHi}`,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:8,background:"transparent"}}>
+              {label:"Configure AI Tone", icon:<Bot size={22} strokeWidth={2}/>,      color:C.coral,   path:`${basePath}/settings/ai`,  locked:true },
+              {label:"View Full Reports", icon:<BarChart3 size={22} strokeWidth={2}/>, color:C.blue,    path:`${basePath}/analytics`,    locked:false },
+              {label:"Test Automation",   icon:<Zap size={22} strokeWidth={2}/>,       color:C.magenta, path:`${basePath}/settings/automations`, locked:true },
+              {label:"Add Team Member",   icon:<UserPlus size={22} strokeWidth={2}/>,  color:C.amber,   path:`${basePath}/settings/team`, locked:true },
+            ].map((a,i)=>{
+              const blocked = isDemoMode && a.locked;
+              return (
+              <button key={i} className="action-card" onClick={()=>{ if (!blocked) navigate(a.path); }} disabled={blocked}
+                title={blocked ? "Sign up to try this" : undefined}
+                style={{padding:"14px 10px",borderRadius:10,border:`1px solid ${C.borderHi}`,cursor:blocked?"not-allowed":"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:8,background:"transparent",opacity:blocked?0.45:1}}>
                 <div style={{width:36,height:36,borderRadius:10,background:`${a.color}12`,display:"flex",alignItems:"center",justifyContent:"center",color:a.color,fontSize:17}}>{a.icon}</div>
                 <span style={{fontSize:11.5,fontWeight:500,color:C.sub}}>{a.label}</span>
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 

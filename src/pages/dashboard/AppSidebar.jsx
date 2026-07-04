@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { C } from "../../tokens";
 import { useStore } from "../../hooks/useStore";
+import { DemoContext } from "../../context/DemoContext";
 import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, LogOut, Store, Users, ChevronDown, PanelLeftClose, PanelLeftOpen, SlidersHorizontal, Bot, Zap, GitBranch, Bell, CreditCard, Sun, MessageSquare, AlertTriangle, Globe } from "lucide-react";
 
 function SolvaLogo({ collapsed = false }) {
@@ -40,13 +41,15 @@ export default function AppSidebar() {
   const navigate   = useNavigate();
   const location   = useLocation();
   const { store }  = useStore();
+  const { isDemoMode } = useContext(DemoContext);
+  const basePath   = isDemoMode ? "/demo" : "/dashboard";
   const [collapsed,       setCollapsed]       = useState(false);
   const [settingsOpen,    setSettingsOpen]    = useState(location.pathname.includes("/settings"));
 
   const isSettings = location.pathname.includes("/settings");
-  const currentPath = location.pathname.replace("/dashboard/", "");
+  const currentPath = location.pathname.replace(`${basePath}/`, "");
 
-  const setView = (key) => navigate(`/dashboard/${key}`);
+  const setView = (key) => navigate(`${basePath}/${key}`);
   const goLanding = () => navigate("/");
 
   const isActive = (key) => {
@@ -163,6 +166,7 @@ export default function AppSidebar() {
                   {/* Settings main row */}
                   <div
                     className="sb-item"
+                    title={isDemoMode ? "Sign up to try this" : undefined}
                     style={{
                       background: active ? "rgba(229,82,102,.09)" : "transparent",
                       color: active ? C.coral : C.sub,
@@ -170,8 +174,11 @@ export default function AppSidebar() {
                       fontSize: 13.5,
                       justifyContent: collapsed ? "center" : "flex-start",
                       position:"relative",
+                      opacity: isDemoMode ? 0.45 : 1,
+                      cursor: isDemoMode ? "not-allowed" : "pointer",
                     }}
                     onClick={() => {
+                      if (isDemoMode) return;
                       if (collapsed) {
                         setCollapsed(false);
                         setSettingsOpen(true);
@@ -217,11 +224,14 @@ export default function AppSidebar() {
                           <div
                             key={sub.key}
                             className="sb-sub-item"
-                            onClick={() => setView(sub.key)}
+                            title={isDemoMode ? "Sign up to try this" : undefined}
+                            onClick={() => { if (!isDemoMode) setView(sub.key); }}
                             style={{
                               color: subActive ? C.coral : C.muted,
                               fontWeight: subActive ? 600 : 400,
                               background: subActive ? "rgba(229,82,102,.07)" : "transparent",
+                              opacity: isDemoMode ? 0.45 : 1,
+                              cursor: isDemoMode ? "not-allowed" : "pointer",
                             }}
                           >
                             <span style={{display:"inline-flex",alignItems:"center",marginRight:7,color:subActive?C.coral:C.muted,flexShrink:0}}>{sub.icon}</span>

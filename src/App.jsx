@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "./lib/supabase";
+import { DemoContext } from "./context/DemoContext";
 import LandingPage       from "./pages/LandingPage";
 import LoginPage         from "./pages/LoginPage";
 import OnboardingPage    from "./pages/OnboardingPage";
@@ -9,6 +10,14 @@ import ShopifyCallback   from "./pages/ShopifyCallback";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import PrivacyPage       from "./pages/PrivacyPage";
 import TermsPage         from "./pages/TermsPage";
+
+function DemoRoute({ children }) {
+  return (
+    <DemoContext.Provider value={{ isDemoMode: true }}>
+      {children}
+    </DemoContext.Provider>
+  );
+}
 
 export default function App() {
   const navigate = useNavigate();
@@ -111,6 +120,11 @@ export default function App() {
         !hasStore ? <Navigate to="/onboarding" replace /> :
         <DashboardShell />
       } />
+      <Route path="/demo" element={<DemoRoute><DashboardShell /></DemoRoute>} />
+      <Route path="/demo/:view" element={<DemoRoute><DashboardShell /></DemoRoute>} />
+      <Route path="/demo/tickets/:ticketId" element={<DemoRoute><DashboardShell fixedView="tickets" /></DemoRoute>} />
+      <Route path="/demo/cart/:cartId" element={<DemoRoute><DashboardShell fixedView="cart" /></DemoRoute>} />
+      <Route path="/demo/returns/:returnId" element={<DemoRoute><DashboardShell fixedView="returns" /></DemoRoute>} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/auth/shopify/callback" element={<ShopifyCallback />} />

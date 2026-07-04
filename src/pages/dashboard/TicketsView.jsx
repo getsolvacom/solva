@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import {
@@ -9,6 +9,7 @@ import {
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
 import { supabase } from "../../lib/supabase";
+import { DemoContext } from "../../context/DemoContext";
 
 const TICKETS = [
   {
@@ -227,6 +228,8 @@ function Bubble({ msg, idx }) {
 export default function TicketsView({ isLandscape, isMobile }) {
   const navigate                              = useNavigate();
   const { ticketId }                          = useParams();
+  const { isDemoMode }                        = useContext(DemoContext);
+  const basePath                              = isDemoMode ? "/demo" : "/dashboard";
   const selectedId                            = ticketId || "TK-1041";
   const mobilePanel                           = ticketId ? "chat" : "list";
   const [filter,          setFilter]          = useState("All");
@@ -297,6 +300,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
+        if (isDemoMode) return;
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setTicketsLoading(false); return; }
         const { data: storeData } = await supabase
@@ -403,19 +408,21 @@ export default function TicketsView({ isLandscape, isMobile }) {
   }
 
   function handleEscalate() {
+    if (isDemoMode) return;
     setStatusOverrides(prev => ({ ...prev, [selectedId]: "escalated" }));
     setTicketEscalated(prev => ({ ...prev, [selectedId]: true }));
     fireToast("Ticket escalated to human agent", "#F0A04B", "rgba(240,160,75,.12)");
   }
 
   function handleClose() {
+    if (isDemoMode) return;
     setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
     setTicketClosed(prev => ({ ...prev, [selectedId]: true }));
     fireToast("Ticket closed successfully", "#3ECFB2", "rgba(62,207,178,.12)");
   }
 
   function handleSend() {
-    if (!reply.trim()) return;
+    if (isDemoMode || !reply.trim()) return;
     const time = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
     setExtraMessages(prev => ({
       ...prev,
@@ -425,6 +432,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
   }
 
   const generateAIReply = async (ticketText) => {
+    if (isDemoMode) return;
     setAiLoading(true);
     try {
       const response = await fetch('/api/ai/ticket-resolve', {
@@ -484,7 +492,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
   }
 
   function handleTicketSelect(id) {
-    navigate("/dashboard/tickets/" + id);
+    navigate(`${basePath}/tickets/` + id);
   }
 
   function handleEmojiInsert(emoji) {
@@ -687,17 +695,19 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   <div style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · {selected.type}</div>
                 </div>
               </div>
-              <button className="tv-back-btn btn-ghost" onClick={() => navigate("/dashboard/tickets")}
+              <button className="tv-back-btn btn-ghost" onClick={() => navigate(`${basePath}/tickets`)}
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Tickets
               </button>
               <div style={{display:"flex",gap:8}}>
-                <button className="btn-ghost" onClick={handleEscalate} disabled={escalateDisabled}
-                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center",cursor:"pointer"}}>
+                <button className="btn-ghost" onClick={isDemoMode ? undefined : handleEscalate} disabled={escalateDisabled || isDemoMode}
+                  title={isDemoMode ? "Sign up to try this" : undefined}
+                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center",cursor:isDemoMode?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
                   <ShieldAlert size={16} strokeWidth={2} style={{marginRight:6}}/>Escalate
                 </button>
-                <button className="btn-primary" onClick={handleClose} disabled={closeDisabled}
-                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center"}}>
+                <button className="btn-primary" onClick={isDemoMode ? undefined : handleClose} disabled={closeDisabled || isDemoMode}
+                  title={isDemoMode ? "Sign up to try this" : undefined}
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",cursor:isDemoMode?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
                   <XCircle size={16} strokeWidth={2} style={{marginRight:6}}/>Close Ticket
                 </button>
               </div>
@@ -721,10 +731,12 @@ export default function TicketsView({ isLandscape, isMobile }) {
               </span>
               <button
                 onClick={() => {
+                  if (isDemoMode) return;
                   const lastCustomerMsg = [...effectiveMsgs].reverse().find(m => m.from === 'customer');
                   if (lastCustomerMsg) generateAIReply(lastCustomerMsg.text);
                 }}
-                disabled={aiLoading || effectiveStatus === 'resolved' || effectiveStatus === 'escalated'}
+                disabled={isDemoMode || aiLoading || effectiveStatus === 'resolved' || effectiveStatus === 'escalated'}
+                title={isDemoMode ? "Sign up to try this" : undefined}
                 className="btn-primary"
                 style={{
                   marginLeft: 'auto',
@@ -737,7 +749,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   alignItems: 'center',
                   gap: 5,
                   flexShrink: 0,
-                  opacity: (aiLoading || effectiveStatus === 'resolved' || effectiveStatus === 'escalated') ? 0.5 : 1,
+                  cursor: isDemoMode ? "not-allowed" : "pointer",
+                  opacity: (isDemoMode || aiLoading || effectiveStatus === 'resolved' || effectiveStatus === 'escalated') ? 0.5 : 1,
                 }}
               >
                 {aiLoading ? (
@@ -870,13 +883,15 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   {/* Right: split send */}
                   <div style={{position:"relative"}} ref={schedRef}>
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
-                      <button className="btn-primary" onClick={handleSend}
-                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:"pointer"}}>
+                      <button className="btn-primary" onClick={isDemoMode ? undefined : handleSend} disabled={isDemoMode}
+                        title={isDemoMode ? "Sign up to try this" : undefined}
+                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:isDemoMode?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
                         <Send size={14} strokeWidth={2}/>Send
                       </button>
                       <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
-                      <button onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
-                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:C.surface,border:`1px solid ${C.border}`}}>
+                      <button onClick={()=>{ if (!isDemoMode) { setSchedMenuOpen(o=>!o); setSchedPickOpen(false); } }} disabled={isDemoMode}
+                        title={isDemoMode ? "Sign up to try this" : undefined}
+                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:isDemoMode?"not-allowed":"pointer",background:C.surface,border:`1px solid ${C.border}`,opacity:isDemoMode?0.45:1}}>
                         <ChevronUp size={16} strokeWidth={2.5} style={{color:C.text}}/>
                       </button>
                     </div>

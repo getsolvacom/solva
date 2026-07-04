@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import {
@@ -9,6 +9,7 @@ import {
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
 import { supabase } from "../../lib/supabase";
+import { DemoContext } from "../../context/DemoContext";
 
 const RETURNS = [
   {
@@ -236,6 +237,8 @@ function Bubble({ msg, idx }) {
 export default function ReturnsView({ isLandscape, isMobile }) {
   const navigate                                      = useNavigate();
   const { returnId }                                  = useParams();
+  const { isDemoMode }                                = useContext(DemoContext);
+  const basePath                                      = isDemoMode ? "/demo" : "/dashboard";
   const selectedId                                    = returnId || "RT-0544";
   const mobilePanel                                   = returnId ? "detail" : "list";
   const [filter,              setFilter]              = useState("All");
@@ -293,6 +296,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   useEffect(() => {
     const fetchReturns = async () => {
       try {
+        if (isDemoMode) return;
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setReturnsLoading(false); return; }
         const { data: storeData } = await supabase
@@ -375,10 +380,11 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     : [];
 
   function handleReturnSelect(id) {
-    navigate("/dashboard/returns/" + id);
+    navigate(`${basePath}/returns/` + id);
   }
 
   function handleOverride() {
+    if (isDemoMode) return;
     setStatusOverrides(prev => ({...prev, [selectedId]:"manual_override"}));
     setOverrideToast(true);
     setOverrideToastFading(false);
@@ -387,7 +393,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   }
 
   const generateAIDeflection = async () => {
-    if (!selected) return;
+    if (isDemoMode || !selected) return;
     setAiDeflectionLoading(true);
     setAiDeflection(null);
     try {
@@ -415,7 +421,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   };
 
   function handleSend() {
-    if (!chatInput.trim()) return;
+    if (isDemoMode || !chatInput.trim()) return;
     const now  = new Date();
     const time = now.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"});
     setExtraMessages(prev => ({...prev, [selectedId]:[...(prev[selectedId]||[]), {from:"agent", text:chatInput.trim(), time}]}));
@@ -643,7 +649,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Order {selected.orderRef}</span>
                 </div>
               </div>
-              <button className="rv-back-btn btn-ghost" onClick={()=>navigate("/dashboard/returns")}
+              <button className="rv-back-btn btn-ghost" onClick={()=>navigate(`${basePath}/returns`)}
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Returns
               </button>
@@ -651,7 +657,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 <button
                   className="btn-ghost"
                   onClick={generateAIDeflection}
-                  disabled={aiDeflectionLoading}
+                  disabled={aiDeflectionLoading || isDemoMode}
+                  title={isDemoMode ? "Sign up to try this" : undefined}
                   style={{
                     padding: "7px 14px",
                     borderRadius: 8,
@@ -661,7 +668,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    opacity: aiDeflectionLoading ? 0.6 : 1,
+                    opacity: (aiDeflectionLoading || isDemoMode) ? (isDemoMode ? 0.45 : 0.6) : 1,
+                    cursor: isDemoMode ? "not-allowed" : "pointer",
                     marginRight: 8,
                   }}
                 >
@@ -676,8 +684,9 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 </button>
               )}
               {selected.status==="pending" && (
-                <button className="btn-primary" disabled={statusOverrides[selectedId]==="manual_override"} onClick={handleOverride}
-                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:statusOverrides[selectedId]==="manual_override"?.75:1,cursor:statusOverrides[selectedId]==="manual_override"?"not-allowed":"pointer",display:"flex",alignItems:"center"}}>
+                <button className="btn-primary" disabled={statusOverrides[selectedId]==="manual_override" || isDemoMode} onClick={handleOverride}
+                  title={isDemoMode ? "Sign up to try this" : undefined}
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:(statusOverrides[selectedId]==="manual_override" || isDemoMode)?.45:1,cursor:(statusOverrides[selectedId]==="manual_override" || isDemoMode)?"not-allowed":"pointer",display:"flex",alignItems:"center"}}>
                   {statusOverrides[selectedId]==="manual_override"
                     ? <><CheckCircle2 size={16} strokeWidth={2} style={{marginRight:6}}/>Override Active</>
                     : <><Zap size={16} strokeWidth={2} style={{marginRight:6}}/>Override AI</>}
@@ -834,13 +843,15 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   {/* Right: split send */}
                   <div style={{position:"relative"}} ref={schedRef}>
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
-                      <button className="btn-primary" onClick={handleSend}
-                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:"pointer"}}>
+                      <button className="btn-primary" onClick={isDemoMode ? undefined : handleSend} disabled={isDemoMode}
+                        title={isDemoMode ? "Sign up to try this" : undefined}
+                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:isDemoMode?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
                         <Send size={14} strokeWidth={2}/>Send
                       </button>
                       <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
-                      <button onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
-                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:C.surface,border:`1px solid ${C.border}`}}>
+                      <button onClick={()=>{ if (!isDemoMode) { setSchedMenuOpen(o=>!o); setSchedPickOpen(false); } }} disabled={isDemoMode}
+                        title={isDemoMode ? "Sign up to try this" : undefined}
+                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:isDemoMode?"not-allowed":"pointer",background:C.surface,border:`1px solid ${C.border}`,opacity:isDemoMode?0.45:1}}>
                         <ChevronUp size={16} strokeWidth={2.5} style={{color:C.text}}/>
                       </button>
                     </div>

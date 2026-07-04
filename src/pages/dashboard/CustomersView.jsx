@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { C } from "../../tokens";
 import { supabase } from "../../lib/supabase";
 import { Search, Users, Ticket, ShoppingCart, RotateCcw, TrendingUp, Mail, Clock, ChevronRight, X } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
+import { DemoContext } from "../../context/DemoContext";
 
 function relativeTime(dateStr) {
   if (!dateStr) return "";
@@ -35,6 +36,7 @@ function SkeletonBlock({ width = "100%", height = 16, radius = 8, style = {} }) 
 }
 
 export default function CustomersView({ isLandscape, isMobile }) {
+  const { isDemoMode } = useContext(DemoContext);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -45,6 +47,7 @@ export default function CustomersView({ isLandscape, isMobile }) {
   useEffect(() => {
     async function load() {
       setLoading(true);
+      if (isDemoMode) { setLoading(false); return; }
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setLoading(false); return; }
       const userId = session.user.id;

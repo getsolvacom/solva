@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2, Search, XCircle, MousePointer } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
 import { supabase } from "../../lib/supabase";
+import { DemoContext } from "../../context/DemoContext";
 
 const CARTS = [
   {
@@ -163,6 +164,8 @@ function GlobalStyles() {
 export default function CartRecoveryView({ isLandscape, isMobile }) {
   const navigate                              = useNavigate();
   const { cartId }                            = useParams();
+  const { isDemoMode }                        = useContext(DemoContext);
+  const basePath                              = isDemoMode ? "/demo" : "/dashboard";
   const selectedId                            = cartId || "CR-0291";
   const mobilePanel                           = cartId ? "detail" : "list";
   const [filter,       setFilter]       = useState("All");
@@ -183,6 +186,8 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   useEffect(() => {
     const fetchCarts = async () => {
       try {
+        if (isDemoMode) return;
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setCartsLoading(false); return; }
         const { data: storeData } = await supabase
@@ -253,11 +258,11 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   };
 
   function handleCartSelect(id) {
-    navigate("/dashboard/cart/" + id);
+    navigate(`${basePath}/cart/` + id);
   }
 
   const handleTrigger = async () => {
-    if (!selected) return;
+    if (isDemoMode || !selected) return;
     setTriggerLoading(true);
     setAiEmail(null);
     try {
@@ -446,7 +451,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
               {/* Back button — mobile only */}
               <button
                 className="cr-back-btn btn-ghost"
-                onClick={()=>navigate("/dashboard/cart")}
+                onClick={()=>navigate(`${basePath}/cart`)}
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}
               >
                 ← Back to Carts
@@ -455,9 +460,10 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
               {/* Action button */}
               <button
                 className="btn-primary"
-                disabled={triggerLoading}
+                disabled={triggerLoading || (isDemoMode && selected.status==="in_sequence")}
+                title={isDemoMode && selected.status==="in_sequence" ? "Sign up to try this" : undefined}
                 onClick={()=>{ if(selected.status==="in_sequence") handleTrigger(); else setModalOpen(true); }}
-                style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,minWidth:160,display:"flex",alignItems:"center",justifyContent:"center",gap:7,opacity:triggerLoading?.82:1,cursor:triggerLoading?"not-allowed":"pointer"}}
+                style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,minWidth:160,display:"flex",alignItems:"center",justifyContent:"center",gap:7,opacity:(triggerLoading || (isDemoMode && selected.status==="in_sequence"))?.45:1,cursor:(triggerLoading || (isDemoMode && selected.status==="in_sequence"))?"not-allowed":"pointer"}}
               >
                 {selected.status==="in_sequence"
                   ? triggerLoading
