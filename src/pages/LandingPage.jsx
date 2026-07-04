@@ -698,7 +698,8 @@ export default function LandingPage() {
               <p style={{fontSize:13,color:C.sub,lineHeight:1.7,marginBottom:20,maxWidth:280}}>
                 AI automation for Shopify stores. Support, returns, and cart recovery — solved automatically.
               </p>
-              <p style={{fontSize:12.5,fontWeight:700,marginBottom:10}}>Get product updates</p>
+              <p style={{fontSize:12.5,fontWeight:700,marginBottom:6}}>Get Launch Updates</p>
+              <p style={{fontSize:12,color:C.sub,marginBottom:10}}>Be the first to know when we ship new features.</p>
               <form onSubmit={handleNewsletterSubmit} style={{display:"flex",gap:8,maxWidth:280}}>
                 <input
                   type="email"
