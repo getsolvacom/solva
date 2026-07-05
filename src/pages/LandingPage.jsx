@@ -63,13 +63,14 @@ function GlobalStyles() {
         .hero-ctas-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;}
         .hero-ctas-row button{white-space:normal!important;text-align:center!important;padding:12px 14px!important;font-size:13.5px!important;line-height:1.3!important;justify-content:center!important;}
         .stats-bar-grid{grid-template-columns:1fr 1fr!important;}
-        .stats-cell{border-right:1px solid var(--border)!important;border-bottom:1px solid var(--border)!important;padding:16px 10px!important;}
+        .stats-cell{border-right:1px solid var(--border)!important;border-bottom:1px solid var(--border)!important;padding:14px 10px!important;}
         .stats-cell:nth-child(2n){border-right:none!important;}
         .stats-cell:nth-child(3),.stats-cell:nth-child(4){border-bottom:none!important;}
+        .stats-number{font-size:19px!important;}
+        .stats-label{font-size:10.5px!important;}
         .problem-section-mobile{padding:60px 24px 30px!important;}
         .solution-card{grid-template-columns:1fr!important;padding:32px 24px!important;gap:32px!important;text-align:left!important;}
-        .colored-row{grid-template-columns:1fr!important;padding:28px 24px!important;gap:18px!important;text-align:left!important;}
-        .colored-row-right{min-width:0!important;}
+        .feat-row{grid-template-columns:1fr!important;direction:ltr!important;gap:24px!important;}
         .hiw-row{grid-template-columns:1fr!important;direction:ltr!important;gap:24px!important;}
         .hiw-line{display:none!important;}
         .integrations-grid{grid-template-columns:1fr 1fr!important;gap:12px!important;}
@@ -78,9 +79,6 @@ function GlobalStyles() {
         .footer-grid{grid-template-columns:1fr!important;gap:32px!important;}
       }
       @media(min-width:768px){
-        .stats-cell{padding:28px 20px!important;}
-        .stats-number{font-size:32px!important;}
-        .stats-label{font-size:13px!important;color:var(--muted)!important;}
         .stats-divider{border-right:1px solid var(--border-hi)!important;}
         .pricing-card{padding:32px 36px!important;}
         .pricing-plan-name{font-size:14.5px!important;color:var(--text)!important;}
@@ -100,20 +98,16 @@ function GlobalStyles() {
         .hero-grid{display:flex!important;flex-direction:column!important;text-align:center!important;}
         .hero-mock{max-width:380px!important;margin-left:auto!important;margin-right:auto!important;}
         .trust-row{margin-bottom:20px!important;}
-        .stats-cell{padding:14px 10px!important;}
-        .stats-number{font-size:19px!important;}
-        .stats-label{font-size:10px!important;}
       }
       @media(min-width:768px){
         .hero-grid{display:grid!important;grid-template-columns:1.1fr .9fr!important;gap:56px!important;align-items:center!important;text-align:left!important;}
         .mock-widget-card{transform:scale(1.08);transform-origin:top right;}
         .hero-mock{padding-right:10px;}
         .stats-bar-grid{grid-template-columns:repeat(4,1fr)!important;}
-        .stats-cell{border-right:1px solid var(--border)!important;}
+        .stats-cell{border-right:1px solid var(--border)!important;padding:18px 20px!important;}
         .stats-cell:last-child{border-right:none!important;}
-        .stats-cell{padding:22px 24px!important;}
-        .stats-number{font-size:46px!important;font-weight:800!important;letter-spacing:-.02em!important;margin-bottom:8px!important;}
-        .stats-label{font-size:14px!important;font-weight:600!important;}
+        .stats-number{font-size:30px!important;font-weight:800!important;letter-spacing:-.02em!important;margin-bottom:5px!important;}
+        .stats-label{font-size:12.5px!important;font-weight:500!important;color:var(--muted)!important;}
       }
       /* ── light-mode overrides (dark mode completely unaffected) ── */
       html.light .nav-scrolled{--nav-shadow:0 8px 24px rgba(0,0,0,.12);}
@@ -178,6 +172,129 @@ function IconYoutube({ size=16, strokeWidth=2 }) {
   );
 }
 
+function FeatMockFrame({ children }) {
+  return (
+    <div style={{borderRadius:20,padding:18,background:"linear-gradient(150deg,rgba(153,42,103,.14),rgba(78,2,105,.08))",border:"1px solid var(--border)"}}>
+      <div style={{background:C.card,border:"1px solid var(--border-hi)",borderRadius:16,padding:20,boxShadow:"0 20px 50px rgba(0,0,0,.25)"}}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function SupportMockup() {
+  const tickets = [
+    { q:"Where is my order?", status:"Resolved", time:"4s" },
+    { q:"Change shipping address", status:"Resolved", time:"6s" },
+    { q:"Discount code not working", status:"Resolved", time:"3s" },
+    { q:"Wholesale inquiry", status:"Escalated", time:"—" },
+  ];
+  return (
+    <FeatMockFrame>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+        <span style={{fontSize:13.5,fontWeight:700,color:C.text}}>Inbox — Today</span>
+        <span style={{fontSize:10.5,fontWeight:700,color:C.teal,background:"rgba(62,207,178,.12)",padding:"4px 10px",borderRadius:100}}>94% auto-resolved</span>
+      </div>
+      {tickets.map((t,i)=>(
+        <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderTop:i>0?"1px solid var(--border)":"none"}}>
+          <MessageSquare size={15} strokeWidth={2} color={C.magenta}/>
+          <span style={{fontSize:13,color:C.sub,flex:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{t.q}</span>
+          <span style={{fontSize:10.5,fontWeight:700,padding:"4px 10px",borderRadius:100,...(t.status==="Resolved"?{color:C.teal,background:"rgba(62,207,178,.12)"}:{color:C.coral,background:"rgba(229,82,102,.12)"})}}>{t.status}</span>
+          <span style={{fontSize:11,color:C.muted,width:30,textAlign:"right"}}>{t.time}</span>
+        </div>
+      ))}
+    </FeatMockFrame>
+  );
+}
+
+function ReturnsMockup() {
+  const outcomes = [
+    { value:"61%", label:"Exchange" },
+    { value:"23%", label:"Store credit" },
+    { value:"16%", label:"Refund" },
+  ];
+  return (
+    <FeatMockFrame>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+        <RotateCcw size={15} strokeWidth={2} color={C.coral}/>
+        <span style={{fontSize:13.5,fontWeight:700,color:C.text}}>Return request — #7203</span>
+      </div>
+      <div style={{background:C.surface,border:"1px solid var(--border)",borderRadius:12,padding:"10px 14px",fontSize:13,color:C.sub,marginBottom:10}}>
+        The jacket runs small, I want to return it.
+      </div>
+      <div style={{background:C.grad,color:"#fff",borderRadius:12,padding:"10px 14px",fontSize:13,marginBottom:16}}>
+        Sorry about the fit! I can send a size L exchange today with free shipping — or store credit with a 10% bonus. Which works best?
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        {outcomes.map((o,i)=>(
+          <div key={i} style={{background:C.surface,border:"1px solid var(--border)",borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+            <div style={{fontSize:15,fontWeight:800,color:C.text}}>{o.value}</div>
+            <div style={{fontSize:10,color:C.muted}}>{o.label}</div>
+          </div>
+        ))}
+      </div>
+    </FeatMockFrame>
+  );
+}
+
+function CartMockup() {
+  const steps = [
+    { icon:<ShoppingCart size={13} strokeWidth={2}/>, title:"Cart abandoned — $186", sub:"3 items · checkout step 2" },
+    { icon:<Mail size={13} strokeWidth={2}/>, title:"Smart reminder sent", sub:"1h 12m later · personalized" },
+    { icon:<Sparkles size={13} strokeWidth={2}/>, title:"Free-shipping offer applied", sub:"Margin-safe incentive" },
+    { icon:<TrendingUp size={13} strokeWidth={2}/>, title:"Order completed", sub:"Recovered automatically", done:true },
+  ];
+  return (
+    <FeatMockFrame>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+        <span style={{fontSize:13.5,fontWeight:700,color:C.text}}>Recovery sequence</span>
+        <span style={{fontSize:10.5,fontWeight:700,color:C.coral,background:"rgba(229,82,102,.12)",padding:"4px 10px",borderRadius:100}}>$4,218 recovered</span>
+      </div>
+      {steps.map((s,i)=>(
+        <div key={i} style={{display:"flex",gap:12}}>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:s.done?C.coral:C.surface,border:`1px solid ${s.done?C.coral:"var(--border)"}`,display:"flex",alignItems:"center",justifyContent:"center",color:s.done?"#fff":C.muted,flexShrink:0}}>
+              {s.icon}
+            </div>
+            {i<steps.length-1 && <div style={{width:1,flex:1,background:"var(--border)",margin:"4px 0"}}/>}
+          </div>
+          <div style={{paddingBottom:18}}>
+            <div style={{fontSize:13,fontWeight:600,color:C.text}}>{s.title}</div>
+            <div style={{fontSize:11,color:C.muted}}>{s.sub}</div>
+          </div>
+        </div>
+      ))}
+    </FeatMockFrame>
+  );
+}
+
+const FEATURE_ROWS = [
+  {
+    icon:<Bot size={14} strokeWidth={2}/>,
+    eyebrow:"AI SUPPORT AGENT",
+    title:"Tickets resolved before they pile up",
+    desc:"Handles order inquiries, shipping questions, and FAQs automatically — escalating only what genuinely needs a human.",
+    bullets:["Answers instantly across chat and email","Understands order status and context","Learns your brand tone and policies","Reduces ticket volume from day one"],
+    mockup:<SupportMockup/>,
+  },
+  {
+    icon:<RotateCcw size={14} strokeWidth={2}/>,
+    eyebrow:"RETURN DEFLECTION",
+    title:"Turn refund requests into revenue you keep",
+    desc:"Before a return is processed, Solva offers smart alternatives — exchanges, discounts, troubleshooting — automatically.",
+    bullets:["Detects return intent early","Offers exchanges and store credit first","Reduces refund rate measurably","Surfaces return reason patterns"],
+    mockup:<ReturnsMockup/>,
+  },
+  {
+    icon:<ShoppingCart size={14} strokeWidth={2}/>,
+    eyebrow:"CART RECOVERY",
+    title:"Abandoned carts, recovered while you sleep",
+    desc:"A 3-touch AI sequence — written dynamically based on what's actually in the cart — recovers revenue while you sleep.",
+    bullets:["Personalized to real cart contents","3-touch email sequence, fully automated","No manual segmentation required","Recovers revenue 24/7"],
+    mockup:<CartMockup/>,
+  },
+];
+
 const NAV_IDS = { "Features":"features", "How It Works":"how-it-works", "Pricing":"pricing" };
 
 export default function LandingPage() {
@@ -187,11 +304,19 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [mockStep, setMockStep] = useState(0);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMockStep(s => (s + 1) % 4);
+    }, 2600);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -378,15 +503,31 @@ export default function LandingPage() {
                 </div>
               </div>
               <div style={{padding:20,display:"flex",flexDirection:"column",gap:14,background:C.bg,minHeight:230}}>
-                <div style={{alignSelf:"flex-start",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomLeftRadius:4,background:C.card,border:`1px solid ${C.border}`,fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
-                  Hi! I noticed your order shipped 3 days ago — want me to pull up the tracking details?
+                <div className="fu" style={{alignSelf:"flex-start",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomLeftRadius:4,background:C.card,border:`1px solid ${C.border}`,fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
+                  Where's my order? It's been 5 days 😤
                 </div>
-                <div style={{alignSelf:"flex-end",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomRightRadius:4,background:C.grad,color:"#fff",fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
-                  Yes please, I haven't received it yet
-                </div>
-                <div style={{alignSelf:"flex-start",display:"flex",gap:5,padding:"12px 16px",borderRadius:14,borderBottomLeftRadius:4,background:C.card,border:`1px solid ${C.border}`}}>
-                  <span className="mock-typing-dot"/><span className="mock-typing-dot"/><span className="mock-typing-dot"/>
-                </div>
+                {mockStep === 0 && (
+                  <div className="fu" style={{alignSelf:"flex-end",display:"flex",gap:5,padding:"12px 16px",borderRadius:14,borderBottomRightRadius:4,background:C.card,border:`1px solid ${C.border}`}}>
+                    <span className="mock-typing-dot"/><span className="mock-typing-dot"/><span className="mock-typing-dot"/>
+                  </div>
+                )}
+                {mockStep >= 1 && (
+                  <div className="fu" style={{alignSelf:"flex-end",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomRightRadius:4,background:C.grad,color:"#fff",fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
+                    I found order <b>#8412</b> — it shipped and arrives <b>tomorrow by 6 PM</b>. Here's your live tracking link.
+                  </div>
+                )}
+                {mockStep >= 2 && (
+                  <div className="fu" style={{alignSelf:"flex-start",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomLeftRadius:4,background:C.card,border:`1px solid ${C.border}`,fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
+                    Oh perfect, thank you!!
+                  </div>
+                )}
+                {mockStep === 3 && (
+                  <div className="fu" style={{alignSelf:"center"}}>
+                    <span style={{fontSize:11.5,fontWeight:600,padding:"6px 14px",borderRadius:100,background:"rgba(62,207,178,.12)",color:C.teal,display:"inline-flex",alignItems:"center",gap:6}}>
+                      <Check size={13} strokeWidth={2.5}/>Ticket resolved — 0 human minutes
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="hero-badge" style={{position:"absolute",top:-14,right:-14,background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:12,padding:"9px 14px",fontSize:12,fontWeight:700,boxShadow:"0 8px 24px rgba(0,0,0,.25)",display:"flex",alignItems:"center",gap:7,color:C.text}}>
@@ -401,7 +542,7 @@ export default function LandingPage() {
       <section style={{position:"relative",zIndex:1,padding:"0 40px"}}>
         <div className="fu stats-bar-grid" style={{display:"grid",width:"100%",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`}}>
           {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"],["3 systems","One Platform"]].map(([v,l],i)=>(
-            <div key={i} className="stats-cell" style={{padding:"20px 14px",background:C.surface,textAlign:"center"}}>
+            <div key={i} className="stats-cell" style={{padding:"16px 14px",textAlign:"center"}}>
               <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
               <div className="stats-label" style={{fontSize:11.5,color:C.muted,fontWeight:500}}>{l}</div>
             </div>
@@ -483,49 +624,29 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* COLORED FEATURE ROWS */}
-      <section style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:"0 40px"}}>
-        <div style={{display:"flex",flexDirection:"column",gap:20,marginBottom:LAYOUT.space.xxxl}}>
-          {[
-            {
-              n:"01", grad:"linear-gradient(135deg,#3ECFB2,#1a8a70)",
-              title:"AI Support Agent resolves before tickets pile up",
-              desc:"Handles order inquiries, shipping questions, and FAQs automatically — escalating only what genuinely needs a human.",
-              bullets:["Answers instantly across chat and email","Understands order status and context","Learns your brand tone and policies","Reduces ticket volume from day one"],
-              cta:"Explore AI Support →"
-            },
-            {
-              n:"02", grad:"linear-gradient(135deg,#F0A04B,#a8621f)",
-              title:"Return Deflection protects margin before refunds happen",
-              desc:"Before a return is processed, Solva offers smart alternatives — exchanges, discounts, troubleshooting — automatically.",
-              bullets:["Detects return intent early","Offers exchanges and store credit first","Reduces refund rate measurably","Surfaces return reason patterns"],
-              cta:"Explore Return Deflection →"
-            },
-            {
-              n:"03", grad:"linear-gradient(135deg,#5BADFF,#1f5aa8)",
-              title:"Cart Recovery brings shoppers back automatically",
-              desc:"A 3-touch AI sequence — written dynamically based on what's actually in the cart — recovers revenue while you sleep.",
-              bullets:["Personalized to real cart contents","3-touch email sequence, fully automated","No manual segmentation required","Recovers revenue 24/7"],
-              cta:"Explore Cart Recovery →"
-            },
-          ].map((row,i)=>(
-            <div key={i} className="colored-row" style={{background:row.grad,borderRadius:20,padding:"44px 48px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:36,alignItems:"start"}}>
-              <span style={{fontSize:17,fontWeight:800,color:"rgba(255,255,255,.85)",fontFamily:"'Outfit',sans-serif",WebkitTextStroke:"0.5px rgba(255,255,255,.3)",paddingTop:4}}>{row.n}</span>
-              <div>
-                <h3 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(19px,2.2vw,24px)",fontWeight:800,color:"#fff",lineHeight:1.28,marginBottom:10,letterSpacing:"-.01em"}}>{row.title}</h3>
-                <p style={{fontSize:13.5,color:"rgba(255,255,255,.82)",lineHeight:1.65,maxWidth:520}}>{row.desc}</p>
+      {/* FEATURE ROWS */}
+      <section style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:"0 40px",marginBottom:LAYOUT.space.xxxl}}>
+        {FEATURE_ROWS.map((row,i)=>(
+          <div key={i} className="feat-row" style={{display:"grid",gridTemplateColumns:"5fr 7fr",gap:48,alignItems:"center",marginBottom:i<FEATURE_ROWS.length-1?72:0,direction:i===1?"rtl":"ltr"}}>
+            <div style={{direction:"ltr"}}>
+              <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"5px 14px",borderRadius:100,background:"rgba(229,82,102,.10)",border:"1px solid rgba(229,82,102,.25)",fontSize:11.5,fontWeight:700,color:C.coral,marginBottom:16}}>
+                {row.icon}{row.eyebrow}
               </div>
-              <div className="colored-row-right" style={{display:"flex",flexDirection:"column",gap:10,minWidth:240}}>
+              <h3 style={{...LAYOUT.h3,fontFamily:"'Outfit',sans-serif",marginBottom:12}}>{row.title}</h3>
+              <p style={{fontSize:14.5,color:C.sub,lineHeight:1.7,marginBottom:20}}>{row.desc}</p>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {row.bullets.map((b,j)=>(
-                  <div key={j} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12.5,color:"rgba(255,255,255,.9)"}}>
-                    <Check size={14} strokeWidth={2.5} style={{marginTop:1,flexShrink:0,color:"rgba(255,255,255,.7)"}}/>{b}
+                  <div key={j} style={{display:"flex",gap:9,alignItems:"flex-start",fontSize:13.5,color:C.sub}}>
+                    <Check size={15} strokeWidth={2.5} color={C.teal} style={{marginTop:1,flexShrink:0}}/>{b}
                   </div>
                 ))}
-                <span onClick={()=>{const el=document.getElementById('features');if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-64,behavior:"smooth"});}} style={{fontSize:12.5,fontWeight:700,color:"#fff",marginTop:6,cursor:"pointer"}}>{row.cta}</span>
               </div>
             </div>
-          ))}
-        </div>
+            <div style={{direction:"ltr"}}>
+              {row.mockup}
+            </div>
+          </div>
+        ))}
       </section>
 
       {/* HOW IT WORKS */}
