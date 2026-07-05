@@ -69,14 +69,16 @@ function GlobalStyles() {
         .stats-number{font-size:19px!important;}
         .stats-label{font-size:10.5px!important;}
         .problem-section-mobile{padding:60px 24px 30px!important;}
-        .solution-card{grid-template-columns:1fr!important;padding:32px 24px!important;gap:32px!important;text-align:left!important;}
-        .feat-row{grid-template-columns:1fr!important;direction:ltr!important;gap:24px!important;}
+        .solution-card{grid-template-columns:1fr!important;padding:28px 20px!important;gap:32px!important;text-align:left!important;}
+        .feat-row{grid-template-columns:1fr!important;direction:ltr!important;gap:22px!important;margin-bottom:48px!important;}
         .hiw-row{grid-template-columns:1fr!important;direction:ltr!important;gap:24px!important;}
         .hiw-line{display:none!important;}
         .integrations-grid{grid-template-columns:1fr 1fr!important;gap:12px!important;}
         .trust-grid{grid-template-columns:1fr!important;gap:14px!important;}
         .faq-grid{grid-template-columns:1fr!important;gap:0!important;}
         .footer-grid{grid-template-columns:1fr!important;gap:32px!important;}
+        .stats-section,.solution-section,.features-section,.featrows-section,.hiw-section,.integrations-section,.trust-section,.pricing-section,.faq-section,.footer-section{padding-left:24px!important;padding-right:24px!important;}
+        .cta-section{margin-left:24px!important;margin-right:24px!important;padding-left:24px!important;padding-right:24px!important;}
       }
       @media(min-width:768px){
         .stats-divider{border-right:1px solid var(--border-hi)!important;}
@@ -502,32 +504,26 @@ export default function LandingPage() {
                   <div style={{fontSize:11,color:"rgba(255,255,255,.75)"}}>Online now</div>
                 </div>
               </div>
-              <div style={{padding:20,display:"flex",flexDirection:"column",gap:14,background:C.bg,minHeight:230}}>
+              <div style={{padding:20,display:"flex",flexDirection:"column",gap:14,background:C.bg}}>
                 <div className="fu" style={{alignSelf:"flex-start",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomLeftRadius:4,background:C.card,border:`1px solid ${C.border}`,fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
                   Where's my order? It's been 5 days 😤
                 </div>
-                {mockStep === 0 && (
-                  <div className="fu" style={{alignSelf:"flex-end",display:"flex",gap:5,padding:"12px 16px",borderRadius:14,borderBottomRightRadius:4,background:C.card,border:`1px solid ${C.border}`}}>
-                    <span className="mock-typing-dot"/><span className="mock-typing-dot"/><span className="mock-typing-dot"/>
-                  </div>
-                )}
-                {mockStep >= 1 && (
-                  <div className="fu" style={{alignSelf:"flex-end",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomRightRadius:4,background:C.grad,color:"#fff",fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
+                <div style={{position:"relative",alignSelf:"flex-end",maxWidth:"80%"}}>
+                  <div style={{padding:"12px 16px",borderRadius:14,borderBottomRightRadius:4,background:C.grad,color:"#fff",fontSize:13.5,lineHeight:1.55,textAlign:"left",opacity:mockStep>=1?1:0,visibility:mockStep>=1?"visible":"hidden",transition:"opacity .45s ease"}}>
                     I found order <b>#8412</b> — it shipped and arrives <b>tomorrow by 6 PM</b>. Here's your live tracking link.
                   </div>
-                )}
-                {mockStep >= 2 && (
-                  <div className="fu" style={{alignSelf:"flex-start",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomLeftRadius:4,background:C.card,border:`1px solid ${C.border}`,fontSize:13.5,lineHeight:1.55,textAlign:"left"}}>
-                    Oh perfect, thank you!!
+                  <div style={{position:"absolute",top:0,right:0,display:"flex",gap:5,padding:"12px 16px",borderRadius:14,borderBottomRightRadius:4,background:C.card,border:`1px solid ${C.border}`,opacity:mockStep===0?1:0,visibility:mockStep===0?"visible":"hidden",transition:"opacity .45s ease"}}>
+                    <span className="mock-typing-dot"/><span className="mock-typing-dot"/><span className="mock-typing-dot"/>
                   </div>
-                )}
-                {mockStep === 3 && (
-                  <div className="fu" style={{alignSelf:"center"}}>
-                    <span style={{fontSize:11.5,fontWeight:600,padding:"6px 14px",borderRadius:100,background:"rgba(62,207,178,.12)",color:C.teal,display:"inline-flex",alignItems:"center",gap:6}}>
-                      <Check size={13} strokeWidth={2.5}/>Ticket resolved — 0 human minutes
-                    </span>
-                  </div>
-                )}
+                </div>
+                <div style={{alignSelf:"flex-start",maxWidth:"80%",padding:"12px 16px",borderRadius:14,borderBottomLeftRadius:4,background:C.card,border:`1px solid ${C.border}`,fontSize:13.5,lineHeight:1.55,textAlign:"left",opacity:mockStep>=2?1:0,visibility:mockStep>=2?"visible":"hidden",transition:"opacity .45s ease"}}>
+                  Oh perfect, thank you!!
+                </div>
+                <div style={{alignSelf:"center",opacity:mockStep===3?1:0,visibility:mockStep===3?"visible":"hidden",transition:"opacity .45s ease"}}>
+                  <span style={{fontSize:11.5,fontWeight:600,padding:"6px 14px",borderRadius:100,background:"rgba(62,207,178,.12)",color:C.teal,display:"inline-flex",alignItems:"center",gap:6}}>
+                    <Check size={13} strokeWidth={2.5}/>Ticket resolved — 0 human minutes
+                  </span>
+                </div>
               </div>
             </div>
             <div className="hero-badge" style={{position:"absolute",top:-14,right:-14,background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:12,padding:"9px 14px",fontSize:12,fontWeight:700,boxShadow:"0 8px 24px rgba(0,0,0,.25)",display:"flex",alignItems:"center",gap:7,color:C.text}}>
@@ -539,7 +535,7 @@ export default function LandingPage() {
       </section>
 
       {/* STATS BAR — moved out of hero into its own section */}
-      <section style={{position:"relative",zIndex:1,padding:"0 40px"}}>
+      <section className="stats-section" style={{position:"relative",zIndex:1,padding:"0 40px"}}>
         <div className="fu stats-bar-grid" style={{display:"grid",width:"100%",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`}}>
           {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"],["3 systems","One Platform"]].map(([v,l],i)=>(
             <div key={i} className="stats-cell" style={{padding:"16px 14px",textAlign:"center"}}>
@@ -565,7 +561,7 @@ export default function LandingPage() {
       </section>
 
       {/* SOLUTION */}
-      <section style={{position:"relative",zIndex:1,padding:"70px 40px",maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
+      <section className="solution-section" style={{position:"relative",zIndex:1,padding:"70px 40px",maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
         <div className="solution-card fu" style={{background:"linear-gradient(160deg,var(--card) 0%,var(--dim) 100%)",border:`1px solid ${C.borderHi}`,borderRadius:24,padding:54,display:"grid",gridTemplateColumns:"1.1fr .9fr",gap:48,alignItems:"center"}}>
           <div>
             <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:16}}>The Solution</p>
@@ -598,7 +594,7 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section id="features" style={{position:"relative",zIndex:1,padding:"56px 40px",maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
+      <section id="features" className="features-section" style={{position:"relative",zIndex:1,padding:"56px 40px",maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:40}}>
           <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:10}}>Core Systems</p>
           <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Three automations. Zero manual work.</h2>
@@ -625,7 +621,7 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURE ROWS */}
-      <section style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:"0 40px",marginBottom:LAYOUT.space.xxxl}}>
+      <section className="featrows-section" style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:"0 40px",marginBottom:LAYOUT.space.xxxl}}>
         {FEATURE_ROWS.map((row,i)=>(
           <div key={i} className="feat-row" style={{display:"grid",gridTemplateColumns:"5fr 7fr",gap:48,alignItems:"center",marginBottom:i<FEATURE_ROWS.length-1?72:0,direction:i===1?"rtl":"ltr"}}>
             <div style={{direction:"ltr"}}>
@@ -650,7 +646,7 @@ export default function LandingPage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:LAYOUT.sectionPadding.standard}}>
+      <section id="how-it-works" className="hiw-section" style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:LAYOUT.sectionPadding.standard}}>
         <div style={{textAlign:"center",marginBottom:64}}>
           <p style={{...LAYOUT.eyebrow,color:C.magenta,marginBottom:14}}>Setup In Minutes</p>
           <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>How Solva Works</h2>
@@ -687,7 +683,7 @@ export default function LandingPage() {
       </section>
 
       {/* INTEGRATIONS */}
-      <section style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:LAYOUT.sectionPadding.compact,textAlign:"center"}}>
+      <section className="integrations-section" style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:LAYOUT.sectionPadding.compact,textAlign:"center"}}>
         <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>Integrations</p>
         <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif",marginBottom:16}}>Built on Shopify. Ready to connect.</h2>
         <p style={{fontSize:14.5,color:C.sub,maxWidth:480,margin:"0 auto 48px",lineHeight:1.7}}>
@@ -710,7 +706,7 @@ export default function LandingPage() {
       </section>
 
       {/* TRUST GRID */}
-      <section style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:LAYOUT.sectionPadding.compact}}>
+      <section className="trust-section" style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidth,margin:"0 auto",padding:LAYOUT.sectionPadding.compact}}>
         <div style={{textAlign:"center",marginBottom:48}}>
           <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>Zero Risk</p>
           <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Try Solva with nothing to lose</h2>
@@ -734,7 +730,7 @@ export default function LandingPage() {
       </section>
 
       {/* PRICING */}
-      <section id="pricing" style={{padding:LAYOUT.sectionPadding.compact,maxWidth:1100,margin:"0 auto"}}>
+      <section id="pricing" className="pricing-section" style={{padding:LAYOUT.sectionPadding.compact,maxWidth:1100,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:46}}>
           <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>Pricing</p>
           <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Simple, Transparent Pricing</h2>
@@ -771,7 +767,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidthMedium,margin:"0 auto",padding:LAYOUT.sectionPadding.standard}}>
+      <section id="faq" className="faq-section" style={{position:"relative",zIndex:1,maxWidth:LAYOUT.maxWidthMedium,margin:"0 auto",padding:LAYOUT.sectionPadding.standard}}>
         <div style={{textAlign:"center",marginBottom:48}}>
           <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>FAQ</p>
           <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Got questions?</h2>
@@ -811,7 +807,7 @@ export default function LandingPage() {
       </div>
 
       {/* FOOTER */}
-      <footer style={{position:"relative",zIndex:1,borderTop:`1px solid ${C.border}`,padding:"64px 40px 32px"}}>
+      <footer className="footer-section" style={{position:"relative",zIndex:1,borderTop:`1px solid ${C.border}`,padding:"64px 40px 32px"}}>
         <div style={{maxWidth:LAYOUT.maxWidth,margin:"0 auto"}}>
           <div className="footer-grid" style={{display:"grid",gridTemplateColumns:"1.4fr 1fr 1fr 1fr 1fr",gap:40,marginBottom:48}}>
             <div>
