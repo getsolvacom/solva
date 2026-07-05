@@ -329,9 +329,23 @@ export default function LandingPage() {
   const [annBarVisible, setAnnBarVisible] = useState(true);
   const annBarRef = useRef(null);
   const [annBarHeight, setAnnBarHeight] = useState(38);
+  const [annBarHidden, setAnnBarHidden] = useState(false);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - lastScrollY.current) < 8) return;
+      if (y > lastScrollY.current && y > 64) setAnnBarHidden(true);
+      else if (y < lastScrollY.current || y <= 0) setAnnBarHidden(false);
+      lastScrollY.current = y;
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -408,7 +422,7 @@ export default function LandingPage() {
 
       {/* ANNOUNCEMENT BAR */}
       {annBarVisible && (
-        <div ref={annBarRef} className="ann-bar" style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,background:"var(--announce-bg)",padding:"10px 24px",fontSize:13,color:"var(--announce-text)",borderBottom:"1px solid var(--announce-border)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div ref={annBarRef} className="ann-bar" style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,background:"var(--announce-bg)",padding:"10px 24px",fontSize:13,color:"var(--announce-text)",borderBottom:"1px solid var(--announce-border)",display:"flex",alignItems:"center",justifyContent:"center",transform:annBarHidden?"translateY(-100%)":"translateY(0)",transition:"transform .28s ease"}}>
           <span style={{flex:1,textAlign:"center"}}>
             14-day free trial · No credit card required · Live in 2 minutes{" "}
             <span onClick={()=>navigate("/onboarding")} style={{color:C.coral,cursor:"pointer",fontWeight:600}}>Start free trial →</span>
@@ -420,7 +434,7 @@ export default function LandingPage() {
       )}
 
       {/* NAV */}
-      <nav className={scrolled?"nav-scrolled":""} style={{position:"fixed",top:annBarVisible?annBarHeight:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:"1px solid var(--nav-border-strong)",backdropFilter:"blur(20px)",boxShadow:"var(--nav-shadow)",transition:"top .22s ease,box-shadow .22s ease"}}>
+      <nav className={scrolled?"nav-scrolled":""} style={{position:"fixed",top:(annBarVisible && !annBarHidden)?annBarHeight:0,left:0,right:0,zIndex:1000,height:64,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 44px",background:C.surface,borderBottom:"1px solid var(--nav-border-strong)",backdropFilter:"blur(20px)",boxShadow:"var(--nav-shadow)",transition:"top .22s ease,box-shadow .22s ease"}}>
         <SolvaLogo/>
 
         {/* Desktop links */}
