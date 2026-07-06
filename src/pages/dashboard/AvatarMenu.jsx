@@ -1,22 +1,26 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../../tokens";
 import { Settings, CreditCard, UserPlus, Store, HelpCircle, MessageCircle, Sparkles, LogOut, Sun } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { DemoContext } from "../../context/DemoContext";
+import ContactSupportModal from "./ContactSupportModal";
 
 const AVATAR_URL = "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=4E0269";
 
-function MenuItem({ icon, label, onClick, danger }) {
+function MenuItem({ icon, label, onClick, danger, disabled }) {
   const [hov, setHov] = useState(false);
   return (
     <div
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
+      title={disabled ? "Sign up to try this" : undefined}
       style={{
         display:"flex", alignItems:"center", gap:10,
-        padding:"8px 16px", cursor:"pointer",
-        background: hov ? (danger ? "rgba(229,82,102,.07)" : C.dim) : "transparent",
+        padding:"8px 16px", cursor: disabled ? "not-allowed" : "pointer",
+        background: hov && !disabled ? (danger ? "rgba(229,82,102,.07)" : C.dim) : "transparent",
+        opacity: disabled ? 0.45 : 1,
         transition:"background .12s",
       }}
     >
@@ -28,7 +32,9 @@ function MenuItem({ icon, label, onClick, danger }) {
 
 export default function AvatarMenu() {
   const navigate = useNavigate();
+  const { isDemoMode } = useContext(DemoContext);
   const [open, setOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState(false);
   const [pos, setPos] = useState({ top:0, right:0, scrollable:false });
   const btnRef = useRef(null);
@@ -164,7 +170,12 @@ export default function AvatarMenu() {
           {/* Section 4 — Help & Support */}
           <div style={{padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
             <MenuItem icon={<HelpCircle size={15}/>} label="Help Center" onClick={()=>{}}/>
-            <MenuItem icon={<MessageCircle size={15}/>} label="Contact Support" onClick={()=>{}}/>
+            <MenuItem
+              icon={<MessageCircle size={15}/>}
+              label="Contact Support"
+              disabled={isDemoMode}
+              onClick={() => { setContactOpen(true); setOpen(false); }}
+            />
             <MenuItem icon={<Sparkles size={15}/>} label="What's New" onClick={()=>{}}/>
           </div>
 
@@ -186,6 +197,8 @@ export default function AvatarMenu() {
           </div>
         </div>
       )}
+
+      <ContactSupportModal open={contactOpen} onClose={() => setContactOpen(false)}/>
     </>
   );
 }
