@@ -51,7 +51,7 @@ export default function ContactSupportModal({ open, onClose }) {
         .eq('id', user.id)
         .maybeSingle();
 
-      const { error: insertError } = await supabase.from('support_requests').insert({
+      const { data: insertedRow, error: insertError } = await supabase.from('support_requests').insert({
         user_id: user.id,
         store_id: store?.id || null,
         subject: subject.trim(),
@@ -61,8 +61,21 @@ export default function ContactSupportModal({ open, onClose }) {
           page: window.location.pathname,
           userAgent: navigator.userAgent,
         },
-      });
+      }).select().single();
       if (insertError) throw insertError;
+
+      try {
+        await fetch("https://mscwabuwuqoyiccxtsps.supabase.co/functions/v1/notify-support", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ record: insertedRow }),
+        });
+      } catch (notifyErr) {
+        console.error("notify-support call failed:", notifyErr);
+      }
 
       setSuccess(true);
     } catch (e) {
