@@ -10,6 +10,8 @@ import ShopifyCallback   from "./pages/ShopifyCallback";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import PrivacyPage       from "./pages/PrivacyPage";
 import TermsPage         from "./pages/TermsPage";
+import DocsPage          from "./pages/DocsPage";
+import AboutPage         from "./pages/AboutPage";
 
 function DemoRoute({ children }) {
   return (
@@ -127,6 +129,8 @@ export default function App() {
       <Route path="/demo/returns/:returnId" element={<DemoRoute><DashboardShell fixedView="returns" /></DemoRoute>} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms" element={<TermsPage />} />
+      <Route path="/docs" element={<DocsPage />} />
+      <Route path="/about" element={<AboutPage />} />
       <Route path="/auth/shopify/callback" element={<ShopifyCallback />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />

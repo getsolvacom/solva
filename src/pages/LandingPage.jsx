@@ -440,7 +440,7 @@ export default function LandingPage() {
         {/* Desktop links */}
         <div className="nav-links-desktop">
           {["Features","How It Works","Pricing","Docs"].map(l=>(
-            <span key={l} className="nav-link" onClick={()=>{ if(l==="Docs") return; /* TODO: /docs route not built yet */ scrollTo(l); }} style={{fontSize:14,color:C.text,fontWeight:600}}>{l}</span>
+            <span key={l} className="nav-link" onClick={()=>{ if(l==="Docs") { navigate("/docs"); return; } scrollTo(l); }} style={{fontSize:14,color:C.text,fontWeight:600}}>{l}</span>
           ))}
         </div>
 
@@ -459,7 +459,7 @@ export default function LandingPage() {
         {menuOpen && (
           <div className="nav-dropdown">
             {["Features","How It Works","Pricing","Docs"].map(l=>(
-              <span key={l} className="nav-link" onClick={()=>{ closeMenu(); if(l==="Docs") return; /* TODO: /docs route not built yet */ scrollTo(l); }}
+              <span key={l} className="nav-link" onClick={()=>{ closeMenu(); if(l==="Docs") { navigate("/docs"); return; } scrollTo(l); }}
                 style={{fontSize:15,color:C.text,fontWeight:600,padding:"13px 8px",borderBottom:`1px solid ${C.border}`}}>
                 {l}
               </span>
@@ -852,15 +852,15 @@ export default function LandingPage() {
                 {label:"Features", anchor:"features"},
                 {label:"How It Works", anchor:"how-it-works"},
                 {label:"Pricing", anchor:"pricing"},
-                {label:"Docs", soon:true},
+                {label:"Docs", route:"/docs"},
               ]},
               {title:"Resources", items:[
                 {label:"FAQ", anchor:"faq"},
-                {label:"Help Center", soon:true},
+                {label:"Help Center", route:"/docs"},
                 {label:"Blog", soon:true},
               ]},
               {title:"Company", items:[
-                {label:"About", soon:true},
+                {label:"About", route:"/about"},
                 {label:"Contact", soon:true},
               ]},
               {title:"Follow Us", social:true, items:[
@@ -881,6 +881,10 @@ export default function LandingPage() {
                     ) : item.soon ? (
                       <span key={j} style={{fontSize:13,color:C.muted,display:"flex",alignItems:"center",gap:6}}>
                         {item.label}<span style={{fontSize:9,fontWeight:700,color:C.muted,border:`1px solid ${C.border}`,borderRadius:4,padding:"1px 5px"}}>SOON</span>
+                      </span>
+                    ) : item.route ? (
+                      <span key={j} style={{fontSize:13,color:C.sub,cursor:"pointer"}} onClick={()=>navigate(item.route)}>
+                        {item.label}
                       </span>
                     ) : (
                       <span key={j} style={{fontSize:13,color:C.sub,cursor:"pointer"}} onClick={()=>{const el=document.getElementById(item.anchor);if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-64,behavior:"smooth"});}}>
