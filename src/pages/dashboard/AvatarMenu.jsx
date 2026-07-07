@@ -5,6 +5,8 @@ import { Settings, CreditCard, UserPlus, Store, HelpCircle, MessageCircle, Spark
 import { supabase } from "../../lib/supabase";
 import { DemoContext } from "../../context/DemoContext";
 import ContactSupportModal from "./ContactSupportModal";
+import WhatsNewModal, { WHATS_NEW_SEEN_KEY } from "./WhatsNewModal";
+import { CHANGELOG } from "../../data/changelog";
 
 const AVATAR_URL = "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=4E0269";
 
@@ -35,6 +37,11 @@ export default function AvatarMenu() {
   const { isDemoMode } = useContext(DemoContext);
   const [open, setOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [whatsNewOpen, setWhatsNewOpen] = useState(false);
+  const latestChangelogDate = CHANGELOG[0]?.date;
+  const [hasUnread, setHasUnread] = useState(
+    () => latestChangelogDate !== localStorage.getItem(WHATS_NEW_SEEN_KEY)
+  );
   const [logoutConfirm, setLogoutConfirm] = useState(false);
   const [pos, setPos] = useState({ top:0, right:0, scrollable:false });
   const btnRef = useRef(null);
@@ -111,14 +118,21 @@ export default function AvatarMenu() {
       <div
         ref={btnRef}
         onClick={toggle}
-        style={{
-          width:34, height:34, borderRadius:"50%",
-          cursor:"pointer", background:C.grad,
-          overflow:"hidden", flexShrink:0,
-          display:"flex", alignItems:"center", justifyContent:"center",
-        }}
+        style={{ position:"relative", width:34, height:34, flexShrink:0, cursor:"pointer" }}
       >
-        <img src={AVATAR_URL} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+        <div
+          style={{
+            width:34, height:34, borderRadius:"50%",
+            background:C.grad,
+            overflow:"hidden",
+            display:"flex", alignItems:"center", justifyContent:"center",
+          }}
+        >
+          <img src={AVATAR_URL} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+        </div>
+        {hasUnread && (
+          <span style={{position:"absolute",top:-2,right:-2,width:8,height:8,borderRadius:"50%",background:C.coral}}/>
+        )}
       </div>
 
       {/* Dropdown */}
@@ -169,14 +183,18 @@ export default function AvatarMenu() {
 
           {/* Section 4 — Help & Support */}
           <div style={{padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
-            <MenuItem icon={<HelpCircle size={15}/>} label="Help Center" onClick={()=>{}}/>
+            <MenuItem icon={<HelpCircle size={15}/>} label="Help Center" onClick={() => go("/docs")}/>
             <MenuItem
               icon={<MessageCircle size={15}/>}
               label="Contact Support"
               disabled={isDemoMode}
               onClick={() => { setContactOpen(true); setOpen(false); }}
             />
-            <MenuItem icon={<Sparkles size={15}/>} label="What's New" onClick={()=>{}}/>
+            <MenuItem
+              icon={<Sparkles size={15}/>}
+              label="What's New"
+              onClick={() => { setWhatsNewOpen(true); setOpen(false); setHasUnread(false); }}
+            />
           </div>
 
           {/* Section 5 — Session */}
@@ -199,6 +217,7 @@ export default function AvatarMenu() {
       )}
 
       <ContactSupportModal open={contactOpen} onClose={() => setContactOpen(false)}/>
+      <WhatsNewModal open={whatsNewOpen} onClose={() => setWhatsNewOpen(false)}/>
     </>
   );
 }

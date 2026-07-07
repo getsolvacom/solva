@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
 import { C, LAYOUT } from "../tokens";
+import ContactSupportModal from "./dashboard/ContactSupportModal";
 
 function SolvaLogo() {
   return (
@@ -29,37 +32,29 @@ function Section({ title, children }) {
   );
 }
 
-function SubSection({ title, children }) {
-  return (
-    <div style={{marginBottom:LAYOUT.space.lg}}>
-      <h3 style={{...LAYOUT.h3,fontFamily:"'Outfit',sans-serif",fontSize:18,color:C.text,marginBottom:10,lineHeight:1.3}}>{title}</h3>
-      <p style={{fontSize:14.5,color:C.sub,lineHeight:1.6}}>{children}</p>
-    </div>
-  );
-}
-
-function FaqItem({ q, a }) {
-  return (
-    <div style={{marginBottom:LAYOUT.space.md}}>
-      <p style={{fontSize:15.5,fontWeight:700,color:C.text,marginBottom:6,lineHeight:1.45}}>{q}</p>
-      <p style={{fontSize:14.5,color:C.sub,lineHeight:1.6}}>{a}</p>
-    </div>
-  );
-}
+const GETTING_STARTED = [
+  { title:"Connect Your Store", desc:"Link your Shopify store with one click. No code, no complexity — Solva reads your catalog and order history instantly." },
+  { title:"Configure Your AI", desc:"Set your brand tone, escalation rules, and recovery preferences — or let Solva suggest smart defaults from your store data." },
+  { title:"Go Live Instantly", desc:"Flip the switch. Support, returns, and cart recovery start working from the very first minute — automatically." },
+];
 
 const FAQS = [
-  { q:"What if the AI gets something wrong?", a:"Every AI action is logged in your Audit Log (Dashboard > Settings > Audit Log). You can review, override, or roll back any automated decision within 24 hours." },
-  { q:"Can I turn off one system but keep the others?", a:"Yes. Each of the three systems (Support, Cart Recovery, Returns) can be enabled or disabled independently in Settings." },
-  { q:"Does this replace my existing helpdesk?", a:"SOLVA is built to be your primary support/cart/returns layer, not an add-on to an existing tool — that's the point of consolidating three systems into one." },
-  { q:"What data does SOLVA access?", a:"Order history, customer contact info, and product catalog data via Shopify's standard OAuth scopes. See our Privacy Policy for full details." },
+  { q:"What does Solva actually automate?", a:"Solva automates three things: AI support ticket resolution, return request deflection, and abandoned cart recovery — all from one connected platform, reading directly from your Shopify store." },
+  { q:"How long does setup take?", a:"About 2 minutes. Connect your Shopify store with one click, configure your brand tone, and you're live." },
+  { q:"Do I need a credit card to start?", a:"No. The 14-day free trial requires no credit card. You only add payment details if you choose to continue." },
+  { q:"Can I customize the AI's tone?", a:"Yes. You can set a tone that matches your brand, add custom FAQs, and give the AI global instructions it always follows." },
+  { q:"What happens when the AI can't resolve something?", a:"It escalates to your team automatically with full context, so nothing falls through the cracks." },
+  { q:"Is my customer data secure?", a:"Yes — Solva is built GDPR-compliant from day one, and we never sell or share your customer data." },
 ];
 
 export default function DocsPage() {
   const navigate = useNavigate();
+  const [openFaq, setOpenFaq] = useState(null);
+  const [contactOpen, setContactOpen] = useState(false);
 
   return (
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"'Outfit',sans-serif",color:C.text}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{background:#060008;}::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:#3D0050;border-radius:2px;}.legal-link{color:${C.muted};text-decoration:none;}.legal-link:hover{text-decoration:underline;}.back-link{color:${C.muted};text-decoration:none;cursor:pointer;font-size:14px;}.back-link:hover{text-decoration:underline;}`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{background:var(--bg);}::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:#3D0050;border-radius:2px;}.legal-link{color:${C.muted};text-decoration:none;}.legal-link:hover{text-decoration:underline;}.back-link{color:${C.muted};text-decoration:none;cursor:pointer;font-size:14px;}.back-link:hover{text-decoration:underline;}@keyframes flowGrad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}.btn-primary{cursor:pointer;border:none;outline:none;background:linear-gradient(135deg,#E55266,#992A67,#4E0269);background-size:200% 200%;animation:flowGrad 4s ease infinite;transition:transform .18s,box-shadow .18s;font-family:'Outfit',sans-serif;}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(229,82,102,.28);}`}</style>
 
       <div style={{maxWidth:LAYOUT.maxWidthNarrow,margin:"0 auto",padding:"60px 24px"}}>
         {/* Logo */}
@@ -69,47 +64,40 @@ export default function DocsPage() {
 
         {/* Hero */}
         <div style={{marginBottom:LAYOUT.space.xxl}}>
-          <h1 style={{fontFamily:"'Outfit',sans-serif",fontSize:"clamp(32px,5.5vw,48px)",fontWeight:800,letterSpacing:"-.02em",lineHeight:1.15,marginBottom:16}}>Documentation</h1>
-          <p style={{fontSize:"clamp(15px,1.8vw,17.5px)",color:C.sub,lineHeight:1.6,maxWidth:520}}>Everything you need to connect your store and get SOLVA running in minutes.</p>
+          <h1 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Help Center</h1>
+          <p style={{fontSize:"clamp(15px,1.8vw,17.5px)",color:C.sub,lineHeight:1.6,maxWidth:520,marginTop:16}}>Everything you need to get the most out of Solva.</p>
         </div>
 
         {/* Getting Started */}
-        <Section title="Connect Your Store in 2 Minutes">
-          <p style={{fontSize:14.5,color:C.sub,lineHeight:1.6,marginBottom:16}}>
-            SOLVA connects directly to your Shopify store through Shopify's official OAuth flow — no manual API keys, no code.
-          </p>
+        <Section title="Getting Started">
           <ol style={{paddingLeft:20,display:"flex",flexDirection:"column",gap:12}}>
-            <li style={{fontSize:14.5,color:C.sub,lineHeight:1.6}}><b style={{color:C.text}}>Step 1:</b> Click "Connect Your Store" and log into your Shopify admin.</li>
-            <li style={{fontSize:14.5,color:C.sub,lineHeight:1.6}}><b style={{color:C.text}}>Step 2:</b> Approve SOLVA's requested permissions (read/write access to orders, customers, and returns — used only to power the three automations below).</li>
-            <li style={{fontSize:14.5,color:C.sub,lineHeight:1.6}}><b style={{color:C.text}}>Step 3:</b> SOLVA reads your existing catalog and order history to understand your store. This takes under 2 minutes for most stores.</li>
-            <li style={{fontSize:14.5,color:C.sub,lineHeight:1.6}}><b style={{color:C.text}}>Step 4:</b> Configure your AI's tone and escalation rules (or use our recommended defaults).</li>
-            <li style={{fontSize:14.5,color:C.sub,lineHeight:1.6}}><b style={{color:C.text}}>Step 5:</b> Flip the switch. SOLVA starts monitoring tickets, carts, and returns immediately.</li>
+            {GETTING_STARTED.map((step)=>(
+              <li key={step.title} style={{fontSize:14.5,color:C.sub,lineHeight:1.6}}>
+                <b style={{color:C.text}}>{step.title}:</b> {step.desc}
+              </li>
+            ))}
           </ol>
         </Section>
 
-        {/* The Three Systems */}
-        <Section title="The Three Systems, Explained">
-          <SubSection title="AI Support Agent">
-            SOLVA reads every incoming support ticket in real time. Using your store's order and catalog data, it identifies what the customer needs — order status, shipping delays, address changes, product questions — and resolves it directly when it has enough context to do so safely. If the AI can't resolve a ticket confidently (refund disputes, policy exceptions, angry customers), it escalates to a human with full context attached, instead of guessing. You set the confidence threshold in Settings &gt; AI Config.
-          </SubSection>
-          <SubSection title="Cart Recovery">
-            When a shopper abandons checkout, SOLVA triggers a 3-touch automated sequence: an initial reminder within the first hour, a follow-up with contextual product details around 24 hours later, and a final incentivized nudge (customizable discount, or none) at 72 hours. Each message adapts to what was actually in the cart. You control timing, incentive amounts, and channels in Settings &gt; Cart Recovery.
-          </SubSection>
-          <SubSection title="Return Deflection">
-            Before a return is processed, SOLVA intercepts it and offers proactive alternatives — a sizing exchange, a different color, store credit, or a partial refund — based on the stated return reason and your store's margin rules. Only returns the AI can't deflect (defective items, wrong orders, policy-mandated refunds) get processed automatically. You set which reasons are eligible for deflection in Settings &gt; Return Rules.
-          </SubSection>
-        </Section>
-
         {/* FAQ */}
-        <Section title="Common Questions">
-          {FAQS.map((f,i)=>(<FaqItem key={i} q={f.q} a={f.a}/>))}
+        <Section title="Frequently Asked Questions">
+          {FAQS.map((item,i)=>(
+            <div key={i} style={{borderBottom:`1px solid ${C.border}`,padding:"20px 0",cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?null:i)}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
+                <span style={{fontSize:14.5,fontWeight:700,color:C.text}}>{item.q}</span>
+                <ChevronDown size={18} strokeWidth={2} style={{flexShrink:0,color:C.muted,transition:"transform .25s",transform:openFaq===i?"rotate(180deg)":"rotate(0)"}}/>
+              </div>
+              <div style={{maxHeight:openFaq===i?200:0,opacity:openFaq===i?1:0,overflow:"hidden",transition:"max-height .3s ease,opacity .25s ease,margin-top .3s ease",marginTop:openFaq===i?12:0}}>
+                <p style={{fontSize:13.5,color:C.sub,lineHeight:1.7}}>{item.a}</p>
+              </div>
+            </div>
+          ))}
         </Section>
 
-        {/* Support CTA */}
-        <div style={{marginBottom:LAYOUT.space.xl,padding:24,borderRadius:14,background:C.card,border:`1px solid ${C.border}`}}>
-          <p style={{fontSize:14.5,color:C.sub,lineHeight:1.6}}>
-            Can't find what you need? Email us directly at <a href="mailto:support@getsolva.app" className="legal-link">support@getsolva.app</a> — a real person reads and replies to every message.
-          </p>
+        {/* Still need help */}
+        <div style={{marginBottom:LAYOUT.space.xl,padding:24,borderRadius:14,background:C.card,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:20,flexWrap:"wrap"}}>
+          <p style={{fontSize:14.5,color:C.sub,lineHeight:1.6,flex:1,minWidth:220}}>Still need help? Send us a message and a real person will get back to you.</p>
+          <button className="btn-primary" onClick={()=>setContactOpen(true)} style={{padding:"11px 24px",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14,flexShrink:0}}>Contact Support</button>
         </div>
 
         {/* Back link */}
@@ -117,6 +105,8 @@ export default function DocsPage() {
           <span className="back-link" onClick={()=>navigate("/")}>← Back to Home</span>
         </div>
       </div>
+
+      <ContactSupportModal open={contactOpen} onClose={()=>setContactOpen(false)}/>
     </div>
   );
 }
