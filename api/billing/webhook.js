@@ -79,6 +79,25 @@ export default async function handler(req, res) {
       console.log('Subscription cancelled for:', userId || userEmail);
     }
 
+    if (eventName === 'subscription_payment_failed') {
+      const userId = customData?.user_id;
+      const userEmail = data?.user_email;
+
+      if (userId) {
+        await supabase.from('profiles').update({
+          plan_status: 'past_due',
+          updated_at: new Date().toISOString(),
+        }).eq('id', userId);
+      } else if (userEmail) {
+        await supabase.from('profiles').update({
+          plan_status: 'past_due',
+          updated_at: new Date().toISOString(),
+        }).eq('email', userEmail);
+      }
+
+      console.log('Subscription payment failed for:', userId || userEmail);
+    }
+
     res.status(200).json({ received: true });
   } catch (err) {
     console.error('Billing webhook error:', err);

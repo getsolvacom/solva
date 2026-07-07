@@ -126,6 +126,60 @@ export default async function handler(req, res) {
       });
     }
 
+    if (userId) {
+      try {
+        const { data: existingTrial } = await supabase
+          .from('shop_trials')
+          .select('shop_domain')
+          .eq('shop_domain', shop)
+          .maybeSingle();
+
+        if (!existingTrial) {
+          const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+          await supabase
+            .from('shop_trials')
+            .insert({
+              shop_domain: shop,
+              trial_started_at: new Date().toISOString(),
+              trial_ends_at: trialEndsAt
+            });
+
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('plan_status')
+            .eq('id', userId)
+            .maybeSingle();
+
+          const planStatus = profile?.plan_status;
+          const eligibleForTrial =
+            planStatus == null || planStatus === 'free' || planStatus === 'cancelled';
+
+          if (eligibleForTrial) {
+            await supabase
+              .from('profiles')
+              .update({ plan: 'trial', plan_status: 'trialing', trial_ends_at: trialEndsAt })
+              .eq('id', userId);
+          }
+        } else {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('plan_status')
+            .eq('id', userId)
+            .maybeSingle();
+
+          if (profile?.plan_status == null) {
+            await supabase
+              .from('profiles')
+              .update({ plan: 'free', plan_status: 'free' })
+              .eq('id', userId);
+          }
+        }
+      } catch (trialErr) {
+        console.error('Trial eligibility error:', trialErr);
+      }
+    }
+
     await registerWebhooks(shop, access_token);
 
     res.redirect('https://solva-sigma.vercel.app/dashboard');
