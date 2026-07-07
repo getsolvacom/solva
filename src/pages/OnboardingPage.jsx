@@ -248,7 +248,7 @@ function Step1({ onNext, onLogin }) {
   return (
     <CardShell>
       <h1 className="fu" style={{fontFamily:"'Outfit',sans-serif",fontSize:24,fontWeight:800,letterSpacing:"-.02em",marginBottom:8}}>Create your account</h1>
-      <p className="fu" style={{fontSize:13.5,color:C.sub,lineHeight:1.7,marginBottom:26}}>Start your free 14-day trial. No credit card required.</p>
+      <p className="fu" style={{fontSize:13.5,color:C.sub,lineHeight:1.7,marginBottom:26}}>Start your free 7-day trial. No credit card required.</p>
 
       {/* Google SSO */}
       <button className="btn-ghost fu fu1" onClick={handleGoogleSignup} disabled={googleLoading} style={{width:"100%",padding:"12px",borderRadius:10,border:`1px solid ${C.border}`,color:C.text,fontSize:14,fontWeight:500,marginBottom:20,display:"flex",alignItems:"center",justifyContent:"center",gap:10,opacity:googleLoading?0.7:1}}>
@@ -579,7 +579,7 @@ function Step4({ goDash }) {
 
       <div className="fu fu3" style={{padding:16,borderRadius:14,background:"rgba(229,82,102,.06)",border:"1px solid rgba(229,82,102,.16)",marginBottom:26}}>
         <p style={{fontSize:11,fontWeight:700,color:C.coral,letterSpacing:".08em",textTransform:"uppercase",marginBottom:10}}>What happens next</p>
-        {["First ticket auto-resolved within minutes of going live","Weekly performance report sent every Monday","Your 14-day free trial is now running — no card charged yet"].map((t,i)=>(
+        {["First ticket auto-resolved within minutes of going live","Weekly performance report sent every Monday","Your 7-day free trial is now running — no card charged yet"].map((t,i)=>(
           <div key={i} style={{display:"flex",gap:9,marginBottom:i<2?8:0}}>
             <span style={{color:C.coral,fontSize:13,flexShrink:0,marginTop:1}}>→</span>
             <span style={{fontSize:13,color:C.sub,lineHeight:1.55}}>{t}</span>

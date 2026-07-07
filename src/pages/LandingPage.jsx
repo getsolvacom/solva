@@ -424,7 +424,7 @@ export default function LandingPage() {
       {annBarVisible && (
         <div ref={annBarRef} className="ann-bar" style={{position:"fixed",top:0,left:0,right:0,zIndex:1001,background:"var(--announce-bg)",padding:"10px 24px",fontSize:13,color:"var(--announce-text)",borderBottom:"1px solid var(--announce-border)",display:"flex",alignItems:"center",justifyContent:"center",transform:annBarHidden?"translateY(-100%)":"translateY(0)",transition:"transform .28s ease"}}>
           <span style={{flex:1,textAlign:"center"}}>
-            14-day free trial · No credit card required · Live in 2 minutes{" "}
+            7-day free trial · No credit card required · Live in 2 minutes{" "}
             <span onClick={()=>navigate("/onboarding")} style={{color:C.coral,cursor:"pointer",fontWeight:600}}>Start free trial →</span>
           </span>
           <button onClick={()=>setAnnBarVisible(false)} style={{background:"transparent",border:"none",cursor:"pointer",color:"var(--announce-text)",padding:"2px 4px",display:"flex",alignItems:"center",flexShrink:0,marginLeft:8}} aria-label="Dismiss announcement">
@@ -551,7 +551,7 @@ export default function LandingPage() {
       {/* STATS BAR — moved out of hero into its own section */}
       <section className="stats-section" style={{position:"relative",zIndex:1,padding:"0 40px"}}>
         <div className="fu stats-bar-grid" style={{display:"grid",width:"100%",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`}}>
-          {[["2 min","Average Setup Time"],["24/7","Automated Support"],["14 days","Free Trial"],["3 systems","One Platform"]].map(([v,l],i)=>(
+          {[["2 min","Average Setup Time"],["24/7","Automated Support"],["7 days","Free Trial"],["3 systems","One Platform"]].map(([v,l],i)=>(
             <div key={i} className="stats-cell" style={{padding:"16px 14px",textAlign:"center"}}>
               <div className="stats-number" style={{fontSize:23,fontWeight:800,background:C.grad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:5}}>{v}</div>
               <div className="stats-label" style={{fontSize:11.5,color:C.muted,fontWeight:500}}>{l}</div>
@@ -727,7 +727,7 @@ export default function LandingPage() {
         </div>
         <div className="trust-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
           {[
-            {icon:<CreditCard size={20} strokeWidth={2}/>,title:"14 days free",desc:"Full access, no credit card required to start."},
+            {icon:<CreditCard size={20} strokeWidth={2}/>,title:"7 days free",desc:"Full access, no credit card required to start."},
             {icon:<XCircle size={20} strokeWidth={2}/>,title:"Cancel anytime",desc:"No annual lock-in. Leave whenever you want."},
             {icon:<Zap size={20} strokeWidth={2}/>,title:"Live in 2 minutes",desc:"Connect your Shopify store and Solva starts working immediately."},
             {icon:<ShieldCheck size={20} strokeWidth={2}/>,title:"Shopify-native",desc:"Reads your real catalog and order history — no manual setup."},
@@ -748,7 +748,7 @@ export default function LandingPage() {
         <div style={{textAlign:"center",marginBottom:46}}>
           <p style={{...LAYOUT.eyebrow,color:C.coral,marginBottom:14}}>Pricing</p>
           <h2 style={{...LAYOUT.h2,fontFamily:"'Outfit',sans-serif"}}>Simple, Transparent Pricing</h2>
-          <p style={{fontSize:14.5,color:C.sub,marginTop:14}}>14-day free trial on every plan. No credit card required to start.</p>
+          <p style={{fontSize:14.5,color:C.sub,marginTop:14}}>7-day free trial on every plan. No credit card required to start.</p>
         </div>
         <div className="pricing-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:18}}>
           {PLANS.map((plan,i)=>(
@@ -790,7 +790,7 @@ export default function LandingPage() {
           {[
             {q:"What does Solva actually automate?",a:"Solva automates three things: AI support ticket resolution, return request deflection, and abandoned cart recovery — all from one connected platform, reading directly from your Shopify store."},
             {q:"How long does setup take?",a:"About 2 minutes. Connect your Shopify store with one click, configure your brand tone, and you're live."},
-            {q:"Do I need a credit card to start?",a:"No. The 14-day free trial requires no credit card. You only add payment details if you choose to continue."},
+            {q:"Do I need a credit card to start?",a:"No. The 7-day free trial requires no credit card. You only add payment details if you choose to continue."},
             {q:"Can I customize the AI's tone?",a:"Yes. You can set a tone that matches your brand, add custom FAQs, and give the AI global instructions it always follows."},
             {q:"What happens when the AI can't resolve something?",a:"It escalates to your team automatically with full context, so nothing falls through the cracks."},
             {q:"Is my customer data secure?",a:"Yes — Solva is built GDPR-compliant from day one, and we never sell or share your customer data."},

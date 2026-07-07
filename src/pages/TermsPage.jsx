@@ -78,7 +78,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="4. Subscription and Billing">
-          <p style={{marginBottom:10}}>SOLVA offers three paid plans — Starter ($19/mo), Growth ($69/mo), and Scale ($169/mo) — all with a 14-day free trial.</p>
+          <p style={{marginBottom:10}}>SOLVA offers three paid plans — Starter ($19/mo), Growth ($69/mo), and Scale ($169/mo) — all with a 7-day free trial.</p>
           <ul style={{paddingLeft:20,display:"flex",flexDirection:"column",gap:6}}>
             <li>Billing is handled by Lemon Squeezy</li>
             <li>Your subscription renews automatically each month</li>
@@ -89,7 +89,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="5. Free Trial">
-          All new accounts receive a 14-day free trial. No charge is made until the trial ends. You may cancel before the trial ends without being charged.
+          All new accounts receive a 7-day free trial. No charge is made until the trial ends. You may cancel before the trial ends without being charged.
         </Section>
 
         <Section title="6. Acceptable Use">

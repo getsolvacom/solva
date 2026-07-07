@@ -41,7 +41,7 @@ const GETTING_STARTED = [
 const FAQS = [
   { q:"What does Solva actually automate?", a:"Solva automates three things: AI support ticket resolution, return request deflection, and abandoned cart recovery — all from one connected platform, reading directly from your Shopify store." },
   { q:"How long does setup take?", a:"About 2 minutes. Connect your Shopify store with one click, configure your brand tone, and you're live." },
-  { q:"Do I need a credit card to start?", a:"No. The 14-day free trial requires no credit card. You only add payment details if you choose to continue." },
+  { q:"Do I need a credit card to start?", a:"No. The 7-day free trial requires no credit card. You only add payment details if you choose to continue." },
   { q:"Can I customize the AI's tone?", a:"Yes. You can set a tone that matches your brand, add custom FAQs, and give the AI global instructions it always follows." },
   { q:"What happens when the AI can't resolve something?", a:"It escalates to your team automatically with full context, so nothing falls through the cracks." },
   { q:"Is my customer data secure?", a:"Yes — Solva is built GDPR-compliant from day one, and we never sell or share your customer data." },
