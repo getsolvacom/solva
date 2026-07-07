@@ -112,7 +112,14 @@ export default function AvatarMenu() {
 
   return (
     <>
-      <style>{`@keyframes avDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <style>{`
+        @keyframes avDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes whatsNewPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+        .whatsnew-dot{animation:whatsNewPulse 1.6s ease-in-out infinite;}
+        @media (prefers-reduced-motion: reduce){
+          .whatsnew-dot{animation:none;opacity:1;}
+        }
+      `}</style>
 
       {/* Avatar button */}
       <div
@@ -131,7 +138,7 @@ export default function AvatarMenu() {
           <img src={AVATAR_URL} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
         </div>
         {hasUnread && (
-          <span style={{position:"absolute",top:-2,right:-2,width:8,height:8,borderRadius:"50%",background:C.coral}}/>
+          <span className="whatsnew-dot" style={{position:"absolute",top:-2,right:-2,width:8,height:8,borderRadius:"50%",background:C.coral}}/>
         )}
       </div>
 
@@ -192,7 +199,7 @@ export default function AvatarMenu() {
             />
             <MenuItem
               icon={<Sparkles size={15}/>}
-              label="What's New"
+              label={<>What's New{hasUnread && <span className="whatsnew-dot" style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:C.coral,marginLeft:6,verticalAlign:"middle"}}/>}</>}
               onClick={() => { setWhatsNewOpen(true); setOpen(false); setHasUnread(false); }}
             />
           </div>
