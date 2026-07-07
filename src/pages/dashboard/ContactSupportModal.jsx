@@ -60,6 +60,7 @@ export default function ContactSupportModal({ open, onClose }) {
           plan: profile?.plan || null,
           page: window.location.pathname,
           userAgent: navigator.userAgent,
+          email: user.email,
         },
       }).select().single();
       if (insertError) throw insertError;
