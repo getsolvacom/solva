@@ -1,12 +1,73 @@
+import { createClient } from '@supabase/supabase-js';
+import { getEntitlements } from '../../src/lib/entitlements.js';
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { returnReason, productName, customerName, storeName, brandTone, maxDiscount } = req.body;
+  const { returnReason, productName, customerName, storeName, storeId, userId } = req.body;
 
   if (!returnReason) {
     return res.status(400).json({ error: 'Return reason is required' });
+  }
+
+  // Enforce plan entitlements server-side. Never fail open: a missing userId
+  // or an unentitled plan is treated the same way and never reaches Anthropic.
+  let entitled = false;
+  if (userId) {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan, plan_status, trial_ends_at')
+        .eq('id', userId)
+        .maybeSingle();
+
+      entitled = getEntitlements(profile).returnDeflection === true;
+    } catch (err) {
+      console.error('Failed to fetch profile for entitlements:', err);
+      entitled = false;
+    }
+  }
+
+  if (!entitled) {
+    return res.status(403).json({
+      error: 'Return deflection is not available on your current plan.',
+    });
+  }
+
+  // Load the store's real AI settings so tone and store context come from
+  // saved configuration rather than caller-supplied values.
+  let aiConfig = {
+    ai_tone: 'friendly',
+    brand_description: '',
+    global_instructions: '',
+    ai_signature: '',
+  };
+
+  if (storeId) {
+    try {
+      const { data: settings } = await supabase
+        .from('store_settings')
+        .select('ai_tone, brand_description, global_instructions, ai_signature')
+        .eq('store_id', storeId)
+        .maybeSingle();
+
+      if (settings) {
+        aiConfig = {
+          ...aiConfig,
+          ...settings,
+          ai_tone: settings.ai_tone || 'friendly',
+        };
+      }
+    } catch (err) {
+      console.error('Failed to fetch AI config:', err);
+    }
   }
 
   const toneInstructions = {
@@ -15,7 +76,19 @@ export default async function handler(req, res) {
     casual: 'Use relaxed, human language. Be real and easy-going.',
   };
 
-  const tone = toneInstructions[brandTone] || toneInstructions.friendly;
+  const tone = toneInstructions[aiConfig.ai_tone] || toneInstructions.friendly;
+
+  const brandSection = aiConfig.brand_description
+    ? `\nABOUT THIS STORE: ${aiConfig.brand_description}`
+    : '';
+
+  const policySection = aiConfig.global_instructions
+    ? `\nMANDATORY RULES — always follow these:\n${aiConfig.global_instructions}`
+    : '';
+
+  const signatureSection = aiConfig.ai_signature
+    ? `\nSign off the email with: ${aiConfig.ai_signature}`
+    : '';
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -32,9 +105,9 @@ export default async function handler(req, res) {
 ${tone}
 Your goal is to offer a compelling alternative to a return — such as a discount, exchange, or store credit.
 Keep the response under 130 words. Be empathetic first, then offer the alternative naturally.
-Maximum discount you can offer: ${maxDiscount || '10%'}.
+Offer a reasonable incentive, but do not commit to anything the store cannot honor.
 Do not process the return — offer an alternative instead.
-If the issue is a defective or wrong item, acknowledge it seriously and offer an exchange first.
+If the issue is a defective or wrong item, acknowledge it seriously and offer an exchange first.${brandSection}${policySection}${signatureSection}
 Format: Subject line first, then the email body. Separate them with a blank line.`,
         messages: [
           {

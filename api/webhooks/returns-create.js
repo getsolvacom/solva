@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     // Get store info from Supabase
     const { data: store } = await supabase
       .from('stores')
-      .select('user_id, shop_name, shop_domain')
+      .select('id, user_id, shop_name, shop_domain')
       .eq('shop_domain', shopDomain)
       .maybeSingle();
 
@@ -47,8 +47,8 @@ export default async function handler(req, res) {
         productName,
         customerName,
         storeName: store.shop_name || shopDomain,
-        brandTone: 'friendly',
-        maxDiscount: '15%',
+        storeId: store.id,
+        userId: store.user_id,
       }),
     });
 

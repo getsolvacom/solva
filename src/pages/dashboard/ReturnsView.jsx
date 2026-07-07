@@ -397,6 +397,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     setAiDeflectionLoading(true);
     setAiDeflection(null);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const response = await fetch('/api/ai/return-deflect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -405,8 +406,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
           productName: selected.product,
           customerName: selected.name.split(' ')[0],
           storeName: store?.shop_name || 'our store',
-          brandTone: 'friendly',
-          maxDiscount: '15%',
+          storeId: store?.id,
+          userId: user?.id,
         }),
       });
       const data = await response.json();

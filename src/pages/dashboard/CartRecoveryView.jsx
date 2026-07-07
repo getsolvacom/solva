@@ -269,6 +269,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
       const cartItems = selected.products
         .map(p => `${p.qty}x ${p.name} (${p.variant}) - $${(p.price * p.qty).toFixed(2)}`)
         .join(', ');
+      const { data: { user } } = await supabase.auth.getUser();
       const response = await fetch('/api/ai/cart-recovery', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -276,8 +277,8 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
           cartItems,
           customerName: selected.name.split(' ')[0],
           storeName: store?.shop_name || 'our store',
-          brandTone: 'friendly',
-          discountCode: 'COMEBACK10',
+          storeId: store?.id,
+          userId: user?.id,
         }),
       });
       const data = await response.json();
