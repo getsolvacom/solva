@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
 
     if (error) {
       console.error('Failed to insert ticket:', error);
-      return new Response('Database error', { status: 500 });
+      return new Response(JSON.stringify({ error: error.message, details: error.details, hint: error.hint, code: error.code }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
     console.log('Ticket created:', ticket.id, 'for store', storeId);
