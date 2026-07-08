@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import {
   Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle,
   ArrowUpRight, AlertTriangle, User, Search, Zap,
-  Smile, Bold, Italic, ChevronUp, Clock, Calendar, Bookmark,
+  Smile, Bold, Italic, ChevronUp, Clock, Calendar, Bookmark, RefreshCw,
 } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
@@ -267,6 +267,11 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const { store } = useStore();
   const [realTickets, setRealTickets] = useState(null);
   const [ticketsLoading, setTicketsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [draftEdits, setDraftEdits] = useState({});
+  const [sendingReply, setSendingReply] = useState(false);
+  const [sendError, setSendError] = useState(null);
+  const [sentTickets, setSentTickets] = useState({});
 
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState([
@@ -297,54 +302,73 @@ export default function TicketsView({ isLandscape, isMobile }) {
     return () => document.removeEventListener("mousedown", h);
   }, [schedMenuOpen, schedPickOpen, customPickOpen]);
 
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        if (isDemoMode) return;
+  const fetchTickets = async () => {
+    try {
+      if (isDemoMode) return;
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { setTicketsLoading(false); return; }
-        const { data: storeData } = await supabase
-          .from('stores')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .maybeSingle();
-        if (!storeData) { setTicketsLoading(false); return; }
-        const { data: rows } = await supabase
-          .from('tickets')
-          .select('*')
-          .eq('store_id', storeData.id)
-          .order('created_at', { ascending: false });
-        if (rows && rows.length > 0) {
-          const mapped = rows.map(r => ({
-            id: r.id,
-            name: r.customer_name || 'Customer',
-            avatar: (r.customer_name || 'C').slice(0, 2).toUpperCase(),
-            avatarColor: '#5BADFF',
-            subject: r.subject || 'Support request',
-            preview: r.preview || (r.subject || '').slice(0, 60),
-            time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
-            status: r.status || 'pending',
-            unread: r.status === 'pending',
-            messages: Array.isArray(r.messages) ? r.messages : [
-              { from: 'customer', text: r.subject || 'Support request', time: '' },
-            ],
-            tags: r.tags || [],
-          }));
-          setRealTickets(mapped);
-        } else {
-          setRealTickets([]);
-        }
-      } catch (err) {
-        console.error('TicketsView fetch error:', err);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setTicketsLoading(false); return; }
+      const { data: storeData } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (!storeData) { setTicketsLoading(false); return; }
+      const { data: rows } = await supabase
+        .from('tickets')
+        .select('*')
+        .eq('store_id', storeData.id)
+        .order('created_at', { ascending: false });
+      if (rows && rows.length > 0) {
+        const mapped = rows.map(r => ({
+          id: r.id,
+          name: r.customer_name || 'Customer',
+          avatar: (r.customer_name || 'C').slice(0, 2).toUpperCase(),
+          avatarColor: '#5BADFF',
+          subject: r.subject || 'Support request',
+          preview: r.preview || (r.subject || '').slice(0, 60),
+          time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
+          status: r.status || 'pending',
+          unread: r.status === 'pending',
+          messages: Array.isArray(r.messages) ? r.messages : [
+            { from: 'customer', text: r.subject || 'Support request', time: '' },
+          ],
+          tags: r.tags || [],
+          source: r.source,
+          ai_draft_reply: r.ai_draft_reply,
+          sent_at: r.sent_at,
+          customer_email: r.customer_email,
+        }));
+        setRealTickets(mapped);
+      } else {
         setRealTickets([]);
-      } finally {
-        setTicketsLoading(false);
       }
-    };
+    } catch (err) {
+      console.error('TicketsView fetch error:', err);
+      setRealTickets([]);
+    } finally {
+      setTicketsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTickets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const refreshTickets = async () => {
+    if (isDemoMode || refreshing) return;
+    setRefreshing(true);
+    await fetchTickets();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSendError(null);
+  }, [selectedId]);
 
   const getStatus = (id, def) => statusOverrides[id] || def;
 
@@ -393,6 +417,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const selected        = ticketSource.find(t => t.id === selectedId);
   const effectiveStatus = selected ? getStatus(selectedId, selected.status) : null;
   const effectiveMsgs   = selected ? [...(Array.isArray(selected.messages) ? selected.messages : []), ...(extraMessages[selectedId] || [])] : [];
+  const draftText       = selected ? (draftEdits[selectedId] ?? selected.ai_draft_reply ?? '') : '';
+  const showDraftPanel  = !!(selected && selected.source === 'email' && selected.ai_draft_reply && !selected.sent_at && !sentTickets[selectedId]);
 
   const counts = {
     All:        ticketSource.length,
@@ -419,6 +445,49 @@ export default function TicketsView({ isLandscape, isMobile }) {
     setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
     setTicketClosed(prev => ({ ...prev, [selectedId]: true }));
     fireToast("Ticket closed successfully", "#3ECFB2", "rgba(62,207,178,.12)");
+  }
+
+  async function handleSendDraft() {
+    if (isDemoMode || !selected) return;
+    const text = draftText.trim();
+    if (!text) return;
+    setSendingReply(true);
+    setSendError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-ticket-reply', {
+        body: { ticketId: selected.id, replyText: text },
+      });
+      if (error) {
+        let msg = error.message || 'Failed to send reply';
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const body = await error.context.json();
+            if (body?.error) msg = body.error;
+          }
+        } catch { /* keep default message */ }
+        setSendError(msg);
+        return;
+      }
+      if (data?.error) { setSendError(data.error); return; }
+
+      const nowIso = new Date().toISOString();
+      const time   = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      setSentTickets(prev => ({ ...prev, [selectedId]: true }));
+      setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
+      setRealTickets(prev => prev ? prev.map(t => t.id === selectedId
+        ? { ...t, status: "resolved", sent_at: nowIso }
+        : t) : prev);
+      setExtraMessages(prev => ({
+        ...prev,
+        [selectedId]: [...(prev[selectedId] || []), { from: "agent", text, time }],
+      }));
+      fireToast("Reply sent to customer", C.teal, "rgba(62,207,178,.12)");
+    } catch (err) {
+      console.error('send-ticket-reply invoke error:', err);
+      setSendError(err?.message || 'Failed to send reply');
+    } finally {
+      setSendingReply(false);
+    }
   }
 
   function handleSend() {
@@ -582,9 +651,16 @@ export default function TicketsView({ isLandscape, isMobile }) {
           style={{width:320,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}
         >
           <div style={{padding:"12px 14px 8px"}}>
-            <div style={{display:"flex",alignItems:"center",gap:9,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
-              <Search size={16} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tickets…" style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:13.5}}/>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <div style={{flex:1,display:"flex",alignItems:"center",gap:9,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
+                <Search size={16} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>
+                <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tickets…" style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:13.5}}/>
+              </div>
+              <button onClick={isDemoMode ? undefined : refreshTickets} disabled={isDemoMode || refreshing}
+                title={isDemoMode ? "Sign up to try this" : "Refresh tickets"}
+                style={{width:38,height:38,flexShrink:0,borderRadius:10,background:C.card,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:(isDemoMode||refreshing)?"not-allowed":"pointer",color:C.muted,opacity:isDemoMode?0.45:1}}>
+                <RefreshCw size={15} strokeWidth={2} style={{animation:refreshing?"spin .7s linear infinite":"none"}}/>
+              </button>
             </div>
           </div>
 
@@ -811,6 +887,47 @@ export default function TicketsView({ isLandscape, isMobile }) {
                 </div>
               )}
             </div>
+
+            {/* AI-drafted reply — review, edit & send for real email-sourced tickets */}
+            {showDraftPanel && (
+              <div style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface,padding:"12px 24px"}}>
+                <div style={{borderRadius:16,background:C.card,border:`1px solid ${C.borderHi}`,padding:"14px 16px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,flexWrap:"wrap"}}>
+                    <div style={{width:24,height:24,borderRadius:7,flexShrink:0,background:"rgba(229,82,102,.14)",display:"flex",alignItems:"center",justifyContent:"center",color:C.coral}}><Zap size={13} strokeWidth={2}/></div>
+                    <span style={{fontSize:12.5,fontWeight:700,color:C.coral}}>AI-drafted reply</span>
+                    <span style={{fontSize:11.5,color:C.muted}}>Review, edit, and send to {selected.customer_email || "the customer"}</span>
+                  </div>
+                  <textarea
+                    value={draftText}
+                    onChange={e=>setDraftEdits(prev=>({...prev,[selectedId]:e.target.value}))}
+                    disabled={sendingReply}
+                    placeholder="Edit the AI draft before sending…"
+                    rows={5}
+                    style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,color:C.text,fontSize:14,lineHeight:1.6,padding:"11px 13px",minHeight:96,maxHeight:220,overflowY:"auto",resize:"vertical",display:"block"}}
+                  />
+                  {sendError && (
+                    <div style={{marginTop:10,padding:"9px 13px",borderRadius:10,background:"rgba(255,82,114,.10)",border:"1px solid rgba(255,82,114,.25)",display:"flex",alignItems:"center",gap:8}}>
+                      <AlertCircle size={14} strokeWidth={2} style={{color:"#FF5272",flexShrink:0}}/>
+                      <span style={{fontSize:12,color:"#FF5272",fontWeight:500,wordBreak:"break-word"}}>{sendError}</span>
+                    </div>
+                  )}
+                  <div style={{display:"flex",justifyContent:"flex-end",marginTop:12}}>
+                    <button className="btn-primary" onClick={handleSendDraft}
+                      disabled={sendingReply || !draftText.trim()}
+                      style={{height:38,padding:"0 20px",color:"#fff",fontWeight:600,fontSize:13,borderRadius:8,display:"flex",alignItems:"center",gap:6,cursor:sendingReply?"not-allowed":"pointer"}}>
+                      {sendingReply ? (
+                        <>
+                          <div style={{width:13,height:13,borderRadius:"50%",border:`2px solid rgba(255,255,255,.3)`,borderTopColor:"#fff",animation:"spin .7s linear infinite",flexShrink:0}}/>
+                          Sending…
+                        </>
+                      ) : (
+                        <><Send size={14} strokeWidth={2}/>Send Reply</>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* AI suggestions — static block, sits between messages and composer */}
             <div className="tv-suggestions">
