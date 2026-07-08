@@ -62,7 +62,6 @@ Deno.serve(async (req) => {
       customer_email: fromAddress,
       customer_name: fromAddress?.split('@')[0] || 'Customer',
       subject: subject,
-      preview: messageBody.slice(0, 140),
       messages: [{ role: 'customer', text: messageBody, at: new Date().toISOString() }],
       status: 'pending',
       source: 'email',
