@@ -52,9 +52,10 @@ Deno.serve(async (req) => {
     const emailDetail = await emailDetailRes.json();
     const messageBody = emailDetail.text || emailDetail.html || '(no content)';
 
+    const secretKeys = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      secretKeys.default ?? ''
     );
 
     const { data: ticket, error } = await supabase.from('tickets').insert({
