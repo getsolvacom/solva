@@ -272,6 +272,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [draftEdits, setDraftEdits] = useState({});
   const [sendingReply, setSendingReply] = useState(false);
   const [sendError, setSendError] = useState(null);
+  const [sendWarning, setSendWarning] = useState(null);
   const [sentTickets, setSentTickets] = useState({});
 
   const [aiLoading, setAiLoading] = useState(false);
@@ -369,6 +370,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSendError(null);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSendWarning(null);
   }, [selectedId]);
 
   const getStatus = (id, def) => statusOverrides[id] || def;
@@ -454,6 +457,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
     if (!text) return;
     setSendingReply(true);
     setSendError(null);
+    setSendWarning(null);
     try {
       const { data, error } = await supabase.functions.invoke('send-ticket-reply', {
         body: { ticketId: selected.id, replyText: text },
@@ -470,6 +474,13 @@ export default function TicketsView({ isLandscape, isMobile }) {
         return;
       }
       if (data?.error) { setSendError(data.error); return; }
+      if (data?.warning) {
+        // Email sent, but the ticket status update failed to persist.
+        // Do NOT show the optimistic success state — keep the draft editable
+        // and surface the warning so the merchant can retry or refresh.
+        setSendWarning(data.warning);
+        return;
+      }
 
       const nowIso = new Date().toISOString();
       const time   = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
@@ -910,6 +921,12 @@ export default function TicketsView({ isLandscape, isMobile }) {
                     <div style={{marginTop:10,padding:"9px 13px",borderRadius:10,background:"rgba(255,82,114,.10)",border:"1px solid rgba(255,82,114,.25)",display:"flex",alignItems:"center",gap:8}}>
                       <AlertCircle size={14} strokeWidth={2} style={{color:"#FF5272",flexShrink:0}}/>
                       <span style={{fontSize:12,color:"#FF5272",fontWeight:500,wordBreak:"break-word"}}>{sendError}</span>
+                    </div>
+                  )}
+                  {sendWarning && (
+                    <div style={{marginTop:10,padding:"9px 13px",borderRadius:10,background:"rgba(240,160,75,.10)",border:"1px solid rgba(240,160,75,.25)",display:"flex",alignItems:"center",gap:8}}>
+                      <AlertTriangle size={14} strokeWidth={2} style={{color:C.amber,flexShrink:0}}/>
+                      <span style={{fontSize:12,color:C.amber,fontWeight:500,wordBreak:"break-word"}}>{sendWarning}</span>
                     </div>
                   )}
                   <div style={{display:"flex",justifyContent:"flex-end",marginTop:12}}>
