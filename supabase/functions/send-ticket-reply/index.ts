@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: `${storeName} <support@support.getsolva.app>`,
         to: [ticket.customer_email],
-        reply_to: `ticket-${ticket.store_id}@support.getsolva.app`,
+        reply_to: `ticket-${ticket.id}@support.getsolva.app`,
         subject: ticket.subject?.startsWith('Re:') ? ticket.subject : `Re: ${ticket.subject}`,
         text: replyText,
       }),
