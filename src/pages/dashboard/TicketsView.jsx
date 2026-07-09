@@ -159,6 +159,7 @@ function GlobalStyles() {
         .tv-suggestions-toggle{display:flex!important;align-items:center;justify-content:space-between;width:100%;}
         .tv-suggestions-chips-hidden{display:none!important;}
         .tv-suggestions-chips{margin-top:7px!important;}
+        .tv-draft-box{max-height:52vh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;padding:12px 14px calc(140px + env(safe-area-inset-bottom))!important;}
         .tv-reply-box{padding:8px 12px!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:500!important;background:var(--surface)!important;border-top:1px solid var(--border-hi)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;}
         .msg-bubble-inner{max-width:86%!important;}
       }
@@ -890,7 +891,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
             {/* AI-drafted reply — review, edit & send for real email-sourced tickets */}
             {showDraftPanel && (
-              <div style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface,padding:"12px 24px"}}>
+              <div className="tv-draft-box" style={{flexShrink:0,borderTop:`1px solid ${C.border}`,background:C.surface,padding:"12px 24px"}}>
                 <div style={{borderRadius:16,background:C.card,border:`1px solid ${C.borderHi}`,padding:"14px 16px"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,flexWrap:"wrap"}}>
                     <div style={{width:24,height:24,borderRadius:7,flexShrink:0,background:"rgba(229,82,102,.14)",display:"flex",alignItems:"center",justifyContent:"center",color:C.coral}}><Zap size={13} strokeWidth={2}/></div>

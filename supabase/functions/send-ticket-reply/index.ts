@@ -1,10 +1,20 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization' }), { status: 401 });
+      return new Response(JSON.stringify({ error: 'Missing authorization' }), { status: 401, headers: { ...corsHeaders } });
     }
 
     const publishableKeys = JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') ?? '{}');
@@ -16,7 +26,7 @@ Deno.serve(async (req) => {
 
     const { ticketId, replyText } = await req.json();
     if (!ticketId || !replyText) {
-      return new Response(JSON.stringify({ error: 'Missing ticketId or replyText' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Missing ticketId or replyText' }), { status: 400, headers: { ...corsHeaders } });
     }
 
     const { data: ticket, error: ticketError } = await supabase
@@ -26,11 +36,11 @@ Deno.serve(async (req) => {
       .single();
 
     if (ticketError || !ticket) {
-      return new Response(JSON.stringify({ error: 'Ticket not found or access denied' }), { status: 404 });
+      return new Response(JSON.stringify({ error: 'Ticket not found or access denied' }), { status: 404, headers: { ...corsHeaders } });
     }
 
     if (!ticket.customer_email) {
-      return new Response(JSON.stringify({ error: 'This ticket has no customer email to reply to' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'This ticket has no customer email to reply to' }), { status: 400, headers: { ...corsHeaders } });
     }
 
     const { data: store } = await supabase
@@ -60,7 +70,7 @@ Deno.serve(async (req) => {
     if (!sendRes.ok) {
       const errBody = await sendRes.text();
       console.error('Resend send failed:', errBody);
-      return new Response(JSON.stringify({ error: 'Failed to send email', details: errBody }), { status: 502 });
+      return new Response(JSON.stringify({ error: 'Failed to send email', details: errBody }), { status: 502, headers: { ...corsHeaders } });
     }
 
     const updatedMessages = [
@@ -82,10 +92,10 @@ Deno.serve(async (req) => {
       console.error('Failed to update ticket after send:', updateError);
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (err) {
     console.error('send-ticket-reply error:', err);
-    return new Response(JSON.stringify({ error: 'Internal error' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal error' }), { status: 500, headers: { ...corsHeaders } });
   }
 });
