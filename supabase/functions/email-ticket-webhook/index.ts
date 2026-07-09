@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
       // the ticket for fresh review (the previous draft/approval no longer applies).
       const updatedMessages = [
         ...(Array.isArray(existingTicket.messages) ? existingTicket.messages : []),
-        { at: new Date().toISOString(), role: 'customer', text: cleanedMessageBody },
+        { from: 'customer', text: cleanedMessageBody, time: new Date().toISOString() },
       ];
 
       const { error: updateError } = await supabase
@@ -265,7 +265,7 @@ Deno.serve(async (req) => {
       customer_email: fromAddress,
       customer_name: fromAddress?.split('@')[0] || 'Customer',
       subject: subject,
-      messages: [{ role: 'customer', text: cleanedMessageBody, at: new Date().toISOString() }],
+      messages: [{ from: 'customer', text: cleanedMessageBody, time: new Date().toISOString() }],
       status: 'pending',
       source: 'email',
       inbound_email_id: emailId,

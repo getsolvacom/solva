@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
 
     const updatedMessages = [
       ...(Array.isArray(ticket.messages) ? ticket.messages : []),
-      { at: new Date().toISOString(), role: 'agent', text: replyText },
+      { from: 'agent', time: new Date().toISOString(), text: replyText },
     ];
 
     const { error: updateError } = await supabase
