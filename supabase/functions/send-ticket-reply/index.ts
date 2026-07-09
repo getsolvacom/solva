@@ -90,6 +90,7 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error('Failed to update ticket after send:', updateError);
+      return new Response(JSON.stringify({ success: true, warning: 'Email sent, but failed to save the update. Refresh and check the ticket status.', updateError: updateError.message }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
