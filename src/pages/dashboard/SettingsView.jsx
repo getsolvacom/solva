@@ -1202,7 +1202,9 @@ function AutomationsSection() {
       setSettingsReady(true);
     }
     window.addEventListener('solva-settings-loaded', onLoad);
-    onLoad({ detail: window.__solvaSettings || {} });
+    if (window.__solvaSettings) {
+      onLoad({ detail: window.__solvaSettings });
+    }
     return () => window.removeEventListener('solva-settings-loaded', onLoad);
   }, []);
 
@@ -1598,7 +1600,9 @@ function NotificationsSection() {
       setSettingsReady(true);
     }
     window.addEventListener('solva-settings-loaded', onLoad);
-    onLoad({ detail: window.__solvaSettings || {} });
+    if (window.__solvaSettings) {
+      onLoad({ detail: window.__solvaSettings });
+    }
     return () => window.removeEventListener('solva-settings-loaded', onLoad);
   }, []);
 
@@ -2331,7 +2335,9 @@ function WidgetSection() {
       setSettingsReady(true);
     }
     window.addEventListener('solva-settings-loaded', onLoad);
-    onLoad({ detail: window.__solvaSettings || {} });
+    if (window.__solvaSettings) {
+      onLoad({ detail: window.__solvaSettings });
+    }
     return () => window.removeEventListener('solva-settings-loaded', onLoad);
   }, []);
 
