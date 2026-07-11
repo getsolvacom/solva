@@ -2319,6 +2319,21 @@ function WidgetSection() {
   const [widgetName,     setWidgetName]     = useState("SOLVA Support");
   const [widgetSubtitle, setWidgetSubtitle] = useState("Typically replies instantly");
   const [widgetSaved,    setWidgetSaved]    = useState(false);
+  const [widgetSaveError, setWidgetSaveError] = useState(null);
+  const [settingsReady,  setSettingsReady]  = useState(!!window.__solvaSettings);
+
+  useEffect(() => {
+    function onLoad(e) {
+      const s = e.detail || window.__solvaSettings;
+      if (!s) return;
+      if (s.widget_name) setWidgetName(s.widget_name);
+      if (s.widget_subtitle) setWidgetSubtitle(s.widget_subtitle);
+      setSettingsReady(true);
+    }
+    window.addEventListener('solva-settings-loaded', onLoad);
+    onLoad({ detail: window.__solvaSettings || {} });
+    return () => window.removeEventListener('solva-settings-loaded', onLoad);
+  }, []);
 
   function handleCopy() {
     navigator.clipboard.writeText(EMBED_CODE).then(() => {
@@ -2338,23 +2353,31 @@ function WidgetSection() {
       const { data: existing } = await supabase
         .from('store_settings').select('id')
         .eq('store_id', storeData.id).maybeSingle();
+      let error;
       if (existing) {
-        await supabase.from('store_settings').update({
+        ({ error } = await supabase.from('store_settings').update({
           widget_name: widgetName,
           widget_subtitle: widgetSubtitle,
           updated_at: new Date().toISOString(),
-        }).eq('store_id', storeData.id);
+        }).eq('store_id', storeData.id));
       } else {
-        await supabase.from('store_settings').insert({
+        ({ error } = await supabase.from('store_settings').insert({
           store_id: storeData.id,
           widget_name: widgetName,
           widget_subtitle: widgetSubtitle,
-        });
+        }));
       }
+
+      if (error) {
+        setWidgetSaveError(error.message);
+        return;
+      }
+      setWidgetSaveError(null);
       setWidgetSaved(true);
       setTimeout(() => setWidgetSaved(false), 2500);
     } catch(err) {
       console.error('Save widget error:', err);
+      setWidgetSaveError(err.message);
     }
   };
 
@@ -2383,6 +2406,15 @@ function WidgetSection() {
       {/* Section 2 — Appearance */}
       <div className="section-card fu fu1">
         <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>Widget Appearance</p>
+
+        {!settingsReady && (
+          <div style={{display:"flex",alignItems:"center",gap:10,padding:"20px 0",color:C.muted,fontSize:13.5}}>
+            <div style={{width:14,height:14,borderRadius:"50%",border:`2px solid ${C.dim}`,borderTopColor:C.coral,animation:"spin .7s linear infinite",flexShrink:0}}/>
+            Loading widget settings…
+          </div>
+        )}
+        {settingsReady && (
+        <>
 
         {/* Widget Name */}
         <div style={{marginBottom:18}}>
@@ -2490,6 +2522,8 @@ function WidgetSection() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </div>
 
       {/* Section 3 — Embed Code */}
@@ -2517,7 +2551,7 @@ function WidgetSection() {
         </p>
       </div>
 
-      <SaveBar onSave={saveWidget} saved={widgetSaved}/>
+      <SaveBar onSave={saveWidget} saved={widgetSaved} error={widgetSaveError}/>
     </div>
   );
 }
