@@ -271,6 +271,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [refreshing, setRefreshing] = useState(false);
   const [draftEdits, setDraftEdits] = useState({});
   const [sendingReply, setSendingReply] = useState(false);
+  const [escalating, setEscalating] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [sendError, setSendError] = useState(null);
   const [sendWarning, setSendWarning] = useState(null);
   const [sentTickets, setSentTickets] = useState({});
@@ -437,18 +439,80 @@ export default function TicketsView({ isLandscape, isMobile }) {
     setTimeout(() => setToast(null), 4000);
   }
 
-  function handleEscalate() {
+  async function handleEscalate() {
     if (isDemoMode) return;
-    setStatusOverrides(prev => ({ ...prev, [selectedId]: "escalated" }));
-    setTicketEscalated(prev => ({ ...prev, [selectedId]: true }));
-    fireToast("Ticket escalated to human agent", "#F0A04B", "rgba(240,160,75,.12)");
+    const isRealTicket = !!(selected && realTickets && realTickets.some(t => t.id === selected.id));
+    // Demo / seed tickets keep the original local-only behavior unchanged.
+    if (!isRealTicket) {
+      setStatusOverrides(prev => ({ ...prev, [selectedId]: "escalated" }));
+      setTicketEscalated(prev => ({ ...prev, [selectedId]: true }));
+      fireToast("Ticket escalated to human agent", "#F0A04B", "rgba(240,160,75,.12)");
+      return;
+    }
+    setEscalating(true);
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .update({ status: 'escalated', escalated: true, updated_at: new Date().toISOString() })
+        .eq('id', selected.id)
+        .select()
+        .single();
+      if (error) {
+        // Do NOT change local state — surface the failure and let the merchant retry.
+        fireToast(error.message || 'Failed to escalate ticket', "#FF5272", "rgba(255,82,114,.12)");
+        return;
+      }
+      // Confirmed success — only now mutate optimistic state.
+      setStatusOverrides(prev => ({ ...prev, [selectedId]: "escalated" }));
+      setTicketEscalated(prev => ({ ...prev, [selectedId]: true }));
+      setRealTickets(prev => prev ? prev.map(t => t.id === selectedId
+        ? { ...t, status: "escalated" }
+        : t) : prev);
+      fireToast("Ticket escalated to human agent", "#F0A04B", "rgba(240,160,75,.12)");
+    } catch (err) {
+      console.error('escalate ticket error:', err);
+      fireToast(err?.message || 'Failed to escalate ticket', "#FF5272", "rgba(255,82,114,.12)");
+    } finally {
+      setEscalating(false);
+    }
   }
 
-  function handleClose() {
+  async function handleClose() {
     if (isDemoMode) return;
-    setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
-    setTicketClosed(prev => ({ ...prev, [selectedId]: true }));
-    fireToast("Ticket closed successfully", "#3ECFB2", "rgba(62,207,178,.12)");
+    const isRealTicket = !!(selected && realTickets && realTickets.some(t => t.id === selected.id));
+    // Demo / seed tickets keep the original local-only behavior unchanged.
+    if (!isRealTicket) {
+      setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
+      setTicketClosed(prev => ({ ...prev, [selectedId]: true }));
+      fireToast("Ticket closed successfully", "#3ECFB2", "rgba(62,207,178,.12)");
+      return;
+    }
+    setClosing(true);
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .update({ status: 'resolved', updated_at: new Date().toISOString() })
+        .eq('id', selected.id)
+        .select()
+        .single();
+      if (error) {
+        // Do NOT change local state — surface the failure and let the merchant retry.
+        fireToast(error.message || 'Failed to close ticket', "#FF5272", "rgba(255,82,114,.12)");
+        return;
+      }
+      // Confirmed success — only now mutate optimistic state.
+      setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
+      setTicketClosed(prev => ({ ...prev, [selectedId]: true }));
+      setRealTickets(prev => prev ? prev.map(t => t.id === selectedId
+        ? { ...t, status: "resolved" }
+        : t) : prev);
+      fireToast("Ticket closed successfully", "#3ECFB2", "rgba(62,207,178,.12)");
+    } catch (err) {
+      console.error('close ticket error:', err);
+      fireToast(err?.message || 'Failed to close ticket', "#FF5272", "rgba(255,82,114,.12)");
+    } finally {
+      setClosing(false);
+    }
   }
 
   async function handleSendDraft() {
@@ -788,15 +852,23 @@ export default function TicketsView({ isLandscape, isMobile }) {
                 ← Back to Tickets
               </button>
               <div style={{display:"flex",gap:8}}>
-                <button className="btn-ghost" onClick={isDemoMode ? undefined : handleEscalate} disabled={escalateDisabled || isDemoMode}
+                <button className="btn-ghost" onClick={isDemoMode ? undefined : handleEscalate} disabled={escalateDisabled || isDemoMode || escalating}
                   title={isDemoMode ? "Sign up to try this" : undefined}
-                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center",cursor:isDemoMode?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
-                  <ShieldAlert size={16} strokeWidth={2} style={{marginRight:6}}/>Escalate
+                  style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center",cursor:(isDemoMode||escalating)?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
+                  {escalating ? (
+                    <><div style={{width:13,height:13,borderRadius:"50%",border:`2px solid rgba(255,82,114,.3)`,borderTopColor:"#FF5272",animation:"spin .7s linear infinite",flexShrink:0,marginRight:6}}/>Escalating…</>
+                  ) : (
+                    <><ShieldAlert size={16} strokeWidth={2} style={{marginRight:6}}/>Escalate</>
+                  )}
                 </button>
-                <button className="btn-primary" onClick={isDemoMode ? undefined : handleClose} disabled={closeDisabled || isDemoMode}
+                <button className="btn-primary" onClick={isDemoMode ? undefined : handleClose} disabled={closeDisabled || isDemoMode || closing}
                   title={isDemoMode ? "Sign up to try this" : undefined}
-                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",cursor:isDemoMode?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
-                  <XCircle size={16} strokeWidth={2} style={{marginRight:6}}/>Close Ticket
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",cursor:(isDemoMode||closing)?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
+                  {closing ? (
+                    <><div style={{width:13,height:13,borderRadius:"50%",border:`2px solid rgba(255,255,255,.3)`,borderTopColor:"#fff",animation:"spin .7s linear infinite",flexShrink:0,marginRight:6}}/>Closing…</>
+                  ) : (
+                    <><XCircle size={16} strokeWidth={2} style={{marginRight:6}}/>Close Ticket</>
+                  )}
                 </button>
               </div>
             </div>
