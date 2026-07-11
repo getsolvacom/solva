@@ -1170,6 +1170,7 @@ function AutomationsSection() {
   const [respWindow,   setRespWindow]   = useState("24 hours");
   const [saved,        setSaved]        = useState(false);
   const [saveError,    setSaveError]    = useState(null);
+  const [settingsReady, setSettingsReady] = useState(!!window.__solvaSettings);
 
   useEffect(() => {
     function onLoad(e) {
@@ -1198,6 +1199,7 @@ function AutomationsSection() {
       if (s.ai_response_delay_seconds != null) {
         setRespDelay(secondsToRespDelay(s.ai_response_delay_seconds));
       }
+      setSettingsReady(true);
     }
     window.addEventListener('solva-settings-loaded', onLoad);
     onLoad({ detail: window.__solvaSettings || {} });
@@ -1307,6 +1309,14 @@ function AutomationsSection() {
   return (
     <div>
       <SectionTitle sub="Enable, disable, and configure each AI automation.">Automations</SectionTitle>
+      {!settingsReady && (
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"20px 0",color:C.muted,fontSize:13.5}}>
+          <div style={{width:14,height:14,borderRadius:"50%",border:`2px solid ${C.dim}`,borderTopColor:C.coral,animation:"spin .7s linear infinite",flexShrink:0}}/>
+          Loading automation settings…
+        </div>
+      )}
+      {settingsReady && (
+        <>
 
       {/* Section header row */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
@@ -1560,6 +1570,8 @@ function AutomationsSection() {
       </div>
 
       <SaveBar onSave={save} saved={saved} error={saveError}/>
+        </>
+      )}
     </div>
   );
 }
@@ -1568,6 +1580,7 @@ function NotificationsSection() {
   const [prefs,     setPrefs]     = useState({weeklyReport:true,escalation:true,cartRecovered:false,returnDeflected:false,newTicket:false,dailySummary:true});
   const [aiDigest,  setAiDigest]  = useState(false);
   const [saved,     setSaved]     = useState(false);
+  const [settingsReady, setSettingsReady] = useState(!!window.__solvaSettings);
 
   useEffect(() => {
     function onLoad(e) {
@@ -1582,6 +1595,7 @@ function NotificationsSection() {
         returnDeflected: s.notif_return_deflected ?? prev.returnDeflected,
         newTicket:       s.notif_new_ticket       ?? prev.newTicket,
       }));
+      setSettingsReady(true);
     }
     window.addEventListener('solva-settings-loaded', onLoad);
     onLoad({ detail: window.__solvaSettings || {} });
@@ -1640,6 +1654,14 @@ function NotificationsSection() {
   return (
     <div>
       <SectionTitle sub="Choose what Solva notifies you about and when.">Notifications</SectionTitle>
+      {!settingsReady && (
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"20px 0",color:C.muted,fontSize:13.5}}>
+          <div style={{width:14,height:14,borderRadius:"50%",border:`2px solid ${C.dim}`,borderTopColor:C.coral,animation:"spin .7s linear infinite",flexShrink:0}}/>
+          Loading notification settings…
+        </div>
+      )}
+      {settingsReady && (
+        <>
       <div className="section-card fu">
         {notifs.map((n,i)=>(
           <div key={n.key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 0",borderBottom:i<notifs.length-1?`1px solid ${C.dim}`:"none"}}>
@@ -1670,6 +1692,8 @@ function NotificationsSection() {
       </div>
 
       <SaveBar onSave={save} saved={saved}/>
+        </>
+      )}
     </div>
   );
 }
