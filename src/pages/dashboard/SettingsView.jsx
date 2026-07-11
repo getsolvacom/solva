@@ -47,6 +47,69 @@ const PLANS = [
   { name:"Scale",   price:"$169", popular:false, features:["Everything in Growth","Unlimited tickets","Custom AI training","Dedicated manager","SLA guarantee"] },
 ];
 
+// ── Automation delay conversion helpers (pure) ──
+// Canonical minute values for the preset duration strings used by the delay
+// controls. Covers every preset across Email 1/2/3 delays and Response Window.
+const DURATION_PRESET_MINUTES = {
+  "30 minutes": 30,
+  "1 hour":     60,
+  "3 hours":    180,
+  "6 hours":    360,
+  "12 hours":   720,
+  "24 hours":   1440,
+  "48 hours":   2880,
+};
+
+// Converts a duration control's current UI state to an integer number of
+// minutes. When `value` is "Custom..." the paired custom number + unit are
+// used (e.g. val=5, unit="Hours" → 300; unit="Minutes" → 5; unit="Days" → 7200).
+// Returns null when the input can't be parsed into a positive integer.
+function durationToMinutes(value, customVal, customUnit) {
+  if (value === "Custom...") {
+    const n = parseInt(customVal, 10);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    if (customUnit === "Minutes") return n;
+    if (customUnit === "Days") return n * 1440;
+    return n * 60; // Hours (default)
+  }
+  if (Object.prototype.hasOwnProperty.call(DURATION_PRESET_MINUTES, value)) {
+    return DURATION_PRESET_MINUTES[value];
+  }
+  return null;
+}
+
+// Converts integer minutes back into duration control state. When the value
+// matches a preset, `value` is that preset string. Otherwise it returns a
+// "Custom..." representation the existing custom-entry UI can display, choosing
+// the largest clean unit (Days → Hours → Minutes).
+function minutesToDuration(mins) {
+  const n = Number(mins);
+  const preset = Object.keys(DURATION_PRESET_MINUTES)
+    .find(k => DURATION_PRESET_MINUTES[k] === n);
+  if (preset) return { value: preset, val: "", unit: "Hours" };
+  if (n > 0 && n % 1440 === 0) return { value: "Custom...", val: String(n / 1440), unit: "Days" };
+  if (n > 0 && n % 60 === 0)   return { value: "Custom...", val: String(n / 60),   unit: "Hours" };
+  return { value: "Custom...", val: String(n), unit: "Minutes" };
+}
+
+// Response Delay is stored in seconds; map to/from its preset strings.
+function respDelayToSeconds(value) {
+  switch (value) {
+    case "30 seconds": return 30;
+    case "2 minutes":  return 120;
+    case "5 minutes":  return 300;
+    default:           return 0; // "Instant"
+  }
+}
+function secondsToRespDelay(secs) {
+  switch (Number(secs)) {
+    case 30:  return "30 seconds";
+    case 120: return "2 minutes";
+    case 300: return "5 minutes";
+    default:  return "Instant";
+  }
+}
+
 function GlobalStyles() {
   return (
     <style>{`
@@ -233,7 +296,7 @@ function SearchableSelect({ value, onChange, options }) {
   );
 }
 
-function SaveBar({ onSave, saved }) {
+function SaveBar({ onSave, saved, error }) {
   return (
     <div style={{display:"flex",alignItems:"center",gap:12,padding:"16px 0 4px"}}>
       <button className="btn-primary" onClick={onSave}
@@ -244,6 +307,12 @@ function SaveBar({ onSave, saved }) {
         <div className="saved-badge" style={{display:"flex",alignItems:"center",gap:7,padding:"7px 14px",borderRadius:9,background:"rgba(62,207,178,.10)",border:"1px solid rgba(62,207,178,.22)"}}>
           <span style={{color:C.teal,fontSize:14}}>✓</span>
           <span style={{fontSize:13.5,fontWeight:600,color:C.teal}}>Changes saved</span>
+        </div>
+      )}
+      {error&&(
+        <div style={{display:"flex",alignItems:"center",gap:7,padding:"7px 14px",borderRadius:9,background:"rgba(255,82,114,.10)",border:"1px solid rgba(255,82,114,.22)"}}>
+          <span style={{color:C.red,fontSize:14}}>!</span>
+          <span style={{fontSize:13.5,fontWeight:600,color:C.red}}>{error}</span>
         </div>
       )}
     </div>
@@ -1100,6 +1169,7 @@ function AutomationsSection() {
   const [respDelay,    setRespDelay]    = useState("Instant");
   const [respWindow,   setRespWindow]   = useState("24 hours");
   const [saved,        setSaved]        = useState(false);
+  const [saveError,    setSaveError]    = useState(null);
 
   useEffect(() => {
     function onLoad(e) {
@@ -1109,6 +1179,25 @@ function AutomationsSection() {
       if (s.automation_returns !== undefined) setReturns(s.automation_returns);
       if (s.automation_cart !== undefined) setCart(s.automation_cart);
       if (s.cart_discount_code) setCartCode(s.cart_discount_code);
+      // Restore automation delays from store_settings (fall back to defaults on null).
+      if (s.cart_delay1_minutes != null) {
+        const d = minutesToDuration(s.cart_delay1_minutes);
+        setDelay1(d.value); setDelay1Val(d.val); setDelay1Unit(d.unit);
+      }
+      if (s.cart_delay2_minutes != null) {
+        const d = minutesToDuration(s.cart_delay2_minutes);
+        setDelay2(d.value); setDelay2Val(d.val); setDelay2Unit(d.unit);
+      }
+      if (s.cart_delay3_minutes != null) {
+        const d = minutesToDuration(s.cart_delay3_minutes);
+        setDelay3(d.value); setDelay3Val(d.val); setDelay3Unit(d.unit);
+      }
+      if (s.return_response_window_minutes != null) {
+        setRespWindow(minutesToDuration(s.return_response_window_minutes).value);
+      }
+      if (s.ai_response_delay_seconds != null) {
+        setRespDelay(secondsToRespDelay(s.ai_response_delay_seconds));
+      }
     }
     window.addEventListener('solva-settings-loaded', onLoad);
     onLoad({ detail: window.__solvaSettings || {} });
@@ -1127,27 +1216,47 @@ function AutomationsSection() {
         .from('store_settings').select('id')
         .eq('store_id', storeData.id).maybeSingle();
 
+      // Convert the delay controls to their stored units, coalescing to the
+      // column defaults if a custom entry can't be parsed.
+      const delayCols = {
+        cart_delay1_minutes:            durationToMinutes(delay1, delay1Val, delay1Unit) ?? 60,
+        cart_delay2_minutes:            durationToMinutes(delay2, delay2Val, delay2Unit) ?? 360,
+        cart_delay3_minutes:            durationToMinutes(delay3, delay3Val, delay3Unit) ?? 1440,
+        return_response_window_minutes: durationToMinutes(respWindow) ?? 1440,
+        ai_response_delay_seconds:      respDelayToSeconds(respDelay),
+      };
+
+      let error;
       if (existing) {
-        await supabase.from('store_settings').update({
+        ({ error } = await supabase.from('store_settings').update({
           automation_support: support,
           automation_returns: returns,
           automation_cart: cart,
           cart_discount_code: cartCode,
+          ...delayCols,
           updated_at: new Date().toISOString(),
-        }).eq('store_id', storeData.id);
+        }).eq('store_id', storeData.id));
       } else {
-        await supabase.from('store_settings').insert({
+        ({ error } = await supabase.from('store_settings').insert({
           store_id: storeData.id,
           automation_support: support,
           automation_returns: returns,
           automation_cart: cart,
           cart_discount_code: cartCode,
-        });
+          ...delayCols,
+        }));
       }
+
+      if (error) {
+        setSaveError(error.message);
+        return;
+      }
+      setSaveError(null);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       console.error('Save automations error:', err);
+      setSaveError(err.message);
     }
   };
 
@@ -1450,7 +1559,7 @@ function AutomationsSection() {
         </div>
       </div>
 
-      <SaveBar onSave={save} saved={saved}/>
+      <SaveBar onSave={save} saved={saved} error={saveError}/>
     </div>
   );
 }
