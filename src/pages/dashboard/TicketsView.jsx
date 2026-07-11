@@ -271,6 +271,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [refreshing, setRefreshing] = useState(false);
   const [draftEdits, setDraftEdits] = useState({});
   const [sendingReply, setSendingReply] = useState(false);
+  const [sendingManual, setSendingManual] = useState(false);
   const [escalating, setEscalating] = useState(false);
   const [closing, setClosing] = useState(false);
   const [sendError, setSendError] = useState(null);
@@ -425,6 +426,9 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const effectiveMsgs   = selected ? [...(Array.isArray(selected.messages) ? selected.messages : []), ...(extraMessages[selectedId] || [])] : [];
   const draftText       = selected ? (draftEdits[selectedId] ?? selected.ai_draft_reply ?? '') : '';
   const showDraftPanel  = !!(selected && selected.source === 'email' && selected.ai_draft_reply && !selected.sent_at && !sentTickets[selectedId]);
+  // A real, email-sourced ticket (backed by a row in realTickets) — as opposed to
+  // demo/seed tickets. Gates the real-send, draft-generation, and no-scheduling paths.
+  const isRealEmailTicket = !!(selected && selected.source === 'email' && realTickets && realTickets.some(t => t.id === selected.id));
 
   const counts = {
     All:        ticketSource.length,
@@ -515,16 +519,14 @@ export default function TicketsView({ isLandscape, isMobile }) {
     }
   }
 
-  async function handleSendDraft() {
-    if (isDemoMode || !selected) return;
-    const text = draftText.trim();
-    if (!text) return;
-    setSendingReply(true);
-    setSendError(null);
-    setSendWarning(null);
+  // Shared invoke + three-tier response parsing for send-ticket-reply, used by
+  // both the AI-draft panel (handleSendDraft) and the manual composer (handleSend).
+  // Returns { ok:true } on confirmed success, { error } on a failure to send, or
+  // { warning } when the email sent but the DB status update did not persist.
+  async function sendReplyToBackend(ticketId, text) {
     try {
       const { data, error } = await supabase.functions.invoke('send-ticket-reply', {
-        body: { ticketId: selected.id, replyText: text },
+        body: { ticketId, replyText: text },
       });
       if (error) {
         let msg = error.message || 'Failed to send reply';
@@ -534,15 +536,32 @@ export default function TicketsView({ isLandscape, isMobile }) {
             if (body?.error) msg = body.error;
           }
         } catch { /* keep default message */ }
-        setSendError(msg);
-        return;
+        return { error: msg };
       }
-      if (data?.error) { setSendError(data.error); return; }
-      if (data?.warning) {
+      if (data?.error) return { error: data.error };
+      if (data?.warning) return { warning: data.warning };
+      return { ok: true };
+    } catch (err) {
+      console.error('send-ticket-reply invoke error:', err);
+      return { error: err?.message || 'Failed to send reply' };
+    }
+  }
+
+  async function handleSendDraft() {
+    if (isDemoMode || !selected) return;
+    const text = draftText.trim();
+    if (!text) return;
+    setSendingReply(true);
+    setSendError(null);
+    setSendWarning(null);
+    try {
+      const result = await sendReplyToBackend(selected.id, text);
+      if (result.error) { setSendError(result.error); return; }
+      if (result.warning) {
         // Email sent, but the ticket status update failed to persist.
         // Do NOT show the optimistic success state — keep the draft editable
         // and surface the warning so the merchant can retry or refresh.
-        setSendWarning(data.warning);
+        setSendWarning(result.warning);
         return;
       }
 
@@ -558,22 +577,48 @@ export default function TicketsView({ isLandscape, isMobile }) {
         [selectedId]: [...(prev[selectedId] || []), { from: "agent", text, time }],
       }));
       fireToast("Reply sent to customer", C.teal, "rgba(62,207,178,.12)");
-    } catch (err) {
-      console.error('send-ticket-reply invoke error:', err);
-      setSendError(err?.message || 'Failed to send reply');
     } finally {
       setSendingReply(false);
     }
   }
 
-  function handleSend() {
+  async function handleSend() {
     if (isDemoMode || !reply.trim()) return;
-    const time = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    setExtraMessages(prev => ({
-      ...prev,
-      [selectedId]: [...(prev[selectedId] || []), { from: "agent", text: reply.trim(), time }],
-    }));
-    setReply("");
+    // Demo / seed tickets keep the original local-only append behavior unchanged.
+    if (!isRealEmailTicket) {
+      const time = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      setExtraMessages(prev => ({
+        ...prev,
+        [selectedId]: [...(prev[selectedId] || []), { from: "agent", text: reply.trim(), time }],
+      }));
+      setReply("");
+      return;
+    }
+    const text = reply.trim();
+    setSendingManual(true);
+    try {
+      const result = await sendReplyToBackend(selected.id, text);
+      if (result.error)   { fireToast(result.error, "#FF5272", "rgba(255,82,114,.12)"); return; }
+      if (result.warning) { fireToast(result.warning, C.amber, "rgba(240,160,75,.12)"); return; }
+
+      // Confirmed success — only now mutate optimistic state. send-ticket-reply
+      // marks the ticket resolved, matching the AI-draft flow.
+      const nowIso = new Date().toISOString();
+      const time   = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      setSentTickets(prev => ({ ...prev, [selectedId]: true }));
+      setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
+      setRealTickets(prev => prev ? prev.map(t => t.id === selectedId
+        ? { ...t, status: "resolved", sent_at: nowIso }
+        : t) : prev);
+      setExtraMessages(prev => ({
+        ...prev,
+        [selectedId]: [...(prev[selectedId] || []), { from: "agent", text, time }],
+      }));
+      setReply("");
+      fireToast("Reply sent to customer", C.teal, "rgba(62,207,178,.12)");
+    } finally {
+      setSendingManual(false);
+    }
   }
 
   const generateAIReply = async (ticketText) => {
@@ -591,6 +636,32 @@ export default function TicketsView({ isLandscape, isMobile }) {
       });
       const data = await response.json();
       if (data.response) {
+        // Real email tickets: generate into the reviewable draft panel and persist,
+        // rather than faking a sent AI message. Generating a draft is NOT resolving,
+        // so we do not touch status here.
+        if (isRealEmailTicket) {
+          const generatedText = data.response;
+          const { error } = await supabase
+            .from('tickets')
+            .update({ ai_draft_reply: generatedText, updated_at: new Date().toISOString() })
+            .eq('id', selected.id);
+          if (error) {
+            // Persist failed — surface it and leave local state untouched.
+            fireToast(error.message || 'Failed to save AI draft', "#FF5272", "rgba(255,82,114,.12)");
+            return;
+          }
+          // Confirmed persist — surface the draft in the editable panel for review.
+          // Clear sent_at in LOCAL state only (never in the DB) so the panel condition
+          // passes even if this ticket was previously sent.
+          setRealTickets(prev => prev ? prev.map(t => t.id === selectedId
+            ? { ...t, ai_draft_reply: generatedText, sent_at: null }
+            : t) : prev);
+          setSentTickets(prev => ({ ...prev, [selectedId]: false }));
+          setDraftEdits(prev => ({ ...prev, [selectedId]: generatedText }));
+          await generateAISuggestions(ticketText);
+          return;
+        }
+
         const time = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
         setExtraMessages(prev => ({
           ...prev,
@@ -1090,20 +1161,28 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   {/* Right: split send */}
                   <div style={{position:"relative"}} ref={schedRef}>
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
-                      <button className="btn-primary" onClick={isDemoMode ? undefined : handleSend} disabled={isDemoMode}
+                      <button className="btn-primary" onClick={isDemoMode ? undefined : handleSend} disabled={isDemoMode || sendingManual}
                         title={isDemoMode ? "Sign up to try this" : undefined}
-                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:isDemoMode?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
-                        <Send size={14} strokeWidth={2}/>Send
+                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:(isDemoMode||sendingManual)?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
+                        {sendingManual ? (
+                          <><div style={{width:13,height:13,borderRadius:"50%",border:`2px solid rgba(255,255,255,.3)`,borderTopColor:"#fff",animation:"spin .7s linear infinite",flexShrink:0}}/>Sending…</>
+                        ) : (
+                          <><Send size={14} strokeWidth={2}/>Send</>
+                        )}
                       </button>
-                      <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
-                      <button onClick={()=>{ if (!isDemoMode) { setSchedMenuOpen(o=>!o); setSchedPickOpen(false); } }} disabled={isDemoMode}
-                        title={isDemoMode ? "Sign up to try this" : undefined}
-                        style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:isDemoMode?"not-allowed":"pointer",background:C.surface,border:`1px solid ${C.border}`,opacity:isDemoMode?0.45:1}}>
-                        <ChevronUp size={16} strokeWidth={2.5} style={{color:C.text}}/>
-                      </button>
+                      {!isRealEmailTicket && (
+                        <>
+                          <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
+                          <button onClick={()=>{ if (!isDemoMode) { setSchedMenuOpen(o=>!o); setSchedPickOpen(false); } }} disabled={isDemoMode}
+                            title={isDemoMode ? "Sign up to try this" : undefined}
+                            style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:isDemoMode?"not-allowed":"pointer",background:C.surface,border:`1px solid ${C.border}`,opacity:isDemoMode?0.45:1}}>
+                            <ChevronUp size={16} strokeWidth={2.5} style={{color:C.text}}/>
+                          </button>
+                        </>
+                      )}
                     </div>
 
-                    {schedMenuOpen && (
+                    {!isRealEmailTicket && schedMenuOpen && (
                       <div style={{...popupBase,minWidth:164}}>
                         <button className="sched-opt" onClick={()=>{ setSchedMenuOpen(false); setSchedPickOpen(true); }}>
                           <Clock size={14} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>Schedule send
@@ -1111,7 +1190,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       </div>
                     )}
 
-                    {schedPickOpen && (
+                    {!isRealEmailTicket && schedPickOpen && (
                       <div style={{...popupBase,minWidth:252}}>
                         <div style={{padding:"10px 14px 4px",fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase"}}>Send at…</div>
                         {SCHEDULE_OPTS.map(opt=>(
@@ -1126,7 +1205,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       </div>
                     )}
 
-                    {customPickOpen && (
+                    {!isRealEmailTicket && customPickOpen && (
                       <div style={{
                         position:"absolute", zIndex:600, right:0, bottom:"calc(100% + 8px)",
                         background:C.card, border:`1px solid ${C.borderHi}`,
