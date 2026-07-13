@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { cartItems, customerName, storeName, storeId, userId } = req.body;
+  const { cartItems, customerName, storeName, storeId, userId, touchNumber = 1 } = req.body;
 
   if (!cartItems) {
     return res.status(400).json({ error: 'Cart items are required' });
@@ -78,7 +78,15 @@ export default async function handler(req, res) {
   };
 
   const tone = toneInstructions[aiConfig.ai_tone] || toneInstructions.friendly;
-  const discountCode = aiConfig.cart_discount_code || 'none';
+  const discountCode = aiConfig.cart_discount_code || '';
+
+  const touchInstructions = {
+    1: 'This is the FIRST reminder, sent shortly after the cart was abandoned. Tone: friendly, low-pressure nudge. Do NOT mention any discount code in this email.',
+    2: 'This is the SECOND reminder, sent after the first went unanswered. If a discount code is provided, mention it clearly as an incentive to complete the purchase. Acknowledge gently that they may have hit a snag.',
+    3: 'This is the THIRD AND FINAL reminder in this sequence. Create genuine urgency (e.g. limited stock, cart expiring soon) without being pushy or dishonest. If a discount code is provided, restate it as a last chance.',
+  };
+
+  const touchSection = `\n${touchInstructions[touchNumber] || touchInstructions[1]}`;
 
   const brandSection = aiConfig.brand_description
     ? `\nABOUT THIS STORE: ${aiConfig.brand_description}`
@@ -108,14 +116,17 @@ ${tone}
 Write a short, persuasive email to recover an abandoned cart.
 Keep it under 120 words. Be genuine — never pushy or spammy.
 If a discount code is provided, mention it naturally.
-Do not use placeholder text like [Customer Name] — use the actual name provided.${brandSection}${policySection}${signatureSection}
+Do not use placeholder text like [Customer Name] — use the actual name provided.${touchSection}${brandSection}${policySection}${signatureSection}
 Format: Subject line first, then the email body. Separate them with a blank line.`,
         messages: [
           {
             role: 'user',
             content: `Customer name: ${customerName || 'there'}
-Cart items: ${cartItems}
-Discount code: ${discountCode}
+Cart items: ${cartItems}${
+              (touchNumber === 2 || touchNumber === 3) && discountCode
+                ? `\nDiscount code: ${discountCode}`
+                : ''
+            }
 
 Write a cart recovery email.`,
           },
