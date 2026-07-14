@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     // Get store info from Supabase
     const { data: store } = await supabase
       .from('stores')
-      .select('user_id')
+      .select('id')
       .eq('shop_domain', shopDomain)
       .maybeSingle();
 
@@ -33,14 +33,14 @@ export default async function handler(req, res) {
         .from('carts')
         .update({ status: 'recovered', recovered_at: new Date().toISOString() })
         .eq('shopify_cart_id', cartToken)
-        .eq('user_id', store.user_id)
+        .eq('store_id', store.id)
         .select('id');
 
       if (cartUpdateError) {
         console.error('Failed to mark cart as recovered:', cartUpdateError);
+      } else {
+        console.log('Cart marked as recovered for token:', cartToken);
       }
-
-      console.log('Cart marked as recovered for token:', cartToken);
 
       // Customer completed checkout, so cancel any still-queued recovery emails
       // for this cart. Only touch rows still waiting ('queued') — never ones
