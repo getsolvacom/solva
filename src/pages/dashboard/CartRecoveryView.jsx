@@ -68,6 +68,7 @@ const CARTS = [
 ];
 
 const STATUS_C = {
+  abandoned:   { label:"Abandoned",      color:"#5BADFF", bg:"rgba(91,173,255,.10)"  },
   recovered:   { label:"Recovered",      color:"#3ECFB2", bg:"rgba(62,207,178,.10)"  },
   in_sequence: { label:"In Sequence",    color:"#F0A04B", bg:"rgba(240,160,75,.10)"  },
   failed:      { label:"Not Recovered",  color:"#FF5272", bg:"rgba(255,82,114,.10)"  },
@@ -249,6 +250,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   });
 
   const selected       = cartSource.find(c => c.id === selectedId);
+  const selectedStatus = selected ? (STATUS_C[selected.status] || STATUS_C.abandoned) : null;
   const totalRecovered = cartSource.filter(c=>c.status==="recovered").reduce((s,c)=>s+c.value,0);
   const counts         = {
     "All":           cartSource.length,
@@ -390,7 +392,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
               </div>
             )}
             {filtered.map(c=>{
-              const s = STATUS_C[c.status];
+              const s = STATUS_C[c.status] || STATUS_C.abandoned;
               return (
                 <div key={c.id} className="cart-row" onClick={()=>handleCartSelect(c.id)}
                   style={{padding:"13px 16px",background:selectedId===c.id?"rgba(229,82,102,.07)":"transparent",borderLeft:`3px solid ${selectedId===c.id?C.coral:"transparent"}`,borderBottom:`1px solid ${C.border}`}}>
@@ -443,7 +445,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
                     <span style={{fontSize:15,fontWeight:700,color:C.text}}>{selected.name}</span>
-                    <span className="tag" style={{color:STATUS_C[selected.status].color,background:STATUS_C[selected.status].bg}}>{STATUS_C[selected.status].label}</span>
+                    <span className="tag" style={{color:selectedStatus.color,background:selectedStatus.bg}}>{selectedStatus.label}</span>
                   </div>
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Abandoned {selected.timeAgo}</span>
                 </div>
@@ -639,7 +641,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
               </div>
               <div style={{display:"flex",gap:8,marginTop:10}}>
                 <span className="tag" style={{color:C.muted,background:C.dim,fontSize:11}}>{selected.id}</span>
-                <span className="tag" style={{color:STATUS_C[selected.status].color,background:STATUS_C[selected.status].bg}}>{STATUS_C[selected.status].label}</span>
+                <span className="tag" style={{color:selectedStatus.color,background:selectedStatus.bg}}>{selectedStatus.label}</span>
                 <span className="tag" style={{color:C.muted,background:C.dim,fontSize:11}}>Abandoned {selected.timeAgo}</span>
               </div>
             </div>
