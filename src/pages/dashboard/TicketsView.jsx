@@ -1170,19 +1170,18 @@ export default function TicketsView({ isLandscape, isMobile }) {
                           <><Send size={14} strokeWidth={2}/>Send</>
                         )}
                       </button>
-                      {!isRealEmailTicket && (
+                      {!isRealEmailTicket && !isDemoMode && (
                         <>
                           <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
-                          <button onClick={()=>{ if (!isDemoMode) { setSchedMenuOpen(o=>!o); setSchedPickOpen(false); } }} disabled={isDemoMode}
-                            title={isDemoMode ? "Sign up to try this" : undefined}
-                            style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:isDemoMode?"not-allowed":"pointer",background:C.surface,border:`1px solid ${C.border}`,opacity:isDemoMode?0.45:1}}>
+                          <button onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
+                            style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:C.surface,border:`1px solid ${C.border}`,opacity:1}}>
                             <ChevronUp size={16} strokeWidth={2.5} style={{color:C.text}}/>
                           </button>
                         </>
                       )}
                     </div>
 
-                    {!isRealEmailTicket && schedMenuOpen && (
+                    {!isRealEmailTicket && !isDemoMode && schedMenuOpen && (
                       <div style={{...popupBase,minWidth:164}}>
                         <button className="sched-opt" onClick={()=>{ setSchedMenuOpen(false); setSchedPickOpen(true); }}>
                           <Clock size={14} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>Schedule send
@@ -1190,7 +1189,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       </div>
                     )}
 
-                    {!isRealEmailTicket && schedPickOpen && (
+                    {!isRealEmailTicket && !isDemoMode && schedPickOpen && (
                       <div style={{...popupBase,minWidth:252}}>
                         <div style={{padding:"10px 14px 4px",fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase"}}>Send at…</div>
                         {SCHEDULE_OPTS.map(opt=>(
@@ -1205,7 +1204,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       </div>
                     )}
 
-                    {!isRealEmailTicket && customPickOpen && (
+                    {!isRealEmailTicket && !isDemoMode && customPickOpen && (
                       <div style={{
                         position:"absolute", zIndex:600, right:0, bottom:"calc(100% + 8px)",
                         background:C.card, border:`1px solid ${C.borderHi}`,
