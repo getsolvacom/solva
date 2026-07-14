@@ -67,6 +67,7 @@ const STATUS_T = {
   resolved:  { label:"Resolved",  color:"#3ECFB2", bg:"rgba(62,207,178,.10)",  icon:<CheckCircle2 size={12} strokeWidth={2}/> },
   escalated: { label:"Escalated", color:"#FF5272", bg:"rgba(255,82,114,.10)",  icon:<ArrowUpRight size={12} strokeWidth={2}/> },
   pending:   { label:"Pending",   color:"#F0A04B", bg:"rgba(240,160,75,.10)",  icon:<AlertCircle size={12} strokeWidth={2}/> },
+  unknown:   { label:"Unknown",   color:"#8B8B9E", bg:"rgba(139,139,158,.10)", icon:<AlertCircle size={12} strokeWidth={2}/> },
 };
 
 const EMOJIS = ["😊","👍","🙏","❤️","🎉","✅","👋","💪","🚀","⭐","😄","🤝","📦","💯","⚡","🔥"];
@@ -423,6 +424,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
   const selected        = ticketSource.find(t => t.id === selectedId);
   const effectiveStatus = selected ? getStatus(selectedId, selected.status) : null;
+  const effectiveStatusCfg = selected ? (STATUS_T[effectiveStatus] || STATUS_T.unknown) : null;
   const effectiveMsgs   = selected ? [...(Array.isArray(selected.messages) ? selected.messages : []), ...(extraMessages[selectedId] || [])] : [];
   const draftText       = selected ? (draftEdits[selectedId] ?? selected.ai_draft_reply ?? '') : '';
   const showDraftPanel  = !!(selected && selected.source === 'email' && selected.ai_draft_reply && !selected.sent_at && !sentTickets[selectedId]);
@@ -863,7 +865,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
           <div style={{flex:1,overflowY:"auto"}}>
             {filtered.map(t => {
-              const st = STATUS_T[getStatus(t.id, t.status)];
+              const st = STATUS_T[getStatus(t.id, t.status)] || STATUS_T.unknown;
               return (
                 <div key={t.id} className="ticket-row" onClick={()=>handleTicketSelect(t.id)}
                   style={{padding:"13px 16px",background:selectedId===t.id?"rgba(229,82,102,.07)":"transparent",borderLeft:`3px solid ${selectedId===t.id?C.coral:"transparent"}`,borderBottom:`1px solid ${C.border}`}}>
@@ -913,7 +915,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:3}}>
                     <span style={{fontSize:15,fontWeight:700,color:C.text}}>{selected.name}</span>
-                    <span className="tag" style={{color:STATUS_T[effectiveStatus].color,background:STATUS_T[effectiveStatus].bg,gap:4}}>{STATUS_T[effectiveStatus].icon}{STATUS_T[effectiveStatus].label}</span>
+                    <span className="tag" style={{color:effectiveStatusCfg.color,background:effectiveStatusCfg.bg,gap:4}}>{effectiveStatusCfg.icon}{effectiveStatusCfg.label}</span>
                   </div>
                   <div style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · {selected.type}</div>
                 </div>
