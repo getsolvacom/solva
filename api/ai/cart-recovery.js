@@ -20,13 +20,19 @@ export default async function handler(req, res) {
   // Enforce plan entitlements server-side. Never fail open: a missing userId
   // or an unentitled plan is treated the same way and never reaches Anthropic.
   let entitled = false;
+  let profile = null;
+  let profileError = null;
   if (userId) {
     try {
-      const { data: profile } = await supabase
+      ({ data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('plan, plan_status, trial_ends_at')
         .eq('id', userId)
-        .maybeSingle();
+        .maybeSingle());
+
+      if (profileError) {
+        console.error('Profile lookup error:', profileError);
+      }
 
       entitled = getEntitlements(profile).cartRecovery === true;
     } catch (err) {
@@ -38,6 +44,8 @@ export default async function handler(req, res) {
   if (!entitled) {
     return res.status(403).json({
       error: 'Cart recovery is not available on your current plan.',
+      debug_profileError: profileError || null,
+      debug_profile: profile || null,
     });
   }
 
