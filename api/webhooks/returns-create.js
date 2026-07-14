@@ -8,6 +8,73 @@ const supabase = createClient(
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
+  const topic = req.headers['x-shopify-topic'];
+
+  // This endpoint is subscribed to two topics. A refunds/create payload means a
+  // refund was issued: if we still have a pending return for that order, mark it
+  // processed and cancel any queued deflection emails. Only an EXACT topic match
+  // takes this path — a missing/unrecognized header falls through to the
+  // existing returns/create logic below, unchanged.
+  if (topic === 'refunds/create') {
+    try {
+      const refund = req.body;
+      const shopDomain = req.headers['x-shopify-shop-domain'];
+      const orderId = refund.order_id ? String(refund.order_id) : null;
+
+      console.log('Refund received for order:', orderId, 'from', shopDomain);
+
+      const { data: matchingReturn, error: lookupError } = await supabase
+        .from('returns')
+        .select('id, status')
+        .eq('order_id', orderId)
+        .maybeSingle();
+
+      if (lookupError) {
+        console.error('Error looking up return for refunded order:', lookupError);
+      }
+
+      if (!matchingReturn) {
+        console.log(`No matching return found for refunded order: ${orderId} — nothing to cancel`);
+        return res.status(200).json({ received: true, matched: false });
+      }
+
+      // Only advance rows that are still pending, so we never clobber a return
+      // that was already deflected or processed by another path.
+      if (matchingReturn.status === 'pending') {
+        const { error: updateError } = await supabase
+          .from('returns')
+          .update({ status: 'processed', deflected: false })
+          .eq('id', matchingReturn.id);
+
+        if (updateError) {
+          console.error('Failed to mark return as processed:', updateError);
+        }
+      }
+
+      // Cancel any still-queued deflection emails for this return. Only touches
+      // rows still waiting ('queued') — never sent/sending/failed/canceled.
+      const { data: canceledMsgs, error: cancelError } = await supabase
+        .from('scheduled_messages')
+        .update({ status: 'canceled' })
+        .eq('type', 'return_deflection')
+        .eq('ref_id', matchingReturn.id)
+        .eq('status', 'queued')
+        .select('id');
+
+      if (cancelError) {
+        console.error('Failed to cancel queued return_deflection messages:', cancelError);
+      }
+
+      const canceled = canceledMsgs?.length ?? 0;
+      console.log(`Canceled ${canceled} queued return_deflection message(s) for return ${matchingReturn.id}`);
+
+      return res.status(200).json({ received: true, matched: true, canceled });
+    } catch (err) {
+      console.error('Refund webhook error:', err);
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
   try {
     const returnRequest = req.body;
     const shopDomain = req.headers['x-shopify-shop-domain'];
