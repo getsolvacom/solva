@@ -29,6 +29,10 @@ const registerWebhooks = async (shop, accessToken) => {
     {
       topic: 'shop/redact',
       address: 'https://solva-sigma.vercel.app/api/webhooks/gdpr'
+    },
+    {
+      topic: 'refunds/create',
+      address: 'https://getsolva.app/api/webhooks/returns-create'
     }
   ];
 
