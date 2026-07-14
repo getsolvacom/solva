@@ -102,9 +102,7 @@ export default async function handler(req, res) {
 
     // Generate and queue each recovery touch. Sequential (not parallel) to keep
     // tracing easy. A failure on one touch must not abort the others.
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'https://solva-sigma.vercel.app';
+    const baseUrl = 'https://getsolva.app';
 
     let queued = 0;
 
