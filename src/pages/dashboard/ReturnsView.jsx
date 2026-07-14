@@ -89,6 +89,7 @@ const REASON_CFG = {
   defect:           { label:"Product Defect",   color:"#FF5272"  },
   wrong_item:       { label:"Wrong Item",       color:"#FF5272"  },
   not_as_described: { label:"Not as Described", color:"#992A67"  },
+  other:            { label:"Other",            color:"#8B8B9E"  },
 };
 
 const EMOJIS = ["😊","👍","🙏","❤️","🎉","✅","👋","💪","🚀","⭐","😄","🤝","📦","💯","⚡","🔥"];
@@ -375,6 +376,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     ? { label:"Manual Override", color:C.amber, bg:"rgba(240,160,75,.10)" }
     : selected ? STATUS_R[selected.status] : null;
 
+  const selectedReason = selected ? (REASON_CFG[selected.reason] || REASON_CFG.other) : null;
+
   const allMessages = selected
     ? [...selected.conversation, ...(extraMessages[selectedId]||[])]
     : [];
@@ -589,7 +592,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             )}
             {filtered.map(r=>{
               const s  = STATUS_R[r.status];
-              const rs = REASON_CFG[r.reason];
+              const rs = REASON_CFG[r.reason] || REASON_CFG.other;
               return (
                 <div key={r.id} className="return-row" onClick={()=>handleReturnSelect(r.id)}
                   style={{padding:"13px 16px",background:selectedId===r.id?"rgba(229,82,102,.07)":"transparent",borderLeft:`3px solid ${selectedId===r.id?C.coral:"transparent"}`,borderBottom:`1px solid ${C.border}`}}>
@@ -644,7 +647,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3,flexWrap:"wrap"}}>
                     <span style={{fontSize:15,fontWeight:700,color:C.text}}>{selected.name}</span>
-                    <span className="tag" style={{color:REASON_CFG[selected.reason].color,background:`${REASON_CFG[selected.reason].color}12`}}>{REASON_CFG[selected.reason].label}</span>
+                    <span className="tag" style={{color:selectedReason.color,background:`${selectedReason.color}12`}}>{selectedReason.label}</span>
                     <span className="tag" style={{color:effectiveStatus.color,background:effectiveStatus.bg}}>{effectiveStatus.label}</span>
                   </div>
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Order {selected.orderRef}</span>
