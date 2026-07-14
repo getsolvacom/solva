@@ -31,6 +31,7 @@ export default async function handler(req, res) {
     const productName = refundLineItems[0]?.line_item?.title || 'their purchase';
     const customerName = returnRequest.order?.billing_address?.first_name || 'there';
     const customerEmail = returnRequest.order?.email;
+    const orderId = returnRequest.order?.id ? String(returnRequest.order.id) : null;
     const returnReason = returnRequest.note || 'Customer requested return';
     const orderValue = parseFloat(returnRequest.transactions?.[0]?.amount || 0);
 
@@ -58,6 +59,7 @@ export default async function handler(req, res) {
       .insert({
         store_id: store.id,
         shopify_return_id: String(returnRequest.id),
+        order_id: orderId,
         customer_email: customerEmail,
         customer_name: customerName,
         product_name: productName,
