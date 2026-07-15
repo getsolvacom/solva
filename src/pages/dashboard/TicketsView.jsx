@@ -72,9 +72,9 @@ const STATUS_T = {
 
 const EMOJIS = ["😊","👍","🙏","❤️","🎉","✅","👋","💪","🚀","⭐","😄","🤝","📦","💯","⚡","🔥"];
 const SCHEDULE_OPTS = [
-  "Tomorrow morning (8:00 AM)",
-  "Tomorrow afternoon (1:00 PM)",
-  "Monday morning (8:00 AM)",
+  { label: "Tomorrow morning (8:00 AM)", getDate: () => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0); return d; } },
+  { label: "Tomorrow afternoon (1:00 PM)", getDate: () => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(13, 0, 0, 0); return d; } },
+  { label: "Monday morning (8:00 AM)", getDate: () => { const d = new Date(); const day = d.getDay(); const daysUntilMonday = (8 - day) % 7 || 7; d.setDate(d.getDate() + daysUntilMonday); d.setHours(8, 0, 0, 0); return d; } },
 ];
 
 function parseMarkdown(text) {
@@ -651,6 +651,19 @@ export default function TicketsView({ isLandscape, isMobile }) {
     const text = reply.trim();
     setSendingManual(true);
     try {
+      // A manual send supersedes any reply still waiting in the queue for this
+      // ticket. Only touches rows still 'queued' — never sent/sending/failed.
+      // A failure here must not block the manual send, which is the priority action.
+      const { error: cancelError } = await supabase
+        .from('scheduled_messages')
+        .update({ status: 'canceled' })
+        .eq('type', 'ticket_reply')
+        .eq('ref_id', selected.id)
+        .eq('status', 'queued');
+      if (cancelError) {
+        console.error('Failed to cancel queued ticket_reply messages:', cancelError);
+      }
+
       const result = await sendReplyToBackend(selected.id, text);
       if (result.error)   { fireToast(result.error, "#FF5272", "rgba(255,82,114,.12)"); return; }
       if (result.warning) { fireToast(result.warning, C.amber, "rgba(240,160,75,.12)"); return; }
@@ -792,16 +805,57 @@ export default function TicketsView({ isLandscape, isMobile }) {
     requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(newCursor, newCursor); });
   }
 
-  function handleScheduleSend(opt) {
+  // Queues a reply into scheduled_messages for scheduler-tick to send later.
+  // Returns true only on a confirmed insert; callers clear the composer and
+  // close their picker only on true.
+  async function queueScheduledReply(sendAt) {
+    if (!store?.id || !selected?.customer_email || !reply.trim()) {
+      fireToast("Cannot schedule: missing store, customer email, or message", "#FF5272", "rgba(255,82,114,.12)");
+      return false;
+    }
+    const subject = selected.subject?.startsWith('Re:') ? selected.subject : `Re: ${selected.subject}`;
+    const { error } = await supabase
+      .from('scheduled_messages')
+      .insert({
+        store_id: store.id,
+        type: 'ticket_reply',
+        ref_id: selected.id,
+        touch_number: 1,
+        to_email: selected.customer_email,
+        from_name: store.shop_name || 'Support',
+        reply_to: `ticket-${selected.id}@support.getsolva.app`,
+        subject,
+        body: reply,
+        send_at: sendAt,
+        status: 'queued',
+      });
+    if (error) {
+      // Queue failed — leave the composer and picker untouched so the merchant can retry.
+      console.error('Failed to queue scheduled reply:', error);
+      fireToast(error.message || 'Failed to schedule message', "#FF5272", "rgba(255,82,114,.12)");
+      return false;
+    }
+    return true;
+  }
+
+  async function handleScheduleSend(opt) {
+    const sendAt = opt.getDate().toISOString();
+    if (!(await queueScheduledReply(sendAt))) return;
     setSchedPickOpen(false);
     setReply("");
     fireToast("Message scheduled ✓", C.teal, "rgba(62,207,178,.12)");
   }
 
-  function handleCustomDateConfirm() {
+  async function handleCustomDateConfirm() {
     const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const timeStr = `${pickHour}:${String(pickMin).padStart(2,"0")} ${pickAmpm}`;
     const dateStr = `${months[pickMonth-1]} ${pickDay}, ${pickYear}`;
+    // 12-hour + AM/PM -> 24-hour: 12 AM is hour 0, 12 PM is hour 12.
+    const hour24 = pickAmpm === "PM"
+      ? (pickHour === 12 ? 12 : pickHour + 12)
+      : (pickHour === 12 ? 0 : pickHour);
+    const sendAt = new Date(pickYear, pickMonth - 1, pickDay, hour24, pickMin, 0, 0).toISOString();
+    if (!(await queueScheduledReply(sendAt))) return;
     setCustomPickOpen(false);
     setReply("");
     fireToast(`Message scheduled for ${dateStr} at ${timeStr} ✓`, C.teal, "rgba(62,207,178,.12)");
@@ -1224,7 +1278,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                           <><Send size={14} strokeWidth={2}/>Send</>
                         )}
                       </button>
-                      {!isRealEmailTicket && !isDemoMode && (
+                      {isRealEmailTicket && (
                         <>
                           <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
                           <button onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
@@ -1235,7 +1289,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       )}
                     </div>
 
-                    {!isRealEmailTicket && !isDemoMode && schedMenuOpen && (
+                    {isRealEmailTicket && schedMenuOpen && (
                       <div style={{...popupBase,minWidth:164}}>
                         <button className="sched-opt" onClick={()=>{ setSchedMenuOpen(false); setSchedPickOpen(true); }}>
                           <Clock size={14} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>Schedule send
@@ -1243,12 +1297,12 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       </div>
                     )}
 
-                    {!isRealEmailTicket && !isDemoMode && schedPickOpen && (
+                    {isRealEmailTicket && schedPickOpen && (
                       <div style={{...popupBase,minWidth:252}}>
                         <div style={{padding:"10px 14px 4px",fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase"}}>Send at…</div>
                         {SCHEDULE_OPTS.map(opt=>(
-                          <button key={opt} className="sched-opt" onClick={()=>handleScheduleSend(opt)}>
-                            <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt}
+                          <button key={opt.label} className="sched-opt" onClick={()=>handleScheduleSend(opt)}>
+                            <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt.label}
                           </button>
                         ))}
                         <button className="sched-opt" onClick={()=>{ setCustomPickOpen(true); setSchedPickOpen(false); }}>
@@ -1258,7 +1312,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                       </div>
                     )}
 
-                    {!isRealEmailTicket && !isDemoMode && customPickOpen && (
+                    {isRealEmailTicket && customPickOpen && (
                       <div style={{
                         position:"absolute", zIndex:600, right:0, bottom:"calc(100% + 8px)",
                         background:C.card, border:`1px solid ${C.borderHi}`,
