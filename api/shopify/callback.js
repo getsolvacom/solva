@@ -1,38 +1,39 @@
 import { createClient } from '@supabase/supabase-js';
 
 const registerWebhooks = async (shop, accessToken) => {
+  const BASE_URL = 'https://getsolva.app';
   const webhooks = [
     {
       topic: 'checkouts/create',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/checkout-abandoned'
+      address: `${BASE_URL}/api/webhooks/checkout-abandoned`
     },
     {
       topic: 'orders/create',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/orders-create'
+      address: `${BASE_URL}/api/webhooks/orders-create`
     },
     {
       topic: 'returns/create',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/returns-create'
+      address: `${BASE_URL}/api/webhooks/returns-create`
     },
     {
       topic: 'app/uninstalled',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/app-uninstalled'
+      address: `${BASE_URL}/api/webhooks/app-uninstalled`
     },
     {
       topic: 'customers/data_request',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/gdpr'
+      address: `${BASE_URL}/api/webhooks/gdpr`
     },
     {
       topic: 'customers/redact',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/gdpr'
+      address: `${BASE_URL}/api/webhooks/gdpr`
     },
     {
       topic: 'shop/redact',
-      address: 'https://solva-sigma.vercel.app/api/webhooks/gdpr'
+      address: `${BASE_URL}/api/webhooks/gdpr`
     },
     {
       topic: 'refunds/create',
-      address: 'https://getsolva.app/api/webhooks/returns-create'
+      address: `${BASE_URL}/api/webhooks/returns-create`
     }
   ];
 
