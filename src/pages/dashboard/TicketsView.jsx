@@ -254,9 +254,48 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [csatHover,      setCsatHover]      = useState(null);
   const [bookmarked,     setBookmarked]     = useState({});
 
-  const toggleBookmark = (e, id) => {
+  const toggleBookmark = async (e, id) => {
     e.stopPropagation();
-    setBookmarked(prev => ({ ...prev, [id]: !prev[id] }));
+    const isRealTicket = !!(realTickets && realTickets.some(t => t.id === id));
+    // Demo / seed tickets keep the original local-only behavior unchanged.
+    if (!isRealTicket) {
+      setBookmarked(prev => ({ ...prev, [id]: !prev[id] }));
+      return;
+    }
+    const next = !bookmarked[id];
+    const { error } = await supabase
+      .from('tickets')
+      .update({ bookmarked: next })
+      .eq('id', id);
+    if (error) {
+      // Persist failed — surface it and leave local state untouched.
+      console.error('Failed to persist bookmark:', error);
+      fireToast(error.message || 'Failed to update bookmark', "#FF5272", "rgba(255,82,114,.12)");
+      return;
+    }
+    // Confirmed success — only now mutate local state.
+    setBookmarked(prev => ({ ...prev, [id]: next }));
+  };
+
+  const submitCsat = async (value) => {
+    const isRealTicket = !!(selected && realTickets && realTickets.some(t => t.id === selected.id));
+    // Demo / seed tickets keep the original local-only behavior unchanged.
+    if (!isRealTicket) {
+      setCsatRatings(prev => ({ ...prev, [selectedId]: value }));
+      return;
+    }
+    const { error } = await supabase
+      .from('tickets')
+      .update({ csat_rating: value })
+      .eq('id', selectedId);
+    if (error) {
+      // Persist failed — surface it and leave local state untouched.
+      console.error('Failed to persist CSAT rating:', error);
+      fireToast(error.message || 'Failed to save rating', "#FF5272", "rgba(255,82,114,.12)");
+      return;
+    }
+    // Confirmed success — only now mutate local state.
+    setCsatRatings(prev => ({ ...prev, [selectedId]: value }));
   };
   const [customPickOpen, setCustomPickOpen] = useState(false);
   const [pickDay,   setPickDay]   = useState(new Date().getDate());
@@ -345,8 +384,21 @@ export default function TicketsView({ isLandscape, isMobile }) {
           ai_draft_reply: r.ai_draft_reply,
           sent_at: r.sent_at,
           customer_email: r.customer_email,
+          bookmarked: r.bookmarked,
+          csat_rating: r.csat_rating,
         }));
         setRealTickets(mapped);
+        // Hydrate the bookmark/CSAT state objects from the persisted rows. A null
+        // csat_rating is left absent from the object (not written as null) so that
+        // csatRatings[id] stays undefined — the "not yet rated" arm of the tri-state.
+        const nextBookmarked = {};
+        const nextCsat = {};
+        mapped.forEach(t => {
+          nextBookmarked[t.id] = !!t.bookmarked;
+          if (t.csat_rating !== null && t.csat_rating !== undefined) nextCsat[t.id] = t.csat_rating;
+        });
+        setBookmarked(prev => ({ ...prev, ...nextBookmarked }));
+        setCsatRatings(prev => ({ ...prev, ...nextCsat }));
       } else {
         setRealTickets([]);
       }
@@ -1016,7 +1068,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:14}}>
                     {[1,2,3,4,5].map(star=>(
                       <button key={star}
-                        onClick={()=>setCsatRatings(prev=>({...prev,[selectedId]:star}))}
+                        onClick={()=>submitCsat(star)}
                         onMouseEnter={()=>setCsatHover(star)}
                         onMouseLeave={()=>setCsatHover(null)}
                         style={{fontSize:28,color:star<=(csatHover||csatRatings[selectedId]||0)?C.amber:C.dim,cursor:"pointer",background:"transparent",border:"none",transition:"color .1s",fontFamily:"'Outfit',sans-serif"}}>
@@ -1027,7 +1079,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   <div style={{display:"flex",justifyContent:"space-between",fontSize:10.5,color:C.muted,paddingLeft:4,paddingRight:4,marginBottom:12}}>
                     <span>Very Dissatisfied</span><span>Very Satisfied</span>
                   </div>
-                  <button onClick={()=>setCsatRatings(prev=>({...prev,[selectedId]:0}))}
+                  <button onClick={()=>submitCsat(0)}
                     style={{fontSize:12,color:C.muted,cursor:"pointer",background:"transparent",border:"none",fontFamily:"'Outfit',sans-serif"}}>
                     Skip
                   </button>
