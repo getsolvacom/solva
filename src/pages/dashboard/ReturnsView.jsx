@@ -327,15 +327,12 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             timeAgo: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
             marginSaved: r.deflected ? parseFloat(r.order_value || 0) : 0,
             offer: {
-              type: r.deflected_offer || 'Exchange Offered',
-              detail: r.ai_deflection_response || 'AI deflection response generated',
+              type: r.deflection_offer || 'Exchange Offered',
+              detail: r.deflection_offer ? `Offered: ${r.deflection_offer}` : 'No deflection offer recorded yet',
               icon: r.deflected ? '🔄' : '⏳',
             },
-            conversation: r.ai_deflection_response ? [
-              { from:'customer', text: r.return_reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' },
-              { from:'ai', text: r.ai_deflection_response, time: r.updated_at ? new Date(r.updated_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' },
-            ] : [
-              { from:'customer', text: r.return_reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' },
+            conversation: [
+              { from:'customer', text: r.reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' },
             ],
           }));
           setRealReturns(mapped);
@@ -847,16 +844,17 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   {/* Right: split send */}
                   <div style={{position:"relative"}} ref={schedRef}>
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
-                      <button className="btn-primary" onClick={isDemoMode ? undefined : handleSend} disabled={isDemoMode}
-                        title={isDemoMode ? "Sign up to try this" : undefined}
-                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:isDemoMode?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
+                      <button className="btn-primary" onClick={undefined} disabled={true}
+                        title="Reply sending for returns isn't available yet"
+                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:"not-allowed",opacity:0.45}}>
                         <Send size={14} strokeWidth={2}/>Send
                       </button>
                       {!isDemoMode && (
                         <>
                           <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
-                          <button onClick={()=>{ setSchedMenuOpen(o=>!o); setSchedPickOpen(false); }}
-                            style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:C.surface,border:`1px solid ${C.border}`,opacity:1}}>
+                          <button onClick={undefined} disabled={true}
+                            title="Reply sending for returns isn't available yet"
+                            style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"not-allowed",background:C.surface,border:`1px solid ${C.border}`,opacity:0.45}}>
                             <ChevronUp size={16} strokeWidth={2.5} style={{color:C.text}}/>
                           </button>
                         </>
