@@ -384,6 +384,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
           ai_draft_reply: r.ai_draft_reply,
           sent_at: r.sent_at,
           customer_email: r.customer_email,
+          ticketNumber: r.ticket_number,
           bookmarked: r.bookmarked,
           csat_rating: r.csat_rating,
         }));
@@ -1023,7 +1024,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                     <span style={{fontSize:15,fontWeight:700,color:C.text}}>{selected.name}</span>
                     <span className="tag" style={{color:effectiveStatusCfg.color,background:effectiveStatusCfg.bg,gap:4}}>{effectiveStatusCfg.icon}{effectiveStatusCfg.label}</span>
                   </div>
-                  <div style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · {selected.type}</div>
+                  <div style={{fontSize:12,color:C.muted}}>{selected.customer_email || selected.email} · {selected.ticketNumber ? `SUP-${selected.ticketNumber}` : selected.id}</div>
                 </div>
               </div>
               <button className="tv-back-btn btn-ghost" onClick={() => navigate(`${basePath}/tickets`)}
