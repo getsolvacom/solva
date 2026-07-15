@@ -347,6 +347,17 @@ function GeneralSection({ storeName, onSaveStoreName, store, userEmail }) {
   const [currency, setCurrency] = useState("USD — US Dollar");
   const [industry, setIndustry] = useState("Fashion & Apparel");
   const [saved,    setSaved]    = useState(false);
+  const [copied,   setCopied]   = useState(false);
+
+  const ticketEmail = store?.id ? `ticket-${store.id}@support.getsolva.app` : '';
+
+  function handleCopy() {
+    if (!ticketEmail) return;
+    navigator.clipboard.writeText(ticketEmail).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   const save = async () => {
     await supabase.auth.updateUser({
@@ -387,6 +398,27 @@ function GeneralSection({ storeName, onSaveStoreName, store, userEmail }) {
           <div><FieldLabel><Clock size={16} strokeWidth={2} style={{marginRight:6}}/>Timezone</FieldLabel><SearchableSelect value={timezone} onChange={e=>setTimezone(e.target.value)} options={TIMEZONE_OPTIONS}/></div>
           <div><FieldLabel><DollarSign size={16} strokeWidth={2} style={{marginRight:6}}/>Currency</FieldLabel><SearchableSelect value={currency} onChange={e=>setCurrency(e.target.value)} options={CURRENCY_OPTIONS}/></div>
         </div>
+      </div>
+      <div className="section-card fu fu2">
+        <p style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:12}}>Your Ticket Email</p>
+        <p style={{fontSize:13,color:C.muted,lineHeight:1.65,marginBottom:16}}>
+          Forward your support inbox (e.g.{" "}
+          <code style={{fontFamily:"monospace",color:C.sub,background:C.dim,padding:"2px 6px",borderRadius:4}}>support@yourstore.com</code>
+          ) to this address, and SOLVA will handle it automatically. No DNS setup required.
+        </p>
+        {ticketEmail ? (
+          <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:10,background:C.dim,border:`1px solid ${C.borderHi}`}}>
+            <code style={{flex:1,fontFamily:"monospace",fontSize:12,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ticketEmail}</code>
+            <button onClick={handleCopy}
+              style={{padding:"7px 14px",borderRadius:8,border:`1px solid ${copied?C.teal:C.border}`,background:copied?"rgba(62,207,178,.10)":"transparent",color:copied?C.teal:C.sub,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif",transition:"all .18s",flexShrink:0,whiteSpace:"nowrap",outline:"none"}}>
+              {copied?"✓ Copied!":"Copy Address"}
+            </button>
+          </div>
+        ) : (
+          <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:10,background:C.dim,border:`1px solid ${C.borderHi}`}}>
+            <span style={{flex:1,fontSize:13,color:C.muted}}>Loading your address…</span>
+          </div>
+        )}
       </div>
       <SaveBar onSave={save} saved={saved}/>
     </div>
