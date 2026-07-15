@@ -85,6 +85,7 @@ Deno.serve(async (req) => {
         status: 'resolved',
         approved_at: new Date().toISOString(),
         sent_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .eq('id', ticketId);
 
