@@ -730,8 +730,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 <button
                   className="btn-ghost"
                   onClick={generateAIDeflection}
-                  disabled={aiDeflectionLoading || isDemoMode}
-                  title={isDemoMode ? "Sign up to try this" : undefined}
+                  disabled={aiDeflectionLoading || isDemoMode || statusOverrides[selectedId]==="manual_override"}
+                  title={isDemoMode ? "Sign up to try this" : statusOverrides[selectedId]==="manual_override" ? "This return has been manually overridden" : undefined}
                   style={{
                     padding: "7px 14px",
                     borderRadius: 8,
@@ -741,8 +741,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    opacity: (aiDeflectionLoading || isDemoMode) ? (isDemoMode ? 0.45 : 0.6) : 1,
-                    cursor: isDemoMode ? "not-allowed" : "pointer",
+                    opacity: (aiDeflectionLoading || isDemoMode || statusOverrides[selectedId]==="manual_override") ? (isDemoMode ? 0.45 : 0.6) : 1,
+                    cursor: (isDemoMode || statusOverrides[selectedId]==="manual_override") ? "not-allowed" : "pointer",
                     marginRight: 8,
                   }}
                 >
@@ -751,6 +751,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                       <div style={{width:12,height:12,borderRadius:'50%',border:`2px solid rgba(229,82,102,.3)`,borderTopColor:C.coral,animation:'spin .7s linear infinite',flexShrink:0}}/>
                       Generating…
                     </>
+                  ) : statusOverrides[selectedId]==="manual_override" ? (
+                    <><CheckCircle2 size={13} strokeWidth={2}/>Manually Handled</>
                   ) : (
                     <><Zap size={13} strokeWidth={2}/>Generate AI Response</>
                   )}
