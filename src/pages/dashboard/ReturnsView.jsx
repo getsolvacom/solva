@@ -360,6 +360,9 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   });
 
   const selected      = returnSource.find(r => r.id === selectedId);
+  // A real return (backed by a row in realReturns) with a customer email to reply
+  // to — as opposed to demo/seed returns. Gates the real-send path in handleSend.
+  const isRealReturn = !!(selected && realReturns && realReturns.some(r => r.id === selected.id) && selected.email);
   const totalSaved    = returnSource.filter(r=>r.status==="deflected").reduce((s,r)=>s+r.marginSaved,0);
   const deflectRate   = returnSource.length > 0 ? Math.round((returnSource.filter(r=>r.status==="deflected").length / returnSource.length) * 100) : 0;
   const counts        = {
@@ -421,11 +424,59 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     }
   };
 
-  function handleSend() {
+  // Shared invoke + three-tier response parsing for send-return-reply, mirroring
+  // TicketsView's sendReplyToBackend. Returns { ok:true } on confirmed success,
+  // { error } on a failure to send, or { warning } when the email sent but the DB
+  // update did not persist.
+  async function sendReturnReplyToBackend(returnId, text) {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-return-reply', {
+        body: { returnId, replyText: text },
+      });
+      if (error) {
+        let msg = error.message || 'Failed to send reply';
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const body = await error.context.json();
+            if (body?.error) msg = body.error;
+          }
+        } catch { /* keep default message */ }
+        return { error: msg };
+      }
+      if (data?.error) return { error: data.error };
+      if (data?.warning) return { warning: data.warning };
+      return { ok: true };
+    } catch (err) {
+      console.error('send-return-reply invoke error:', err);
+      return { error: err?.message || 'Failed to send reply' };
+    }
+  }
+
+  async function handleSend() {
     if (isDemoMode || !chatInput.trim()) return;
+    const text = chatInput.trim();
+
+    if (isRealReturn) {
+      setChatInput("");
+      const result = await sendReturnReplyToBackend(selected.id, text);
+      if (result.error) {
+        fireSchedToast(`Failed to send: ${result.error}`);
+        setChatInput(text);
+        return;
+      }
+      if (result.warning) {
+        fireSchedToast(result.warning);
+      }
+      // Optimistically reflect the sent message locally; a refetch/reload will
+      // show the authoritative version from returns.messages.
+      setExtraMessages(prev => ({...prev, [selectedId]:[...(prev[selectedId]||[]), {from:"agent", text, time: new Date().toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"})}]}));
+      return;
+    }
+
+    // Demo/non-real fallback: unchanged local-only behavior
     const now  = new Date();
     const time = now.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"});
-    setExtraMessages(prev => ({...prev, [selectedId]:[...(prev[selectedId]||[]), {from:"agent", text:chatInput.trim(), time}]}));
+    setExtraMessages(prev => ({...prev, [selectedId]:[...(prev[selectedId]||[]), {from:"agent", text, time}]}));
     setChatInput("");
   }
 
@@ -844,9 +895,9 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   {/* Right: split send */}
                   <div style={{position:"relative"}} ref={schedRef}>
                     <div style={{display:"flex",borderRadius:8,overflow:"hidden"}}>
-                      <button className="btn-primary" onClick={undefined} disabled={true}
-                        title="Reply sending for returns isn't available yet"
-                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:"not-allowed",opacity:0.45}}>
+                      <button className="btn-primary" onClick={isDemoMode ? undefined : handleSend} disabled={isDemoMode}
+                        title={isDemoMode ? "Sign up to try this" : undefined}
+                        style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:isDemoMode ? "not-allowed" : "pointer",opacity:isDemoMode ? 0.45 : 1}}>
                         <Send size={14} strokeWidth={2}/>Send
                       </button>
                       {!isDemoMode && (
