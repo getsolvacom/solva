@@ -318,6 +318,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             product: r.product_name || 'Product',
             productEmoji: '📦',
             variant: '',
+            manualOverride: !!r.manual_override,
             orderRef: r.order_id || '—',
             orderValue: parseFloat(r.order_value || 0),
             reason: r.reason || 'changed_mind',
@@ -339,6 +340,9 @@ export default function ReturnsView({ isLandscape, isMobile }) {
               : [{ from: 'customer', text: r.reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' }],
           }));
           setRealReturns(mapped);
+          const overridesSeed = {};
+          mapped.forEach(r => { if (r.manualOverride) overridesSeed[r.id] = "manual_override"; });
+          setStatusOverrides(prev => ({ ...prev, ...overridesSeed }));
         } else {
           setRealReturns([]);
         }
@@ -389,8 +393,23 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     navigate(`${basePath}/returns/` + id);
   }
 
-  function handleOverride() {
+  async function handleOverride() {
     if (isDemoMode) return;
+
+    if (isRealReturn) {
+      const { error: updateError } = await supabase.from('returns').update({ manual_override: true }).eq('id', selected.id);
+      if (updateError) {
+        console.error('Failed to persist override:', updateError);
+        fireSchedToast(`Failed to override: ${updateError.message}`);
+        return;
+      }
+      const { error: cancelError } = await supabase.from('scheduled_messages').update({ status: 'canceled' }).eq('type', 'return_deflection').eq('ref_id', selected.id).eq('status', 'queued');
+      if (cancelError) {
+        console.error('Failed to cancel queued AI deflection message:', cancelError);
+        // Non-fatal — the override itself succeeded, just log this.
+      }
+    }
+
     setStatusOverrides(prev => ({...prev, [selectedId]:"manual_override"}));
     setOverrideToast(true);
     setOverrideToastFading(false);
