@@ -267,7 +267,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
 
   const { store } = useStore();
 
-  const [aiDeflection, setAiDeflection] = useState(null);
   const [aiDeflectionLoading, setAiDeflectionLoading] = useState(false);
   const [realReturns, setRealReturns] = useState(null);
   const [returnsLoading, setReturnsLoading] = useState(true);
@@ -402,7 +401,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   const generateAIDeflection = async () => {
     if (isDemoMode || !selected) return;
     setAiDeflectionLoading(true);
-    setAiDeflection(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const response = await fetch('/api/ai/return-deflect', {
@@ -419,7 +417,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
       });
       const data = await response.json();
       if (data.response) {
-        setAiDeflection(data.response);
+        setChatInput(data.response);
       }
     } catch (error) {
       console.error('Return deflection AI error:', error);
@@ -832,17 +830,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 <h3 style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".08em",textTransform:"uppercase",marginBottom:16}}>AI Deflection Conversation</h3>
                 {allMessages.map((msg,i)=><Bubble key={i} msg={msg} idx={i}/>)}
               </div>
-
-              {aiDeflection && (
-                <div style={{padding:18,borderRadius:14,background:"rgba(229,82,102,.06)",border:"1px solid rgba(229,82,102,.22)"}}>
-                  <h3 style={{fontSize:11,fontWeight:700,color:C.coral,letterSpacing:".08em",textTransform:"uppercase",marginBottom:14,display:"flex",alignItems:"center",gap:6}}>
-                    <Zap size={13} strokeWidth={2}/>AI Generated Deflection Response
-                  </h3>
-                  <div style={{whiteSpace:"pre-wrap",fontSize:13.5,color:C.sub,lineHeight:1.75,fontFamily:"'Outfit',sans-serif"}}>
-                    {aiDeflection}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Reply box */}
