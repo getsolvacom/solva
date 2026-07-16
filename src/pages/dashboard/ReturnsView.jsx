@@ -331,9 +331,13 @@ export default function ReturnsView({ isLandscape, isMobile }) {
               detail: r.deflection_offer ? `Offered: ${r.deflection_offer}` : 'No deflection offer recorded yet',
               icon: r.deflected ? '🔄' : '⏳',
             },
-            conversation: [
-              { from:'customer', text: r.reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' },
-            ],
+            conversation: Array.isArray(r.messages) && r.messages.length > 0
+              ? r.messages.map(m => ({
+                  from: m.from,
+                  text: m.text,
+                  time: m.time ? new Date(m.time).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) : '',
+                }))
+              : [{ from: 'customer', text: r.reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' }],
           }));
           setRealReturns(mapped);
         } else {
