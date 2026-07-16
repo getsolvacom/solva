@@ -133,6 +133,7 @@ export default async function handler(req, res) {
         reason: returnReason,
         order_value: orderValue,
         status: 'pending',
+        messages: [{ from: 'customer', text: returnReason, time: new Date().toISOString() }],
       })
       .select()
       .single();
