@@ -20,7 +20,7 @@ function stripQuotedReply(text) {
 // Shared draft-generation logic used by both the new-ticket and reply-append
 // paths. Behavior is identical to the original inline block (same model, same
 // entitlements logic, same fallback defaults) — this is a refactor only.
-async function generateDraftForTicket(supabase, ticketId, storeId, subject, messageText) {
+async function generateDraftForTicket(supabase, ticketId, storeId, subject, messageText, customerEmail) {
   // Resolve the store owner and their plan entitlements
   let entitlements = getEntitlements({});
   const { data: store } = await supabase
@@ -63,10 +63,11 @@ async function generateDraftForTicket(supabase, ticketId, storeId, subject, mess
     response_detail: 'balanced',
     faqs: [],
     ai_tone: 'friendly',
+    ai_auto_send_enabled: false,
   };
   const { data: settings } = await supabase
     .from('store_settings')
-    .select('brand_description, customer_description, global_instructions, response_detail, faqs, ai_tone')
+    .select('brand_description, customer_description, global_instructions, response_detail, faqs, ai_tone, ai_auto_send_enabled')
     .eq('store_id', storeId)
     .maybeSingle();
 
@@ -102,14 +103,24 @@ async function generateDraftForTicket(supabase, ticketId, storeId, subject, mess
     ? 'Use a relaxed, casual, conversational tone.'
     : 'Use a warm, friendly, helpful tone.';
 
-  const systemPrompt = `You are an AI customer support assistant drafting a reply for a store.
+  const systemPrompt = `You are an AI customer support assistant handling a reply for a store.
 
-This is a DRAFT that a human support agent will review and edit before it is sent — it is NOT auto-sent to the customer. Write it as a ready-to-review reply.
+You must both CLASSIFY the customer's message and DRAFT a reply, returned via the classify_and_draft tool.
 
 TONE: ${toneInstruction}
 LENGTH: ${lengthInstruction}${brandSection}${customerSection}${instructionsSection}${faqSection}
 
-IMPORTANT: If the customer's question matches or is similar to one of the store FAQs above, use that exact answer. Be helpful and empathetic. Do not add unnecessary markdown formatting like ## headers or ** bold text. Write in plain conversational text only.`;
+CLASSIFICATION — choose exactly one category:
+- 'faq': the question is directly answerable from the store's FAQ list above.
+- 'product_question': a general question about a product, answerable from the brand/product info already provided above.
+- 'other': anything involving money, refunds, order-specific status, complaints, or anything not clearly answerable from the info given. When in doubt, choose 'other'.
+
+CONFIDENCE — be honest and conservative, NOT optimistic:
+- 'high': ONLY if you are certain the reply is accurate and complete with zero guessing.
+- 'medium' or 'low': for anything less than certain.
+A 'high'-confidence reply may be auto-sent to a real customer with NO human review, so a wrong 'high' rating can send an incorrect reply. When unsure, rate 'medium' or 'low'.
+
+REPLY — write it as a ready-to-send reply. If the customer's question matches or is similar to one of the store FAQs above, use that exact answer. Be helpful and empathetic. Do not add unnecessary markdown formatting like ## headers or ** bold text. Write in plain conversational text only.`;
 
   const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -122,6 +133,22 @@ IMPORTANT: If the customer's question matches or is similar to one of the store 
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       system: systemPrompt,
+      tools: [
+        {
+          name: 'classify_and_draft',
+          description: 'Classify the customer message and provide a draft reply.',
+          input_schema: {
+            type: 'object',
+            properties: {
+              category: { type: 'string', enum: ['faq', 'product_question', 'other'] },
+              confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+              reply: { type: 'string' },
+            },
+            required: ['category', 'confidence', 'reply'],
+          },
+        },
+      ],
+      tool_choice: { type: 'tool', name: 'classify_and_draft' },
       messages: [
         { role: 'user', content: `Subject: ${subject}\n\n${messageText}` },
       ],
@@ -134,9 +161,89 @@ IMPORTANT: If the customer's question matches or is similar to one of the store 
     return;
   }
 
-  const draft = anthropicData.content?.[0]?.text ?? '';
-  await supabase.from('tickets').update({ ai_draft_reply: draft }).eq('id', ticketId);
-  console.log('Draft reply generated for ticket', ticketId);
+  // Parse the structured tool-use output. Fail closed on anything missing or
+  // malformed — treat as 'other'/'low' so a parsing failure can never auto-send.
+  let category = 'other';
+  let confidence = 'low';
+  let reply = anthropicData.content?.find(b => b.type === 'text')?.text || '';
+
+  const toolBlock = anthropicData.content?.find(b => b.type === 'tool_use');
+  if (toolBlock && toolBlock.input
+    && typeof toolBlock.input.category === 'string'
+    && typeof toolBlock.input.confidence === 'string'
+    && typeof toolBlock.input.reply === 'string') {
+    category = toolBlock.input.category;
+    confidence = toolBlock.input.confidence;
+    reply = toolBlock.input.reply;
+  }
+
+  const eligible = (category === 'faq' || category === 'product_question') && confidence === 'high' && aiConfig.ai_auto_send_enabled === true;
+
+  if (!eligible) {
+    await supabase.from('tickets').update({ ai_draft_reply: reply, ai_category: category, ai_confidence: confidence }).eq('id', ticketId);
+    console.log('Draft reply generated for ticket', ticketId, 'category:', category, 'confidence:', confidence);
+    return;
+  }
+
+  // Eligible for auto-send. Wrap in its own try/catch so any failure falls back
+  // gracefully to draft-only behavior rather than leaving the ticket broken.
+  try {
+    const { data: store } = await supabase
+      .from('stores')
+      .select('shop_name')
+      .eq('id', storeId)
+      .maybeSingle();
+    const storeName = store?.shop_name || 'Support';
+
+    const sendRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: `${storeName} <support@support.getsolva.app>`,
+        to: [customerEmail],
+        reply_to: `ticket-${ticketId}@support.getsolva.app`,
+        subject: subject?.startsWith('Re:') ? subject : `Re: ${subject}`,
+        text: reply,
+      }),
+    });
+
+    if (!sendRes.ok) {
+      const errBody = await sendRes.text();
+      console.error('Auto-send Resend failed for ticket', ticketId, errBody);
+      await supabase.from('tickets').update({ ai_draft_reply: reply, ai_category: category, ai_confidence: confidence }).eq('id', ticketId);
+      return;
+    }
+
+    // Re-read the CURRENT messages fresh — never reuse a possibly-stale array.
+    const { data: freshTicket } = await supabase
+      .from('tickets')
+      .select('messages')
+      .eq('id', ticketId)
+      .maybeSingle();
+    const updatedMessages = [
+      ...(Array.isArray(freshTicket?.messages) ? freshTicket.messages : []),
+      { from: 'ai', text: reply, time: new Date().toISOString() },
+    ];
+
+    await supabase.from('tickets').update({
+      messages: updatedMessages,
+      status: 'resolved',
+      approved_at: new Date().toISOString(),
+      sent_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      ai_draft_reply: reply,
+      ai_category: category,
+      ai_confidence: confidence,
+    }).eq('id', ticketId);
+
+    console.log('Auto-sent ticket', ticketId, 'category:', category, 'confidence:', confidence);
+  } catch (sendErr) {
+    console.error('Auto-send failed (falling back to draft) for ticket', ticketId, sendErr);
+    await supabase.from('tickets').update({ ai_draft_reply: reply, ai_category: category, ai_confidence: confidence }).eq('id', ticketId);
+  }
 }
 
 Deno.serve(async (req) => {
@@ -293,7 +400,7 @@ Deno.serve(async (req) => {
       // surface as a non-200 — the reply is already saved, and returning an
       // error would make Resend retry and duplicate work.
       try {
-        await generateDraftForTicket(supabase, existingTicket.id, existingTicket.store_id, existingTicket.subject || subject, cleanedMessageBody);
+        await generateDraftForTicket(supabase, existingTicket.id, existingTicket.store_id, existingTicket.subject || subject, cleanedMessageBody, fromAddress);
       } catch (draftErr) {
         console.error('Draft generation failed (reply still saved):', draftErr);
       }
@@ -326,7 +433,7 @@ Deno.serve(async (req) => {
     // must NOT surface as a non-200, or Resend would retry and duplicate work —
     // the ticket already exists, so we swallow errors and still return 200.
     try {
-      await generateDraftForTicket(supabase, ticket.id, storeId, subject, cleanedMessageBody);
+      await generateDraftForTicket(supabase, ticket.id, storeId, subject, cleanedMessageBody, fromAddress);
     } catch (draftErr) {
       console.error('Draft generation failed (ticket still saved):', draftErr);
     }
