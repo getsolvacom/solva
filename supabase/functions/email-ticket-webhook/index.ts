@@ -178,12 +178,13 @@ Deno.serve(async (req) => {
 
     // Extract the uuid from "ticket-{uuid}@support.getsolva.app". It may be an
     // existing ticket id (a customer reply) or a store id (a brand new ticket).
-    const match = toAddress?.match(/^ticket-([a-f0-9-]+)@/i);
-    if (!match) {
-      console.error('Could not parse store_id from to address:', toAddress);
+    const ticketMatch = toAddress?.match(/^ticket-([a-f0-9-]+)@/i);
+    const returnMatch = !ticketMatch ? toAddress?.match(/^return-([a-f0-9-]+)@/i) : null;
+
+    if (!ticketMatch && !returnMatch) {
+      console.error('Could not parse recipient address:', toAddress);
       return new Response('Unrecognized recipient format', { status: 200 });
     }
-    const uuid = match[1];
 
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     const emailDetailRes = await fetch(`https://api.resend.com/emails/receiving/${emailId}`, {
@@ -200,6 +201,49 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       secretKeys.default ?? ''
     );
+
+    if (returnMatch) {
+      const returnId = returnMatch[1];
+
+      const { data: returnRow, error: returnFetchError } = await supabase
+        .from('returns')
+        .select('id, messages')
+        .eq('id', returnId)
+        .maybeSingle();
+
+      if (returnFetchError || !returnRow) {
+        console.error('Could not find matching return for inbound reply:', returnId, returnFetchError);
+        return new Response('Return not found', { status: 200 });
+      }
+
+      const resendApiKey = Deno.env.get('RESEND_API_KEY');
+      const emailDetailRes = await fetch(`https://api.resend.com/emails/receiving/${emailId}`, {
+        headers: { 'Authorization': `Bearer ${resendApiKey}` },
+      });
+      const emailDetail = await emailDetailRes.json();
+      const messageBody = emailDetail.text || emailDetail.html || '(no content)';
+      const cleanedMessageBody = stripQuotedReply(messageBody);
+
+      const updatedMessages = [
+        ...(Array.isArray(returnRow.messages) ? returnRow.messages : []),
+        { from: 'customer', text: cleanedMessageBody, time: new Date().toISOString() },
+      ];
+
+      const { error: updateError } = await supabase
+        .from('returns')
+        .update({ messages: updatedMessages, updated_at: new Date().toISOString() })
+        .eq('id', returnId);
+
+      if (updateError) {
+        console.error('Failed to append inbound reply to return:', returnId, updateError);
+        return new Response('Failed to update return', { status: 200 });
+      }
+
+      console.log('Appended inbound customer reply to return:', returnId);
+      return new Response('ok', { status: 200 });
+    }
+
+    const uuid = ticketMatch[1];
 
     // Guard against Resend retrying delivery of the same email (idempotency)
     const { data: existing } = await supabase
