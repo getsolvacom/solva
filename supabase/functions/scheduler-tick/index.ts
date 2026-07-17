@@ -135,6 +135,29 @@ Deno.serve(async (req) => {
           }
         }
 
+        if (msg.type === 'return_deflection') {
+          const { data: returnRow, error: returnFetchError } = await supabase.from('returns').select('messages').eq('id', msg.ref_id).maybeSingle();
+
+          if (returnFetchError) {
+            console.error(`Failed to fetch return ${msg.ref_id} for deflection message mirroring:`, returnFetchError);
+          } else if (returnRow) {
+            const updatedMessages = [
+              ...(Array.isArray(returnRow.messages) ? returnRow.messages : []),
+              { from: 'ai', text: msg.body, time: new Date().toISOString() },
+            ];
+            const { error: returnUpdateError } = await supabase.from('returns').update({
+              messages: updatedMessages,
+              updated_at: new Date().toISOString(),
+            }).eq('id', msg.ref_id);
+
+            if (returnUpdateError) {
+              console.error(`Failed to update return ${msg.ref_id} after automatic deflection send:`, returnUpdateError);
+            }
+          } else {
+            console.error(`No return found for id ${msg.ref_id} — deflection sent but could not be mirrored.`);
+          }
+        }
+
         const { error: updateError } = await supabase
           .from('scheduled_messages')
           .update({
