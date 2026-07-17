@@ -94,9 +94,9 @@ const REASON_CFG = {
 
 const EMOJIS = ["😊","👍","🙏","❤️","🎉","✅","👋","💪","🚀","⭐","😄","🤝","📦","💯","⚡","🔥"];
 const SCHEDULE_OPTS = [
-  "Tomorrow morning (8:00 AM)",
-  "Tomorrow afternoon (1:00 PM)",
-  "Monday morning (8:00 AM)",
+  { label: "Tomorrow morning (8:00 AM)", getDate: () => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0); return d; } },
+  { label: "Tomorrow afternoon (1:00 PM)", getDate: () => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(13, 0, 0, 0); return d; } },
+  { label: "Monday morning (8:00 AM)", getDate: () => { const d = new Date(); const day = d.getDay(); const daysUntilMonday = (8 - day) % 7 || 7; d.setDate(d.getDate() + daysUntilMonday); d.setHours(8, 0, 0, 0); return d; } },
 ];
 
 function parseMarkdown(text) {
@@ -499,6 +499,12 @@ export default function ReturnsView({ isLandscape, isMobile }) {
 
     if (isRealReturn) {
       setChatInput("");
+      // Cancel any pending scheduled reply for this return — a manual send
+      // supersedes it. Non-fatal: log but never block the manual send.
+      const { error: cancelError } = await supabase.from('scheduled_messages').update({ status: 'canceled' }).eq('type', 'return_reply').eq('ref_id', selected.id).eq('status', 'queued');
+      if (cancelError) {
+        console.error('Failed to cancel queued scheduled reply:', cancelError);
+      }
       const result = await sendReturnReplyToBackend(selected.id, text);
       if (result.error) {
         fireSchedToast(`Failed to send: ${result.error}`);
@@ -561,18 +567,67 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     setTimeout(() => { setSchedToast(false); setSchedToastFading(false); }, 3000);
   }
 
-  function handleScheduleSend(opt) {
-    setSchedPickOpen(false);
+  async function handleScheduleSend(opt) {
+    if (!isRealReturn || !store?.id || !selected?.email || !chatInput.trim()) {
+      fireSchedToast("Can't schedule: missing return, store, or message");
+      return;
+    }
+    const sendAt = opt.getDate().toISOString();
+    const subject = `Re: Your return${selected.product ? ` for ${selected.product}` : ''}`;
+    const { error } = await supabase.from('scheduled_messages').insert({
+      store_id: store.id,
+      type: 'return_reply',
+      ref_id: selected.id,
+      touch_number: 1,
+      to_email: selected.email,
+      from_name: store.shop_name || 'Support',
+      reply_to: null,
+      subject,
+      body: chatInput.trim(),
+      send_at: sendAt,
+      status: 'queued',
+    });
+    if (error) {
+      console.error('Failed to schedule return reply:', error);
+      fireSchedToast(`Failed to schedule: ${error.message}`);
+      return;
+    }
     setChatInput("");
+    setSchedPickOpen(false);
     fireSchedToast("Message scheduled ✓");
   }
 
-  function handleCustomDateConfirm() {
+  async function handleCustomDateConfirm() {
+    if (!isRealReturn || !store?.id || !selected?.email || !chatInput.trim()) {
+      fireSchedToast("Can't schedule: missing return, store, or message");
+      return;
+    }
     const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const timeStr = `${pickHour}:${String(pickMin).padStart(2,"0")} ${pickAmpm}`;
     const dateStr = `${months[pickMonth-1]} ${pickDay}, ${pickYear}`;
-    setCustomPickOpen(false);
+    const hour24 = pickAmpm === "PM" ? (pickHour === 12 ? 12 : pickHour + 12) : (pickHour === 12 ? 0 : pickHour);
+    const sendAt = new Date(pickYear, pickMonth - 1, pickDay, hour24, pickMin, 0, 0).toISOString();
+    const subject = `Re: Your return${selected.product ? ` for ${selected.product}` : ''}`;
+    const { error } = await supabase.from('scheduled_messages').insert({
+      store_id: store.id,
+      type: 'return_reply',
+      ref_id: selected.id,
+      touch_number: 1,
+      to_email: selected.email,
+      from_name: store.shop_name || 'Support',
+      reply_to: null,
+      subject,
+      body: chatInput.trim(),
+      send_at: sendAt,
+      status: 'queued',
+    });
+    if (error) {
+      console.error('Failed to schedule return reply:', error);
+      fireSchedToast(`Failed to schedule: ${error.message}`);
+      return;
+    }
     setChatInput("");
+    setCustomPickOpen(false);
     fireSchedToast(`Message scheduled for ${dateStr} at ${timeStr} ✓`);
   }
 
@@ -934,12 +989,11 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                         style={{height:36,padding:"0 16px",color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:5,borderRadius:0,cursor:isDemoMode ? "not-allowed" : "pointer",opacity:isDemoMode ? 0.45 : 1}}>
                         <Send size={14} strokeWidth={2}/>Send
                       </button>
-                      {!isDemoMode && (
+                      {isRealReturn && (
                         <>
                           <div style={{width:1,background:"rgba(255,255,255,.25)",alignSelf:"stretch",flexShrink:0}}/>
-                          <button onClick={undefined} disabled={true}
-                            title="Reply sending for returns isn't available yet"
-                            style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"not-allowed",background:C.surface,border:`1px solid ${C.border}`,opacity:0.45}}>
+                          <button onClick={()=>setSchedMenuOpen(o=>!o)}
+                            style={{width:34,height:36,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:0,cursor:"pointer",background:C.surface,border:`1px solid ${C.border}`,opacity:1}}>
                             <ChevronUp size={16} strokeWidth={2.5} style={{color:C.text}}/>
                           </button>
                         </>
@@ -958,8 +1012,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                       <div style={{...popupBase,minWidth:252}}>
                         <div style={{padding:"10px 14px 4px",fontSize:11,fontWeight:700,color:C.muted,letterSpacing:".06em",textTransform:"uppercase"}}>Send at…</div>
                         {SCHEDULE_OPTS.map(opt=>(
-                          <button key={opt} className="sched-opt" onClick={()=>handleScheduleSend(opt)}>
-                            <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt}
+                          <button key={opt.label} className="sched-opt" onClick={()=>handleScheduleSend(opt)}>
+                            <Clock size={13} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>{opt.label}
                           </button>
                         ))}
                         <button className="sched-opt" onClick={()=>{ setCustomPickOpen(true); setSchedPickOpen(false); }}>
