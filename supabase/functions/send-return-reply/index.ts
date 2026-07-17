@@ -62,6 +62,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: `${storeName} <support@support.getsolva.app>`,
         to: [returnRow.customer_email],
+        reply_to: `return-${returnRow.id}@support.getsolva.app`,
         subject: subject,
         text: replyText,
       }),

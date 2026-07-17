@@ -218,7 +218,7 @@ export default async function handler(req, res) {
         touch_number: 1,
         to_email: customerEmail,
         from_name: store.shop_name || 'Support',
-        reply_to: null,
+        reply_to: `return-${newReturn.id}@support.getsolva.app`,
         subject,
         body,
         send_at: new Date(Date.now() + windowMinutes * 60000).toISOString(),
