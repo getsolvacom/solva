@@ -112,6 +112,29 @@ Deno.serve(async (req) => {
           }
         }
 
+        if (msg.type === 'return_reply') {
+          const { data: returnRow, error: returnFetchError } = await supabase.from('returns').select('messages').eq('id', msg.ref_id).maybeSingle();
+
+          if (returnFetchError) {
+            console.error(`Failed to fetch return ${msg.ref_id} for message mirroring:`, returnFetchError);
+          } else if (returnRow) {
+            const updatedMessages = [
+              ...(Array.isArray(returnRow.messages) ? returnRow.messages : []),
+              { from: 'agent', text: msg.body, time: new Date().toISOString() },
+            ];
+            const { error: returnUpdateError } = await supabase.from('returns').update({
+              messages: updatedMessages,
+              updated_at: new Date().toISOString(),
+            }).eq('id', msg.ref_id);
+
+            if (returnUpdateError) {
+              console.error(`Failed to update return ${msg.ref_id} after scheduled send:`, returnUpdateError);
+            }
+          } else {
+            console.error(`No return found for id ${msg.ref_id} — scheduled reply sent but could not be mirrored.`);
+          }
+        }
+
         const { error: updateError } = await supabase
           .from('scheduled_messages')
           .update({
