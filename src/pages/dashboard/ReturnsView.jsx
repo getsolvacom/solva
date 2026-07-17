@@ -417,6 +417,26 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     setTimeout(() => { setOverrideToast(false); setOverrideToastFading(false); }, 3000);
   }
 
+  async function handleResumeAI() {
+    if (isDemoMode) return;
+
+    if (isRealReturn) {
+      const { error: updateError } = await supabase.from('returns').update({ manual_override: false }).eq('id', selected.id);
+      if (updateError) {
+        console.error('Failed to resume AI:', updateError);
+        fireSchedToast(`Failed to resume AI: ${updateError.message}`);
+        return;
+      }
+    }
+
+    setStatusOverrides(prev => {
+      const next = { ...prev };
+      delete next[selectedId];
+      return next;
+    });
+    fireSchedToast("AI resumed for this return");
+  }
+
   const generateAIDeflection = async () => {
     if (isDemoMode || !selected) return;
     setAiDeflectionLoading(true);
@@ -759,12 +779,14 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 </button>
               )}
               {selected.status==="pending" && (
-                <button className="btn-primary" disabled={statusOverrides[selectedId]==="manual_override" || isDemoMode} onClick={handleOverride}
+                <button className="btn-primary"
+                  disabled={isDemoMode}
+                  onClick={statusOverrides[selectedId]==="manual_override" ? handleResumeAI : handleOverride}
                   title={isDemoMode ? "Sign up to try this" : undefined}
-                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:(statusOverrides[selectedId]==="manual_override" || isDemoMode)?.45:1,cursor:(statusOverrides[selectedId]==="manual_override" || isDemoMode)?"not-allowed":"pointer",display:"flex",alignItems:"center"}}>
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,opacity:isDemoMode?.45:1,cursor:isDemoMode?"not-allowed":"pointer",display:"flex",alignItems:"center"}}>
                   {statusOverrides[selectedId]==="manual_override"
-                    ? <><CheckCircle2 size={16} strokeWidth={2} style={{marginRight:6}}/>Override Active</>
-                    : <><Zap size={16} strokeWidth={2} style={{marginRight:6}}/>Override AI</>}
+                    ? <><Zap size={16} strokeWidth={2} style={{marginRight:6}}/>Resume AI</>
+                    : <><CheckCircle2 size={16} strokeWidth={2} style={{marginRight:6}}/>Override AI</>}
                 </button>
               )}
             </div>
