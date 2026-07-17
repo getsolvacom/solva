@@ -437,6 +437,26 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     fireSchedToast("AI resumed for this return");
   }
 
+  async function handleMarkDeflected() {
+    if (isDemoMode || !isRealReturn) return;
+
+    const { error: updateError } = await supabase.from('returns').update({ deflected: true }).eq('id', selected.id);
+    if (updateError) {
+      console.error('Failed to mark return as deflected:', updateError);
+      fireSchedToast(`Failed to mark as deflected: ${updateError.message}`);
+      return;
+    }
+
+    // Also cancel any still-queued AI deflection message — the customer already
+    // accepted, so the automatic offer email is no longer needed.
+    const { error: cancelError } = await supabase.from('scheduled_messages').update({ status: 'canceled' }).eq('type', 'return_deflection').eq('ref_id', selected.id).eq('status', 'queued');
+    if (cancelError) {
+      console.error('Failed to cancel queued deflection message after marking deflected:', cancelError);
+    }
+
+    fireSchedToast("Return marked as deflected ✓");
+  }
+
   const generateAIDeflection = async () => {
     if (isDemoMode || !selected) return;
     setAiDeflectionLoading(true);
@@ -842,6 +862,13 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   {statusOverrides[selectedId]==="manual_override"
                     ? <><Zap size={16} strokeWidth={2} style={{marginRight:6}}/>Resume AI</>
                     : <><CheckCircle2 size={16} strokeWidth={2} style={{marginRight:6}}/>Override AI</>}
+                </button>
+              )}
+              {selected.status === "pending" && (
+                <button className="btn-ghost" onClick={handleMarkDeflected} disabled={isDemoMode}
+                  title={isDemoMode ? "Sign up to try this" : "Record that the customer accepted the deflection offer"}
+                  style={{padding:"7px 14px",borderRadius:8,border:`1px solid ${C.teal}`,color:C.teal,fontSize:13,display:"flex",alignItems:"center",gap:6,opacity:isDemoMode?0.45:1,cursor:isDemoMode?"not-allowed":"pointer"}}>
+                  <CheckCircle2 size={13} strokeWidth={2}/>Mark as Deflected
                 </button>
               )}
               </div>
