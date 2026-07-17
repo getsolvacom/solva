@@ -197,6 +197,8 @@ function GlobalStyles() {
         .rv-two-col{grid-template-columns:1fr!important;}
         .rv-back-btn{display:flex!important;align-items:center;}
         .rv-reply-box{padding:8px 12px!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:500!important;background:#0C000F!important;border-top:1px solid #3D0050!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;}
+        .rv-actions-row{flex-wrap:wrap;}
+        .rv-actions-row button{padding:6px 12px!important;font-size:12.5px!important;}
       }
       .ls-mob .rv-root{height:100dvh!important;overflow:hidden!important;flex:1!important;}
       .ls-mob .rv-workspace{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
@@ -209,6 +211,7 @@ function GlobalStyles() {
       .ls-mob .rv-back-btn{display:none!important;}
       .ls-mob .rv-two-col{grid-template-columns:1fr 1fr!important;}
       .ls-mob .rv-reply-box{padding:8px 14px!important;position:relative!important;bottom:auto!important;left:auto!important;right:auto!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+      .ls-mob .rv-actions-row{flex-wrap:wrap;}
       @keyframes skeletonShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
     `}</style>
   );
@@ -817,7 +820,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Order {selected.orderRef}</span>
                 </div>
               </div>
-              <div style={{display:"flex", alignItems:"center", gap:8}}>
+              <div className="rv-actions-row" style={{display:"flex", alignItems:"center", gap:8}}>
               <button className="rv-back-btn btn-ghost" onClick={()=>navigate(`${basePath}/returns`)}
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Returns
