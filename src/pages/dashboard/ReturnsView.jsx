@@ -797,6 +797,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Order {selected.orderRef}</span>
                 </div>
               </div>
+              <div style={{display:"flex", alignItems:"center", gap:8}}>
               <button className="rv-back-btn btn-ghost" onClick={()=>navigate(`${basePath}/returns`)}
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Returns
@@ -818,7 +819,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     gap: 6,
                     opacity: (aiDeflectionLoading || isDemoMode || statusOverrides[selectedId]==="manual_override") ? (isDemoMode ? 0.45 : 0.6) : 1,
                     cursor: (isDemoMode || statusOverrides[selectedId]==="manual_override") ? "not-allowed" : "pointer",
-                    marginRight: 8,
                   }}
                 >
                   {aiDeflectionLoading ? (
@@ -844,6 +844,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     : <><CheckCircle2 size={16} strokeWidth={2} style={{marginRight:6}}/>Override AI</>}
                 </button>
               )}
+              </div>
             </div>
 
             {/* Scrollable body — flex:1, minHeight:0 for independent scroll on desktop/ls-mob */}
