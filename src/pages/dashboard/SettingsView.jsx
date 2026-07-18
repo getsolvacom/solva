@@ -1183,6 +1183,7 @@ BEHAVIOR RULES:
 
 function AutomationsSection() {
   const [support,    setSupport]    = useState(true);
+  const [autoSend,   setAutoSend]   = useState(false);
   const [returns,    setReturns]    = useState(true);
   const [cart,       setCart]       = useState(true);
   const [cartCode,   setCartCode]   = useState("COMEBACK10");
@@ -1209,6 +1210,7 @@ function AutomationsSection() {
       const s = e.detail || window.__solvaSettings;
       if (!s) return;
       if (s.automation_support !== undefined) setSupport(s.automation_support);
+      if (s.ai_auto_send_enabled !== undefined) setAutoSend(s.ai_auto_send_enabled);
       if (s.automation_returns !== undefined) setReturns(s.automation_returns);
       if (s.automation_cart !== undefined) setCart(s.automation_cart);
       if (s.cart_discount_code) setCartCode(s.cart_discount_code);
@@ -1266,6 +1268,7 @@ function AutomationsSection() {
       if (existing) {
         ({ error } = await supabase.from('store_settings').update({
           automation_support: support,
+          ai_auto_send_enabled: autoSend,
           automation_returns: returns,
           automation_cart: cart,
           cart_discount_code: cartCode,
@@ -1276,6 +1279,7 @@ function AutomationsSection() {
         ({ error } = await supabase.from('store_settings').insert({
           store_id: storeData.id,
           automation_support: support,
+          ai_auto_send_enabled: autoSend,
           automation_returns: returns,
           automation_cart: cart,
           cart_discount_code: cartCode,
@@ -1382,6 +1386,20 @@ function AutomationsSection() {
               <div className="sv-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
                 <div><FieldLabel hint="How many tickets AI can handle per day.">Daily Ticket Limit</FieldLabel><SelectInput value={ticketLimit} onChange={e=>setTicketLimit(e.target.value)} options={["100","500","1,000","Unlimited"]}/></div>
                 <div><FieldLabel hint="Delay before AI sends its reply.">Response Delay</FieldLabel><SelectInput value={respDelay} onChange={e=>setRespDelay(e.target.value)} options={["Instant","30 seconds","2 minutes","5 minutes"]}/></div>
+              </div>
+              <div style={{marginTop:16,paddingTop:16,borderTop:`1px solid ${C.border}`,borderRadius:10,background:autoSend?"rgba(240,160,75,.06)":"transparent",padding:autoSend?14:0}}>
+                <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13.5,fontWeight:700,color:C.text,marginBottom:4,display:"flex",alignItems:"center",gap:6}}>
+                      <Zap size={14} strokeWidth={2} style={{color:C.amber}}/>
+                      Auto-Send Safe Replies
+                    </div>
+                    <div style={{fontSize:12,color:C.muted,lineHeight:1.5}}>
+                      When enabled, AI replies to simple FAQ and product questions are sent automatically — no review needed. Anything involving orders, refunds, or requiring judgment always waits for your approval. Turn this on only once you trust the AI's replies for your store.
+                    </div>
+                  </div>
+                  <Toggle on={autoSend} onToggle={()=>setAutoSend(v=>!v)}/>
+                </div>
               </div>
             </div>
           </div>
