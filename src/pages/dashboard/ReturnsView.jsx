@@ -99,6 +99,11 @@ const SCHEDULE_OPTS = [
   { label: "Monday morning (8:00 AM)", getDate: () => { const d = new Date(); const day = d.getDay(); const daysUntilMonday = (8 - day) % 7 || 7; d.setDate(d.getDate() + daysUntilMonday); d.setHours(8, 0, 0, 0); return d; } },
 ];
 
+function getLastHandler(messages) {
+  if (!Array.isArray(messages)) return undefined;
+  return [...messages].reverse().find(m => m.from === 'ai' || m.from === 'agent')?.from;
+}
+
 function parseMarkdown(text) {
   const regex = /(\*\*(.+?)\*\*|_(.+?)_)/g;
   const parts = [];
@@ -369,7 +374,9 @@ export default function ReturnsView({ isLandscape, isMobile }) {
       filter==="All"       ? true :
       filter==="Deflected" ? r.status==="deflected" :
       filter==="Processed" ? r.status==="processed" :
-      filter==="Pending"   ? r.status==="pending"   : true;
+      filter==="Pending"   ? r.status==="pending"   :
+      filter==="AI"           ? getLastHandler(r.messages) === 'ai' :
+      filter==="Human Agent"  ? getLastHandler(r.messages) === 'agent' : true;
     return mf && ms;
   });
 
@@ -385,6 +392,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     Pending:   nonArchivedSource.filter(r=>r.status==="pending").length,
     Deflected: nonArchivedSource.filter(r=>r.status==="deflected").length,
     Processed: nonArchivedSource.filter(r=>r.status==="processed").length,
+    AI: nonArchivedSource.filter(r => getLastHandler(r.messages) === 'ai').length,
+    "Human Agent": nonArchivedSource.filter(r => getLastHandler(r.messages) === 'agent').length,
     Archived:  returnSource.filter(r=>r.isArchived).length,
   };
 
@@ -744,7 +753,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             </div>
           </div>
           <div style={{display:"flex",flexWrap:"wrap",gap:4,padding:"0 12px 10px"}}>
-            {["All","Pending","Deflected","Processed","Archived"].map(f=>(
+            {["All","Pending","Deflected","Processed","AI","Human Agent","Archived"].map(f=>(
               <button key={f} onClick={()=>setFilter(f)}
                 style={{padding:"4px 10px",borderRadius:100,cursor:"pointer",border:`1px solid ${filter===f?C.coral:C.border}`,background:filter===f?"rgba(229,82,102,.10)":"transparent",color:filter===f?C.coral:C.muted,fontSize:11.5,fontWeight:filter===f?700:400,fontFamily:"'Outfit',sans-serif"}}>
                 {f} ({counts[f]})
