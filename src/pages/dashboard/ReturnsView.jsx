@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import {
   DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip,
   User, Search, Clock as ClockIcon,
-  Smile, Bold, Italic, ChevronUp, Clock, Calendar,
+  Smile, Bold, Italic, ChevronUp, Clock, Calendar, Archive,
 } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
@@ -322,6 +322,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             productEmoji: '📦',
             variant: '',
             manualOverride: !!r.manual_override,
+            isArchived: !!r.is_archived,
             orderRef: r.order_id || '—',
             orderValue: parseFloat(r.order_value || 0),
             reason: r.reason || 'changed_mind',
@@ -361,12 +362,15 @@ export default function ReturnsView({ isLandscape, isMobile }) {
 
   const returnSource = realReturns && realReturns.length > 0 ? realReturns : RETURNS;
   const filtered = returnSource.filter(r => {
+    const ms = r.name.toLowerCase().includes(search.toLowerCase()) || r.product.toLowerCase().includes(search.toLowerCase());
+    if (filter === "Archived") return r.isArchived && ms;
+    if (r.isArchived) return false;
     const mf =
       filter==="All"       ? true :
       filter==="Deflected" ? r.status==="deflected" :
       filter==="Processed" ? r.status==="processed" :
       filter==="Pending"   ? r.status==="pending"   : true;
-    return mf && (r.name.toLowerCase().includes(search.toLowerCase()) || r.product.toLowerCase().includes(search.toLowerCase()));
+    return mf && ms;
   });
 
   const selected      = returnSource.find(r => r.id === selectedId);
@@ -375,11 +379,13 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   const isRealReturn = !!(selected && realReturns && realReturns.some(r => r.id === selected.id) && selected.email);
   const totalSaved    = returnSource.filter(r=>r.status==="deflected").reduce((s,r)=>s+r.marginSaved,0);
   const deflectRate   = returnSource.length > 0 ? Math.round((returnSource.filter(r=>r.status==="deflected").length / returnSource.length) * 100) : 0;
+  const nonArchivedSource = returnSource.filter(r => !r.isArchived);
   const counts        = {
-    All:       returnSource.length,
-    Pending:   returnSource.filter(r=>r.status==="pending").length,
-    Deflected: returnSource.filter(r=>r.status==="deflected").length,
-    Processed: returnSource.filter(r=>r.status==="processed").length,
+    All:       nonArchivedSource.length,
+    Pending:   nonArchivedSource.filter(r=>r.status==="pending").length,
+    Deflected: nonArchivedSource.filter(r=>r.status==="deflected").length,
+    Processed: nonArchivedSource.filter(r=>r.status==="processed").length,
+    Archived:  returnSource.filter(r=>r.isArchived).length,
   };
 
   const effectiveStatus = selected && statusOverrides[selected.id] === "manual_override"
@@ -458,6 +464,26 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     }
 
     fireSchedToast("Return marked as deflected ✓");
+  }
+
+  async function handleArchive() {
+    if (isDemoMode) return;
+    const newArchivedState = !selected.isArchived;
+
+    if (isRealReturn) {
+      const { error } = await supabase.from('returns').update({
+        is_archived: newArchivedState,
+        archived_at: newArchivedState ? new Date().toISOString() : null,
+      }).eq('id', selected.id);
+      if (error) {
+        console.error('Failed to update archive status:', error);
+        fireSchedToast(`Failed to update archive status: ${error.message}`);
+        return;
+      }
+      setRealReturns(prev => prev ? prev.map(r => r.id === selected.id ? { ...r, isArchived: newArchivedState } : r) : prev);
+    }
+
+    fireSchedToast(newArchivedState ? "Return archived" : "Return unarchived");
   }
 
   const generateAIDeflection = async () => {
@@ -718,7 +744,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             </div>
           </div>
           <div style={{display:"flex",flexWrap:"wrap",gap:4,padding:"0 12px 10px"}}>
-            {["All","Pending","Deflected","Processed"].map(f=>(
+            {["All","Pending","Deflected","Processed","Archived"].map(f=>(
               <button key={f} onClick={()=>setFilter(f)}
                 style={{padding:"4px 10px",borderRadius:100,cursor:"pointer",border:`1px solid ${filter===f?C.coral:C.border}`,background:filter===f?"rgba(229,82,102,.10)":"transparent",color:filter===f?C.coral:C.muted,fontSize:11.5,fontWeight:filter===f?700:400,fontFamily:"'Outfit',sans-serif"}}>
                 {f} ({counts[f]})
@@ -874,6 +900,12 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   <CheckCircle2 size={13} strokeWidth={2}/>Mark as Deflected
                 </button>
               )}
+              <button className="btn-ghost" onClick={isDemoMode ? undefined : handleArchive} disabled={isDemoMode}
+                title={isDemoMode ? "Sign up to try this" : undefined}
+                style={{padding:"7px 14px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontWeight:600,fontSize:13,display:"flex",alignItems:"center",gap:6,opacity:isDemoMode?0.45:1,cursor:isDemoMode?"not-allowed":"pointer"}}>
+                <Archive size={13} strokeWidth={2}/>
+                {selected.isArchived ? "Unarchive" : "Archive"}
+              </button>
               </div>
             </div>
 
