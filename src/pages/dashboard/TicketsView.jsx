@@ -228,6 +228,16 @@ function Bubble({ msg, idx }) {
   );
 }
 
+function isTicketUnread(messages, lastViewedAt) {
+  if (!Array.isArray(messages)) return false;
+  const lastCustomerMsg = [...messages].reverse().find(m => m.from === 'customer');
+  if (!lastCustomerMsg || !lastCustomerMsg.time) return false;
+  const msgTime = new Date(lastCustomerMsg.time).getTime();
+  if (isNaN(msgTime)) return false;
+  if (!lastViewedAt) return true;
+  return msgTime > new Date(lastViewedAt).getTime();
+}
+
 export default function TicketsView({ isLandscape, isMobile }) {
   const navigate                              = useNavigate();
   const { ticketId }                          = useParams();
@@ -378,7 +388,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
           time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
           updatedAt: r.updated_at || r.created_at,
           status: r.status || 'pending',
-          unread: r.status === 'pending',
+          unread: isTicketUnread(r.messages, r.merchant_last_viewed_at),
+          merchantLastViewedAt: r.merchant_last_viewed_at,
           messages: Array.isArray(r.messages) ? r.messages : [
             { from: 'customer', text: r.subject || 'Support request', time: '' },
           ],
@@ -433,6 +444,24 @@ export default function TicketsView({ isLandscape, isMobile }) {
     setSendError(null);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSendWarning(null);
+    // Fire-and-forget mark-as-viewed: a failed view-tracking write must never
+    // block or disrupt the ticket UI, so it only logs on error.
+    const isRealTicket = !!(selected && realTickets && realTickets.some(t => t.id === selected.id));
+    if (isRealTicket && selected.unread) {
+      supabase.from('tickets')
+        .update({ merchant_last_viewed_at: new Date().toISOString() })
+        .eq('id', selected.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Failed to mark ticket as viewed:', error);
+            return;
+          }
+          setRealTickets(prev => prev ? prev.map(t => t.id === selected.id
+            ? { ...t, unread: false, merchantLastViewedAt: new Date().toISOString() }
+            : t) : prev);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
   const getStatus = (id, def) => statusOverrides[id] || def;
@@ -447,7 +476,9 @@ export default function TicketsView({ isLandscape, isMobile }) {
     if (filter === "Archived") return isArchived && ms;
     if (isArchived) return false;
     const mf = filter === "All"
-      || (filter === "Bookmarked" ? bookmarked[t.id] : getStatus(t.id, t.status) === filter.toLowerCase());
+      || (filter === "Unread" ? t.unread === true
+      : filter === "Bookmarked" ? bookmarked[t.id]
+      : getStatus(t.id, t.status) === filter.toLowerCase());
     return mf && ms;
   });
 
@@ -498,6 +529,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
     Pending:    nonArchivedSource.filter(t => getStatus(t.id, t.status) === "pending").length,
     Resolved:   nonArchivedSource.filter(t => getStatus(t.id, t.status) === "resolved").length,
     Escalated:  nonArchivedSource.filter(t => getStatus(t.id, t.status) === "escalated").length,
+    Unread:     nonArchivedSource.filter(t => t.unread === true).length,
     Bookmarked: nonArchivedSource.filter(t => bookmarked[t.id]).length,
     Archived:   ticketSource.filter(t => t.isArchived || archivedOverrides[t.id]).length,
   };
@@ -958,7 +990,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
           </div>
 
           <div style={{display:"flex",gap:4,padding:"0 14px 10px",flexWrap:"wrap"}}>
-            {["All","Pending","Resolved","Escalated","Bookmarked","Archived"].map(f=>(
+            {["All","Pending","Resolved","Escalated","Unread","Bookmarked","Archived"].map(f=>(
               <button key={f} className="filter-tab" onClick={()=>setFilter(f)}
                 style={{padding:"4px 10px",borderRadius:100,border:`1px solid ${filter===f?C.coral:C.border}`,background:filter===f?"rgba(229,82,102,.10)":"transparent",color:filter===f?C.coral:C.muted,fontSize:11.5,fontWeight:filter===f?700:400}}>
                 {f} ({counts[f]})
