@@ -112,6 +112,24 @@ export default async function handler(req, res) {
       }
     );
 
+    // Determine whether this is the merchant's first-ever connection for this
+    // shop, so the welcome email fires exactly once. Checked BEFORE the upsert
+    // below (which never touches welcome_email_sent_at): a first-time
+    // connection is one where no store row exists yet, or the row exists but
+    // welcome_email_sent_at has not been stamped. A reconnect/resync already
+    // has welcome_email_sent_at set and must NOT re-trigger the email.
+    let isFirstConnection = false;
+    try {
+      const { data: existingStore } = await supabase
+        .from('stores')
+        .select('welcome_email_sent_at')
+        .eq('shop_domain', shop)
+        .maybeSingle();
+      isFirstConnection = !existingStore || !existingStore.welcome_email_sent_at;
+    } catch (welcomeCheckErr) {
+      console.error('Welcome-email first-connection check failed:', welcomeCheckErr);
+    }
+
     const { data, error } = await supabase
       .from('stores')
       .upsert(
@@ -182,6 +200,73 @@ export default async function handler(req, res) {
         }
       } catch (trialErr) {
         console.error('Trial eligibility error:', trialErr);
+      }
+
+      // Fire the welcome email exactly once, only on a first-time connection.
+      // The store upsert above has already succeeded at this point. A failed
+      // welcome email must NEVER fail or roll back the OAuth callback — the
+      // store connection succeeding is the priority.
+      if (isFirstConnection) {
+        try {
+          // Shopify's OAuth doesn't reliably give us a usable merchant email,
+          // so we use profiles.email (populated by handle_new_user on signup).
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', userId)
+            .maybeSingle();
+
+          const merchantEmail = profile?.email;
+
+          if (merchantEmail) {
+            const resendApiKey = process.env.RESEND_API_KEY;
+            const welcomeText =
+              `Hi there,\n\n` +
+              `Great news — your store ${shopName} is now connected to SOLVA, and SOLVA is live and working for you.\n\n` +
+              `Everything is ready to go right out of the box:\n\n` +
+              `- AI Tickets: customer questions get answered automatically.\n` +
+              `- Cart Recovery: abandoned carts get a friendly nudge to come back.\n` +
+              `- Returns: return requests are handled and gently deflected where it makes sense.\n\n` +
+              `You don't need to do anything to get started. If you'd like to fine-tune the tone, automations, or discount codes, head to Settings in your dashboard anytime.\n\n` +
+              `Welcome aboard,\nThe SOLVA Team`;
+
+            const sendRes = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${resendApiKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: 'SOLVA <support@support.getsolva.app>',
+                to: [merchantEmail],
+                subject: "Welcome to SOLVA — you're all set!",
+                text: welcomeText,
+              }),
+            });
+
+            if (!sendRes.ok) {
+              const errBody = await sendRes.text();
+              console.error('Welcome email send failed:', errBody);
+            } else {
+              console.log('Welcome email sent to:', merchantEmail);
+            }
+
+            // Stamp welcome_email_sent_at whether the send succeeded or not, so
+            // subsequent reconnect attempts never re-send (no retry storms).
+            const { error: stampErr } = await supabase
+              .from('stores')
+              .update({ welcome_email_sent_at: new Date().toISOString() })
+              .eq('shop_domain', shop);
+            if (stampErr) {
+              console.error('Failed to stamp welcome_email_sent_at:', stampErr);
+            }
+          } else {
+            console.error('No merchant email on profile; skipping welcome email for userId:', userId);
+          }
+        } catch (welcomeErr) {
+          // Never block the OAuth callback on a welcome-email failure.
+          console.error('Welcome email flow error (store connection unaffected):', welcomeErr);
+        }
       }
     }
 
