@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
 import { useTheme } from '../../hooks/useTheme';
 import { supabase } from "../../lib/supabase";
+import { authedFetch } from "../../lib/authedFetch";
 import { useStore } from "../../hooks/useStore";
 import { Store, Mail, Globe, Clock, DollarSign, Briefcase, Smile, Coffee, RotateCcw, Unplug, Trash2, UserPlus, Download, Bell, Bot, ShoppingCart, Lock, Check, AlertTriangle, Users, CreditCard, Zap, Sun, Moon, Monitor, Gift, MessageSquare, GitBranch, Ticket, X, FlaskConical, Plus, Send, ChevronDown, Star, Lightbulb, Link, Activity } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
@@ -603,14 +604,13 @@ BEHAVIOR RULES:
 5. Never make up specific facts like prices, dates, or policies that aren't provided above.
 6. Never refuse to engage in a normal conversation. Always respond helpfully.`;
 
-      const response = await fetch("/api/ai/ticket-resolve", {
+      const response = await authedFetch("/api/ai/ticket-resolve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ticket: userMsg,
           storeName: "your store",
           brandTone: tone || "friendly",
-          storeId: currentStoreId,
           systemPrompt,
         }),
       });
@@ -631,7 +631,7 @@ BEHAVIOR RULES:
     else setGeneratingBrand(false);
     if (!isB) setGeneratingCustomer(true);
     try {
-      const response = await fetch("/api/ai/ticket-resolve", {
+      const response = await authedFetch("/api/ai/ticket-resolve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

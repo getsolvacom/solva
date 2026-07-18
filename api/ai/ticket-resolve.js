@@ -11,7 +11,31 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { ticket, storeName, brandTone, storeId, systemPrompt: clientSystemPrompt } = req.body;
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  if (authError || !user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { data: store } = await supabase
+    .from('stores')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .maybeSingle();
+  const storeId = store?.id;
+
+  const { data: allowed } = await supabase.rpc('check_and_increment_rate_limit', {
+    p_key: `ticket_resolve:${user.id}`,
+    p_max_requests: 30,
+    p_window_seconds: 300,
+  });
+  if (!allowed) {
+    return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
+  }
+
+  const { ticket, storeName, brandTone, systemPrompt: clientSystemPrompt } = req.body;
 
   if (!ticket) {
     return res.status(400).json({ error: 'Ticket content is required' });

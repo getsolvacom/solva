@@ -10,6 +10,7 @@ import {
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
 import { supabase } from "../../lib/supabase";
+import { authedFetch } from "../../lib/authedFetch";
 import { DemoContext } from "../../context/DemoContext";
 
 const TICKETS = [
@@ -776,7 +777,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
     if (isDemoMode) return;
     setAiLoading(true);
     try {
-      const response = await fetch('/api/ai/ticket-resolve', {
+      const response = await authedFetch('/api/ai/ticket-resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -830,7 +831,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
   const generateAISuggestions = async (ticketText) => {
     try {
-      const response = await fetch('/api/ai/ticket-resolve', {
+      const response = await authedFetch('/api/ai/ticket-resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
