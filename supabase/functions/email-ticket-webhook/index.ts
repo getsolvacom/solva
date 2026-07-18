@@ -120,6 +120,8 @@ CONFIDENCE — be honest and conservative, NOT optimistic:
 - 'medium' or 'low': for anything less than certain.
 A 'high'-confidence reply may be auto-sent to a real customer with NO human review, so a wrong 'high' rating can send an incorrect reply. When unsure, rate 'medium' or 'low'.
 
+MATCHED_FAQ_QUESTION — if (and only if) you classify this as 'faq' with 'high' confidence, you MUST set matched_faq_question to the exact text of the specific store FAQ question your reply is based on, copied verbatim from the FAQ list above — do NOT paraphrase, reword, or invent it. This value is checked mechanically against the real FAQ list: if it does not exactly match a real FAQ question, the reply will NOT be sent automatically (it will be downgraded and held for human review). If category is not 'faq' or confidence is not 'high', leave matched_faq_question as an empty string.
+
 REPLY — write it as a ready-to-send reply. If the customer's question matches or is similar to one of the store FAQs above, use that exact answer. Be helpful and empathetic. Do not add unnecessary markdown formatting like ## headers or ** bold text. Write in plain conversational text only.`;
 
   const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -143,8 +145,9 @@ REPLY — write it as a ready-to-send reply. If the customer's question matches 
               category: { type: 'string', enum: ['faq', 'product_question', 'other'] },
               confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
               reply: { type: 'string' },
+              matched_faq_question: { type: 'string', description: 'If category is faq and confidence is high, the EXACT text of the store FAQ question this reply is based on, copied verbatim from the provided FAQ list. Leave as an empty string if no FAQ was matched or category is not faq.' },
             },
-            required: ['category', 'confidence', 'reply'],
+            required: ['category', 'confidence', 'reply', 'matched_faq_question'],
           },
         },
       ],
@@ -165,19 +168,35 @@ REPLY — write it as a ready-to-send reply. If the customer's question matches 
   // malformed — treat as 'other'/'low' so a parsing failure can never auto-send.
   let category = 'other';
   let confidence = 'low';
+  let matchedFaqQuestion = '';
   let reply = anthropicData.content?.find(b => b.type === 'text')?.text || '';
 
   const toolBlock = anthropicData.content?.find(b => b.type === 'tool_use');
   if (toolBlock && toolBlock.input
     && typeof toolBlock.input.category === 'string'
     && typeof toolBlock.input.confidence === 'string'
-    && typeof toolBlock.input.reply === 'string') {
+    && typeof toolBlock.input.reply === 'string'
+    && typeof toolBlock.input.matched_faq_question === 'string') {
     category = toolBlock.input.category;
     confidence = toolBlock.input.confidence;
     reply = toolBlock.input.reply;
+    matchedFaqQuestion = toolBlock.input.matched_faq_question;
   }
 
-  const eligible = (category === 'faq' || category === 'product_question') && confidence === 'high' && aiConfig.ai_auto_send_enabled === true;
+  // Never trust the model's self-reported confidence alone — verify a claimed
+  // high-confidence FAQ answer actually corresponds to a real, merchant-configured
+  // FAQ entry before allowing it to count as auto-send-eligible.
+  if (category === 'faq' && confidence === 'high') {
+    const realMatch = Array.isArray(aiConfig.faqs) && aiConfig.faqs.some(
+      f => f.q && f.q.trim().toLowerCase() === matchedFaqQuestion.trim().toLowerCase()
+    );
+    if (!realMatch) {
+      console.log('Claimed high-confidence FAQ match did not correspond to a real FAQ entry — downgrading to medium.', { ticketId, matchedFaqQuestion });
+      confidence = 'medium';
+    }
+  }
+
+  const eligible = category === 'faq' && confidence === 'high' && aiConfig.ai_auto_send_enabled === true;
 
   if (!eligible) {
     await supabase.from('tickets').update({ ai_draft_reply: reply, ai_category: category, ai_confidence: confidence }).eq('id', ticketId);
