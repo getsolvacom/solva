@@ -5,6 +5,7 @@ import {
   Send, Paperclip, XCircle, ShieldAlert, CheckCircle2, AlertCircle,
   ArrowUpRight, AlertTriangle, User, Search, Zap,
   Smile, Bold, Italic, ChevronUp, Clock, Calendar, Bookmark, RefreshCw,
+  Archive,
 } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
@@ -314,6 +315,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [sendingManual, setSendingManual] = useState(false);
   const [escalating, setEscalating] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [archivedOverrides, setArchivedOverrides] = useState({});
   const [sendError, setSendError] = useState(null);
   const [sendWarning, setSendWarning] = useState(null);
   const [sentTickets, setSentTickets] = useState({});
@@ -388,6 +390,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
           ticketNumber: r.ticket_number,
           bookmarked: r.bookmarked,
           csat_rating: r.csat_rating,
+          isArchived: r.is_archived,
         }));
         setRealTickets(mapped);
         // Hydrate the bookmark/CSAT state objects from the persisted rows. A null
@@ -439,9 +442,12 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const ticketSource = realTickets && realTickets.length > 0 ? realTickets : TICKETS;
 
   const filteredByStatus = ticketSource.filter(t => {
+    const isArchived = t.isArchived || archivedOverrides[t.id];
+    const ms = t.name.toLowerCase().includes(search.toLowerCase()) || t.subject.toLowerCase().includes(search.toLowerCase());
+    if (filter === "Archived") return isArchived && ms;
+    if (isArchived) return false;
     const mf = filter === "All"
       || (filter === "Bookmarked" ? bookmarked[t.id] : getStatus(t.id, t.status) === filter.toLowerCase());
-    const ms = t.name.toLowerCase().includes(search.toLowerCase()) || t.subject.toLowerCase().includes(search.toLowerCase());
     return mf && ms;
   });
 
@@ -486,12 +492,14 @@ export default function TicketsView({ isLandscape, isMobile }) {
   // demo/seed tickets. Gates the real-send, draft-generation, and no-scheduling paths.
   const isRealEmailTicket = !!(selected && selected.source === 'email' && realTickets && realTickets.some(t => t.id === selected.id));
 
+  const nonArchivedSource = ticketSource.filter(t => !(t.isArchived || archivedOverrides[t.id]));
   const counts = {
-    All:        ticketSource.length,
-    Pending:    ticketSource.filter(t => getStatus(t.id, t.status) === "pending").length,
-    Resolved:   ticketSource.filter(t => getStatus(t.id, t.status) === "resolved").length,
-    Escalated:  ticketSource.filter(t => getStatus(t.id, t.status) === "escalated").length,
-    Bookmarked: ticketSource.filter(t => bookmarked[t.id]).length,
+    All:        nonArchivedSource.length,
+    Pending:    nonArchivedSource.filter(t => getStatus(t.id, t.status) === "pending").length,
+    Resolved:   nonArchivedSource.filter(t => getStatus(t.id, t.status) === "resolved").length,
+    Escalated:  nonArchivedSource.filter(t => getStatus(t.id, t.status) === "escalated").length,
+    Bookmarked: nonArchivedSource.filter(t => bookmarked[t.id]).length,
+    Archived:   ticketSource.filter(t => t.isArchived || archivedOverrides[t.id]).length,
   };
 
   function fireToast(message, color, bg) {
@@ -572,6 +580,34 @@ export default function TicketsView({ isLandscape, isMobile }) {
       fireToast(err?.message || 'Failed to close ticket', "#FF5272", "rgba(255,82,114,.12)");
     } finally {
       setClosing(false);
+    }
+  }
+
+  async function handleArchive() {
+    if (isDemoMode) return;
+    const isRealTicket = !!(selected && realTickets && realTickets.some(t => t.id === selected.id));
+    const newArchivedState = !selected.isArchived;
+
+    if (!isRealTicket) {
+      setArchivedOverrides(prev => ({ ...prev, [selectedId]: newArchivedState }));
+      fireToast(newArchivedState ? "Ticket archived" : "Ticket unarchived", "#3ECFB2", "rgba(62,207,178,.12)");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .update({ is_archived: newArchivedState, archived_at: newArchivedState ? new Date().toISOString() : null, updated_at: new Date().toISOString() })
+        .eq('id', selected.id);
+      if (error) {
+        fireToast(error.message || 'Failed to update archive status', "#FF5272", "rgba(255,82,114,.12)");
+        return;
+      }
+      setRealTickets(prev => prev ? prev.map(t => t.id === selectedId ? { ...t, isArchived: newArchivedState } : t) : prev);
+      fireToast(newArchivedState ? "Ticket archived" : "Ticket unarchived", "#3ECFB2", "rgba(62,207,178,.12)");
+    } catch (err) {
+      console.error('archive ticket error:', err);
+      fireToast(err?.message || 'Failed to update archive status', "#FF5272", "rgba(255,82,114,.12)");
     }
   }
 
@@ -922,7 +958,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
           </div>
 
           <div style={{display:"flex",gap:4,padding:"0 14px 10px",flexWrap:"wrap"}}>
-            {["All","Pending","Resolved","Escalated","Bookmarked"].map(f=>(
+            {["All","Pending","Resolved","Escalated","Bookmarked","Archived"].map(f=>(
               <button key={f} className="filter-tab" onClick={()=>setFilter(f)}
                 style={{padding:"4px 10px",borderRadius:100,border:`1px solid ${filter===f?C.coral:C.border}`,background:filter===f?"rgba(229,82,102,.10)":"transparent",color:filter===f?C.coral:C.muted,fontSize:11.5,fontWeight:filter===f?700:400}}>
                 {f} ({counts[f]})
@@ -1041,6 +1077,12 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   ) : (
                     <><ShieldAlert size={16} strokeWidth={2} style={{marginRight:6}}/>Escalate</>
                   )}
+                </button>
+                <button className="btn-ghost" onClick={isDemoMode ? undefined : handleArchive} disabled={isDemoMode}
+                  title={isDemoMode ? "Sign up to try this" : undefined}
+                  style={{padding:"7px 16px",borderRadius:8,border:`1px solid ${C.border}`,color:C.sub,fontWeight:600,fontSize:13,display:"flex",alignItems:"center",cursor:isDemoMode?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
+                  <Archive size={16} strokeWidth={2} style={{marginRight:6}}/>
+                  {(selected.isArchived || archivedOverrides[selectedId]) ? "Unarchive" : "Archive"}
                 </button>
                 <button className="btn-primary" onClick={isDemoMode ? undefined : handleClose} disabled={closeDisabled || isDemoMode || closing}
                   title={isDemoMode ? "Sign up to try this" : undefined}
