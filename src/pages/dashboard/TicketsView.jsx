@@ -155,6 +155,8 @@ function GlobalStyles() {
         .tv-chat-header-meta{display:none!important;}
         .tv-back-btn{display:flex!important;align-items:center;}
         .tv-chat-header{padding:11px 14px!important;}
+        .tv-chat-header{flex-wrap:wrap;}
+        .tv-back-btn{flex-basis:100%;}
         .tv-ai-bar{padding:9px 14px!important;}
         .tv-messages{padding-left:12px!important;padding-right:12px!important;padding-bottom:100px!important;}
         .tv-suggestions{padding:8px 14px!important;}
