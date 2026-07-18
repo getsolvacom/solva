@@ -164,6 +164,8 @@ function GlobalStyles() {
         .tv-draft-box{max-height:52vh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;padding:12px 14px calc(140px + env(safe-area-inset-bottom))!important;}
         .tv-reply-box{padding:8px 12px!important;padding-bottom:calc(8px + env(safe-area-inset-bottom))!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:500!important;background:var(--surface)!important;border-top:1px solid var(--border-hi)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;}
         .msg-bubble-inner{max-width:86%!important;}
+        .tv-actions-row{flex-wrap:wrap;}
+        .tv-actions-row button{padding:6px 12px!important;font-size:12.5px!important;}
       }
       .ls-mob .tv-workspace{flex-direction:row!important;overflow:hidden!important;flex:1!important;min-height:0!important;}
       .ls-mob .tv-list{width:40%!important;flex:none!important;border-right:1px solid var(--border)!important;overflow-y:auto!important;height:100%!important;}
@@ -178,6 +180,7 @@ function GlobalStyles() {
       .ls-mob .tv-suggestions-chips-hidden{display:flex!important;flex-wrap:wrap!important;}
       .ls-mob .tv-reply-box{padding:8px 14px!important;position:relative!important;bottom:auto!important;left:auto!important;right:auto!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
       .ls-mob .msg-bubble-inner{max-width:72%!important;}
+      .ls-mob .tv-actions-row{flex-wrap:wrap;}
     `}</style>
   );
 }
@@ -1109,7 +1112,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Tickets
               </button>
-              <div style={{display:"flex",gap:8}}>
+              <div className="tv-actions-row" style={{display:"flex",gap:8}}>
                 <button className="btn-ghost" onClick={isDemoMode ? undefined : handleEscalate} disabled={escalateDisabled || isDemoMode || escalating}
                   title={isDemoMode ? "Sign up to try this" : undefined}
                   style={{padding:"7px 14px",borderRadius:8,border:"1px solid rgba(255,82,114,.25)",color:"#FF5272",fontSize:13,display:"flex",alignItems:"center",cursor:(isDemoMode||escalating)?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
