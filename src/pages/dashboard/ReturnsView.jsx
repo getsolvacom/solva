@@ -252,6 +252,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   const mobilePanel                                   = returnId ? "detail" : "list";
   const [filter,              setFilter]              = useState("All");
   const [search,              setSearch]              = useState("");
+  const [sortOrder,           setSortOrder]           = useState("newest");
   const [statusOverrides,     setStatusOverrides]     = useState({});
   const [overrideToast,       setOverrideToast]       = useState(false);
   const [overrideToastFading, setOverrideToastFading] = useState(false);
@@ -334,6 +335,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
             reasonLabel: r.reason || 'Return Request',
             status: r.deflected ? 'deflected' : r.status || 'pending',
             timeAgo: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
+            updatedAt: r.updated_at || r.created_at,
             marginSaved: r.deflected ? parseFloat(r.order_value || 0) : 0,
             offer: {
               type: r.deflection_offer || 'Exchange Offered',
@@ -378,6 +380,11 @@ export default function ReturnsView({ isLandscape, isMobile }) {
       filter==="AI"           ? getLastHandler(r.conversation) === 'ai' :
       filter==="Human Agent"  ? getLastHandler(r.conversation) === 'agent' : true;
     return mf && ms;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortOrder === "oldest") return new Date(a.updatedAt || 0) - new Date(b.updatedAt || 0);
+    return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
   });
 
   const selected      = returnSource.find(r => r.id === selectedId);
@@ -752,6 +759,12 @@ export default function ReturnsView({ isLandscape, isMobile }) {
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search returns…" style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:13.5}}/>
             </div>
           </div>
+          <div style={{padding:"0 12px 10px"}}>
+            <select value={sortOrder} onChange={e=>setSortOrder(e.target.value)} style={{...selectSt, flex:"none", width:"100%"}}>
+              <option value="newest">Newest Activity First</option>
+              <option value="oldest">Oldest Activity First</option>
+            </select>
+          </div>
           <div style={{display:"flex",flexWrap:"wrap",gap:4,padding:"0 12px 10px"}}>
             {["All","Pending","Deflected","Processed","AI","Human Agent","Archived"].map(f=>(
               <button key={f} onClick={()=>setFilter(f)}
@@ -792,7 +805,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 ))}
               </div>
             )}
-            {filtered.map(r=>{
+            {sorted.map(r=>{
               const s  = STATUS_R[r.status];
               const rs = REASON_CFG[r.reason] || REASON_CFG.other;
               return (
