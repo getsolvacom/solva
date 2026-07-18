@@ -374,6 +374,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
           subject: r.subject || 'Support request',
           preview: r.preview || (r.subject || '').slice(0, 60),
           time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
+          updatedAt: r.updated_at || r.created_at,
           status: r.status || 'pending',
           unread: r.status === 'pending',
           messages: Array.isArray(r.messages) ? r.messages : [
@@ -471,8 +472,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
       const bPen = getStatus(b.id, b.status) === "pending" ? 0 : 1;
       return aPen - bPen;
     }
-    if (sortOrder === "oldest") return (a.time || "").localeCompare(b.time || "");
-    return (b.time || "").localeCompare(a.time || "");
+    if (sortOrder === "oldest") return new Date(a.updatedAt || 0) - new Date(b.updatedAt || 0);
+    return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
   });
 
   const selected        = ticketSource.find(t => t.id === selectedId);
