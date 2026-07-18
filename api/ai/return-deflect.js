@@ -11,7 +11,47 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { returnReason, productName, customerName, storeName, storeId, userId } = req.body;
+  let derivedUserId = null;
+  let derivedStoreId = null;
+
+  const internalSecret = req.headers['x-internal-secret'];
+  if (internalSecret && internalSecret === process.env.INTERNAL_AI_SECRET) {
+    // Trusted internal call (Shopify webhook) — still requires the caller to
+    // explicitly state which user/store this is for, since there's no session
+    // to derive it from. This is fine because only our own webhook code can
+    // reach this branch, gated by the secret.
+    derivedUserId = req.body.userId;
+    derivedStoreId = req.body.storeId;
+    if (!derivedUserId || !derivedStoreId) {
+      return res.status(400).json({ error: 'userId and storeId are required for internal calls' });
+    }
+  } else {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    derivedUserId = user.id;
+    const { data: store } = await supabase
+      .from('stores')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .maybeSingle();
+    derivedStoreId = store?.id;
+  }
+
+  const { data: allowed } = await supabase.rpc('check_and_increment_rate_limit', {
+    p_key: `return_deflect:${derivedUserId}`,
+    p_max_requests: 50,
+    p_window_seconds: 300,
+  });
+  if (!allowed) {
+    return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
+  }
+
+  const { returnReason, productName, customerName, storeName } = req.body;
 
   if (!returnReason) {
     return res.status(400).json({ error: 'Return reason is required' });
@@ -20,12 +60,12 @@ export default async function handler(req, res) {
   // Enforce plan entitlements server-side. Never fail open: a missing userId
   // or an unentitled plan is treated the same way and never reaches Anthropic.
   let entitled = false;
-  if (userId) {
+  if (derivedUserId) {
     try {
       const { data: profile } = await supabase
         .from('profiles')
         .select('plan, plan_status, trial_ends_at')
-        .eq('id', userId)
+        .eq('id', derivedUserId)
         .maybeSingle();
 
       entitled = getEntitlements(profile).returnDeflection === true;
@@ -50,12 +90,12 @@ export default async function handler(req, res) {
     ai_signature: '',
   };
 
-  if (storeId) {
+  if (derivedStoreId) {
     try {
       const { data: settings } = await supabase
         .from('store_settings')
         .select('ai_tone, brand_description, global_instructions, ai_signature')
-        .eq('store_id', storeId)
+        .eq('store_id', derivedStoreId)
         .maybeSingle();
 
       if (settings) {

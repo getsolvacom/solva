@@ -6,6 +6,7 @@ import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
 import { useEntitlements } from "../../hooks/useEntitlements";
 import { supabase } from "../../lib/supabase";
+import { authedFetch } from "../../lib/authedFetch";
 import { DemoContext } from "../../context/DemoContext";
 
 const CARTS = [
@@ -274,16 +275,13 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
       const cartItems = selected.products
         .map(p => `${p.qty}x ${p.name} (${p.variant}) - $${(p.price * p.qty).toFixed(2)}`)
         .join(', ');
-      const { data: { user } } = await supabase.auth.getUser();
-      const response = await fetch('/api/ai/cart-recovery', {
+      const response = await authedFetch('/api/ai/cart-recovery', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cartItems,
           customerName: selected.name.split(' ')[0],
           storeName: store?.shop_name || 'our store',
-          storeId: store?.id,
-          userId: user?.id,
         }),
       });
       const data = await response.json();

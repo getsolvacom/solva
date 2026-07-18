@@ -10,6 +10,7 @@ import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
 import { useEntitlements } from "../../hooks/useEntitlements";
 import { supabase } from "../../lib/supabase";
+import { authedFetch } from "../../lib/authedFetch";
 import { DemoContext } from "../../context/DemoContext";
 
 const RETURNS = [
@@ -509,8 +510,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     if (isDemoMode || !selected) return;
     setAiDeflectionLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const response = await fetch('/api/ai/return-deflect', {
+      const response = await authedFetch('/api/ai/return-deflect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -518,8 +518,6 @@ export default function ReturnsView({ isLandscape, isMobile }) {
           productName: selected.product,
           customerName: selected.name.split(' ')[0],
           storeName: store?.shop_name || 'our store',
-          storeId: store?.id,
-          userId: user?.id,
         }),
       });
       const data = await response.json();

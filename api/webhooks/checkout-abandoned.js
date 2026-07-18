@@ -111,7 +111,7 @@ export default async function handler(req, res) {
       try {
         const aiResponse = await fetch(`${baseUrl}/api/ai/cart-recovery`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.INTERNAL_AI_SECRET },
           body: JSON.stringify({
             cartItems,
             customerName,
