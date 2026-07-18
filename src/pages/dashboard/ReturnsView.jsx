@@ -375,8 +375,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
       filter==="Deflected" ? r.status==="deflected" :
       filter==="Processed" ? r.status==="processed" :
       filter==="Pending"   ? r.status==="pending"   :
-      filter==="AI"           ? getLastHandler(r.messages) === 'ai' :
-      filter==="Human Agent"  ? getLastHandler(r.messages) === 'agent' : true;
+      filter==="AI"           ? getLastHandler(r.conversation) === 'ai' :
+      filter==="Human Agent"  ? getLastHandler(r.conversation) === 'agent' : true;
     return mf && ms;
   });
 
@@ -392,8 +392,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     Pending:   nonArchivedSource.filter(r=>r.status==="pending").length,
     Deflected: nonArchivedSource.filter(r=>r.status==="deflected").length,
     Processed: nonArchivedSource.filter(r=>r.status==="processed").length,
-    AI: nonArchivedSource.filter(r => getLastHandler(r.messages) === 'ai').length,
-    "Human Agent": nonArchivedSource.filter(r => getLastHandler(r.messages) === 'agent').length,
+    AI: nonArchivedSource.filter(r => getLastHandler(r.conversation) === 'ai').length,
+    "Human Agent": nonArchivedSource.filter(r => getLastHandler(r.conversation) === 'agent').length,
     Archived:  returnSource.filter(r=>r.isArchived).length,
   };
 
