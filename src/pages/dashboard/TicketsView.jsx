@@ -228,6 +228,11 @@ function Bubble({ msg, idx }) {
   );
 }
 
+function getLastHandler(messages) {
+  if (!Array.isArray(messages)) return undefined;
+  return [...messages].reverse().find(m => m.from === 'ai' || m.from === 'agent')?.from;
+}
+
 function isTicketUnread(messages, lastViewedAt) {
   if (!Array.isArray(messages)) return false;
   const lastCustomerMsg = [...messages].reverse().find(m => m.from === 'customer');
@@ -478,6 +483,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
     const mf = filter === "All"
       || (filter === "Unread" ? t.unread === true
       : filter === "Bookmarked" ? bookmarked[t.id]
+      : filter === "AI" ? getLastHandler(t.messages) === 'ai'
+      : filter === "Human Agent" ? getLastHandler(t.messages) === 'agent'
       : getStatus(t.id, t.status) === filter.toLowerCase());
     return mf && ms;
   });
@@ -531,6 +538,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
     Escalated:  nonArchivedSource.filter(t => getStatus(t.id, t.status) === "escalated").length,
     Unread:     nonArchivedSource.filter(t => t.unread === true).length,
     Bookmarked: nonArchivedSource.filter(t => bookmarked[t.id]).length,
+    AI:         nonArchivedSource.filter(t => getLastHandler(t.messages) === 'ai').length,
+    "Human Agent": nonArchivedSource.filter(t => getLastHandler(t.messages) === 'agent').length,
     Archived:   ticketSource.filter(t => t.isArchived || archivedOverrides[t.id]).length,
   };
 
@@ -990,7 +999,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
           </div>
 
           <div style={{display:"flex",gap:4,padding:"0 14px 10px",flexWrap:"wrap"}}>
-            {["All","Pending","Resolved","Escalated","Unread","Bookmarked","Archived"].map(f=>(
+            {["All","Pending","Resolved","Escalated","Unread","Bookmarked","AI","Human Agent","Archived"].map(f=>(
               <button key={f} className="filter-tab" onClick={()=>setFilter(f)}
                 style={{padding:"4px 10px",borderRadius:100,border:`1px solid ${filter===f?C.coral:C.border}`,background:filter===f?"rgba(229,82,102,.10)":"transparent",color:filter===f?C.coral:C.muted,fontSize:11.5,fontWeight:filter===f?700:400}}>
                 {f} ({counts[f]})
