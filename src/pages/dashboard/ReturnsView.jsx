@@ -846,7 +846,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                   <span style={{fontSize:12,color:C.muted}}>{selected.email} · {selected.id} · Order {selected.orderRef}</span>
                 </div>
               </div>
-              <div className="rv-actions-row" style={{display:"flex", alignItems:"center", gap:8}}>
+              <div className="rv-actions-row" style={{display:"flex", alignItems:"center", flexWrap:"wrap", gap:8, justifyContent:"flex-end"}}>
               <button className="rv-back-btn btn-ghost" onClick={()=>navigate(`${basePath}/returns`)}
                 style={{gap:5,color:C.coral,fontSize:13,fontWeight:600,padding:"8px 16px",background:C.card,border:`1px solid ${C.borderHi}`,borderRadius:8}}>
                 ← Back to Returns
