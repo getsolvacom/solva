@@ -4,10 +4,11 @@ import { C } from "../../tokens";
 import {
   DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip,
   User, Search, Clock as ClockIcon,
-  Smile, Bold, Italic, ChevronUp, Clock, Calendar, Archive,
+  Smile, Bold, Italic, ChevronUp, Clock, Calendar, Archive, Lock,
 } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
+import { useEntitlements } from "../../hooks/useEntitlements";
 import { supabase } from "../../lib/supabase";
 import { DemoContext } from "../../context/DemoContext";
 
@@ -275,6 +276,8 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   const [pickAmpm,  setPickAmpm]  = useState("AM");
 
   const { store } = useStore();
+  const { entitlements, loading: entitlementsLoading } = useEntitlements();
+  const returnDeflectionLocked = !entitlementsLoading && entitlements && entitlements.returnDeflection !== true;
 
   const [aiDeflectionLoading, setAiDeflectionLoading] = useState(false);
   const [realReturns, setRealReturns] = useState(null);
@@ -874,6 +877,13 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                 ← Back to Returns
               </button>
               {selected.status === "pending" && (
+                returnDeflectionLocked ? (
+                  <button className="btn-ghost" onClick={()=>navigate(`${basePath}/settings/billing`)}
+                    title="AI Return Deflection requires a higher plan — click to upgrade"
+                    style={{padding:"7px 14px",borderRadius:8,border:`1px solid ${C.amber}`,color:C.amber,fontSize:13,display:"flex",alignItems:"center",gap:6,cursor:"pointer"}}>
+                    <Lock size={13} strokeWidth={2}/>Upgrade to Unlock
+                  </button>
+                ) : (
                 <button
                   className="btn-ghost"
                   onClick={generateAIDeflection}
@@ -903,6 +913,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
                     <><Zap size={13} strokeWidth={2}/>Generate AI Response</>
                   )}
                 </button>
+                )
               )}
               {selected.status==="pending" && (
                 <button className="btn-primary"

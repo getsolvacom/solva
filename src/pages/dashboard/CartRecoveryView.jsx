@@ -1,9 +1,10 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
-import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2, Search, XCircle, MousePointer } from "lucide-react";
+import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2, Search, XCircle, MousePointer, Lock } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
+import { useEntitlements } from "../../hooks/useEntitlements";
 import { supabase } from "../../lib/supabase";
 import { DemoContext } from "../../context/DemoContext";
 
@@ -178,6 +179,8 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   const [toastFading,     setToastFading]     = useState(false);
 
   const { store } = useStore();
+  const { entitlements, loading: entitlementsLoading } = useEntitlements();
+  const cartRecoveryLocked = !entitlementsLoading && entitlements && entitlements.cartRecovery !== true;
 
   const [aiEmail, setAiEmail] = useState(null);
   const [aiEmailLoading, setAiEmailLoading] = useState(false);
@@ -461,19 +464,27 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
               </button>
 
               {/* Action button */}
-              <button
-                className="btn-primary"
-                disabled={triggerLoading || (isDemoMode && selected.status==="in_sequence")}
-                title={isDemoMode && selected.status==="in_sequence" ? "Sign up to try this" : undefined}
-                onClick={()=>{ if(selected.status==="in_sequence") handleTrigger(); else setModalOpen(true); }}
-                style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,minWidth:160,display:"flex",alignItems:"center",justifyContent:"center",gap:7,opacity:(triggerLoading || (isDemoMode && selected.status==="in_sequence"))?.45:1,cursor:(triggerLoading || (isDemoMode && selected.status==="in_sequence"))?"not-allowed":"pointer"}}
-              >
-                {selected.status==="in_sequence"
-                  ? triggerLoading
-                    ? <><div className="cr-spinner"/><span>Triggering...</span></>
-                    : <><Zap size={16} strokeWidth={2} style={{marginRight:6}}/>Trigger Next Step</>
-                  : <><Eye size={16} strokeWidth={2} style={{marginRight:6}}/>View Order</>}
-              </button>
+              {selected.status==="in_sequence" && cartRecoveryLocked ? (
+                <button className="btn-primary" onClick={()=>navigate(`${basePath}/settings/billing`)}
+                  title="Cart Recovery requires a higher plan — click to upgrade"
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,minWidth:160,display:"flex",alignItems:"center",justifyContent:"center",gap:7,cursor:"pointer"}}>
+                  <Lock size={16} strokeWidth={2} style={{marginRight:6}}/>Upgrade to Unlock
+                </button>
+              ) : (
+                <button
+                  className="btn-primary"
+                  disabled={triggerLoading || (isDemoMode && selected.status==="in_sequence")}
+                  title={isDemoMode && selected.status==="in_sequence" ? "Sign up to try this" : undefined}
+                  onClick={()=>{ if(selected.status==="in_sequence") handleTrigger(); else setModalOpen(true); }}
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,minWidth:160,display:"flex",alignItems:"center",justifyContent:"center",gap:7,opacity:(triggerLoading || (isDemoMode && selected.status==="in_sequence"))?.45:1,cursor:(triggerLoading || (isDemoMode && selected.status==="in_sequence"))?"not-allowed":"pointer"}}
+                >
+                  {selected.status==="in_sequence"
+                    ? triggerLoading
+                      ? <><div className="cr-spinner"/><span>Triggering...</span></>
+                      : <><Zap size={16} strokeWidth={2} style={{marginRight:6}}/>Trigger Next Step</>
+                    : <><Eye size={16} strokeWidth={2} style={{marginRight:6}}/>View Order</>}
+                </button>
+              )}
             </div>
 
             {/* Scrollable body */}
