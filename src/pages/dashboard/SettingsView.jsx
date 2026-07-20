@@ -2943,11 +2943,12 @@ export default function SettingsView({ isLandscape, isMobile }) {
         const { data: settings } = await supabase
           .from('store_settings').select('*')
           .eq('store_id', storeData.id).maybeSingle();
-        if (settings) {
-          setSettingsId(settings.id);
-          window.__solvaSettings = settings;
-          window.dispatchEvent(new CustomEvent('solva-settings-loaded', { detail: settings }));
-        }
+        // Dispatch even when no store_settings row exists yet, so every section
+        // resolves its loading state and falls back to defaults rather than
+        // spinning forever. The row is created lazily on first save.
+        if (settings) setSettingsId(settings.id);
+        window.__solvaSettings = settings || {};
+        window.dispatchEvent(new CustomEvent('solva-settings-loaded', { detail: window.__solvaSettings }));
       } catch (err) {
         console.error('Load settings error:', err);
       }
