@@ -250,6 +250,7 @@ REPLY — write it as a ready-to-send reply. If the customer's question matches 
     await supabase.from('tickets').update({
       messages: updatedMessages,
       status: 'resolved',
+      ai_resolved: true,
       approved_at: new Date().toISOString(),
       sent_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -403,6 +404,7 @@ Deno.serve(async (req) => {
         .update({
           messages: updatedMessages,
           status: 'pending',
+          ai_resolved: false,
           updated_at: new Date().toISOString(),
           ai_draft_reply: null,
           sent_at: null,
