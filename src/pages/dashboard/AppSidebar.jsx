@@ -37,7 +37,7 @@ const SETTINGS_SUB = [
   {key:"settings/danger",        label:"Danger Zone",   icon:<AlertTriangle size={13} strokeWidth={2}/>},
 ];
 
-export default function AppSidebar() {
+export default function AppSidebar({ counts = {} }) {
   const navigate   = useNavigate();
   const location   = useLocation();
   const { store }  = useStore();
@@ -59,9 +59,9 @@ export default function AppSidebar() {
 
   const items = [
     {key:"overview",  label:"Overview",      icon:<LayoutDashboard size={18} strokeWidth={2}/>},
-    {key:"tickets",   label:"AI Tickets",    icon:<Ticket size={18} strokeWidth={2}/>,        badge:"12"},
-    {key:"cart",      label:"Cart Recovery", icon:<ShoppingCart size={18} strokeWidth={2}/>,  badge:"24"},
-    {key:"returns",   label:"Returns",       icon:<RotateCcw size={18} strokeWidth={2}/>,     badge:"8"},
+    {key:"tickets",   label:"AI Tickets",    icon:<Ticket size={18} strokeWidth={2}/>,        badge:counts.ticketCount},
+    {key:"cart",      label:"Cart Recovery", icon:<ShoppingCart size={18} strokeWidth={2}/>,  badge:counts.cartCount},
+    {key:"returns",   label:"Returns",       icon:<RotateCcw size={18} strokeWidth={2}/>,     badge:counts.returnCount},
     {key:"customers", label:"Customers",     icon:<Users size={18} strokeWidth={2}/>},
     {key:"analytics", label:"Analytics",     icon:<BarChart3 size={18} strokeWidth={2}/>},
     {key:"settings",  label:"Settings",      icon:<Settings size={18} strokeWidth={2}/>, hasDropdown:true},
@@ -261,12 +261,13 @@ export default function AppSidebar() {
               >
                 <span style={{flexShrink:0,display:"inline-flex"}}>{icon}</span>
                 {!collapsed && <span style={{flex:1}}>{label}</span>}
-                {!collapsed && badge && (
+                {/* !!badge, not badge — a count of 0 would otherwise render as a stray "0". */}
+                {!collapsed && !!badge && (
                   <span style={{marginLeft:"auto",fontSize:10.5,fontWeight:700,background:active?C.coral:C.dim,color:active?"#fff":C.muted,padding:"1px 7px",borderRadius:100,flexShrink:0}}>
                     {badge}
                   </span>
                 )}
-                {collapsed && badge && (
+                {collapsed && !!badge && (
                   <span style={{position:"absolute",top:4,right:4,width:16,height:16,borderRadius:"50%",background:C.coral,color:"#fff",fontSize:9,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>
                     {badge}
                   </span>

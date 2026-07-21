@@ -11,6 +11,7 @@ import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
 import { supabase } from "../../lib/supabase";
 import { authedFetch } from "../../lib/authedFetch";
+import { isTicketUnread } from "../../lib/ticketUnread";
 import { DemoContext } from "../../context/DemoContext";
 
 // Demo-only. The seed tickets carry timestamps relative to page load so the stat
@@ -256,16 +257,6 @@ function Bubble({ msg, idx }) {
 function getLastHandler(messages) {
   if (!Array.isArray(messages)) return undefined;
   return [...messages].reverse().find(m => m.from === 'ai' || m.from === 'agent')?.from;
-}
-
-function isTicketUnread(messages, lastViewedAt) {
-  if (!Array.isArray(messages)) return false;
-  const lastCustomerMsg = [...messages].reverse().find(m => m.from === 'customer');
-  if (!lastCustomerMsg || !lastCustomerMsg.time) return false;
-  const msgTime = new Date(lastCustomerMsg.time).getTime();
-  if (isNaN(msgTime)) return false;
-  if (!lastViewedAt) return true;
-  return msgTime > new Date(lastViewedAt).getTime();
 }
 
 export default function TicketsView({ isLandscape, isMobile }) {

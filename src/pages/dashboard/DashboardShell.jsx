@@ -4,6 +4,7 @@ import { C } from "../../tokens";
 import { LayoutDashboard, BarChart3, Ticket, ShoppingCart, RotateCcw, Settings, Menu, Users, ArrowRight } from "lucide-react";
 import AppSidebar       from "./AppSidebar";
 import { useStore }     from "../../hooks/useStore";
+import { useSidebarCounts } from "../../hooks/useSidebarCounts";
 import { DemoContext }  from "../../context/DemoContext";
 import OverviewView     from "./OverviewView";
 import TicketsView      from "./TicketsView";
@@ -15,13 +16,23 @@ import CustomersView   from "./CustomersView";
 
 const NAV_ITEMS = [
   {key:"overview",  label:"Overview",      icon:<LayoutDashboard size={18} strokeWidth={2}/>},
-  {key:"tickets",   label:"AI Tickets",    icon:<Ticket size={18} strokeWidth={2}/>,        badge:"12"},
-  {key:"cart",      label:"Cart Recovery", icon:<ShoppingCart size={18} strokeWidth={2}/>,  badge:"24"},
-  {key:"returns",   label:"Returns",       icon:<RotateCcw size={18} strokeWidth={2}/>,     badge:"8"},
+  {key:"tickets",   label:"AI Tickets",    icon:<Ticket size={18} strokeWidth={2}/>,        badgeKey:"ticketCount"},
+  {key:"cart",      label:"Cart Recovery", icon:<ShoppingCart size={18} strokeWidth={2}/>,  badgeKey:"cartCount"},
+  {key:"returns",   label:"Returns",       icon:<RotateCcw size={18} strokeWidth={2}/>,     badgeKey:"returnCount"},
   {key:"customers", label:"Customers",     icon:<Users size={18} strokeWidth={2}/>},
   {key:"analytics", label:"Analytics",     icon:<BarChart3 size={18} strokeWidth={2}/>},
   {key:"settings",  label:"Settings",      icon:<Settings size={18} strokeWidth={2}/>},
 ];
+
+// Demo mode shows sample data throughout, so the badges read off the seed
+// fixtures rather than counting the (empty) real tables.
+//   ticketCount — the 2 seed TICKETS carrying `unread: true`.
+//   cartCount   — the 3 seed CARTS not yet recovered. Approximate: the fixtures
+//                 use a richer status vocabulary ('in_sequence', 'failed') than
+//                 production ever writes, where a cart is only 'abandoned' or
+//                 'recovered', so "not recovered" is the closest equivalent.
+//   returnCount — the 1 seed RETURN still pending a decision.
+const DEMO_COUNTS = { ticketCount: 2, cartCount: 3, returnCount: 1 };
 
 function useOrientation() {
   const [state, setState] = useState(() => ({
@@ -78,6 +89,9 @@ export default function DashboardShell({ fixedView }) {
   const setView              = (key) => navigate(`${basePath}/${key}`);
   const goLanding            = () => navigate("/");
   const { store }            = useStore();
+  // Passing a null storeId in demo mode short-circuits the hook — it never queries.
+  const liveCounts           = useSidebarCounts(isDemoMode ? null : store?.id);
+  const counts               = isDemoMode ? DEMO_COUNTS : liveCounts;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navTo                = (key) => { navigate(`${basePath}/${key}`); setDrawerOpen(false); };
 
@@ -164,7 +178,7 @@ export default function DashboardShell({ fixedView }) {
 
       {/* Desktop sidebar */}
       <div className="dash-sidebar">
-        <AppSidebar store={store} />
+        <AppSidebar store={store} counts={counts} />
       </div>
 
       {/* Mobile overlay */}
@@ -174,13 +188,17 @@ export default function DashboardShell({ fixedView }) {
       <div className={`mob-drawer${drawerOpen?" open":""}`}>
         <div style={{padding:"0 18px 20px"}}><DrawerLogo/></div>
         <nav style={{flex:1,display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
-          {NAV_ITEMS.map(({key,label,icon,badge})=>(
-            <div key={key} className={`mob-nav-item${view===key?" active":""}`} onClick={()=>navTo(key)}>
-              <span style={{fontSize:14,flexShrink:0}}>{icon}</span>
-              {label}
-              {badge&&<span style={{marginLeft:"auto",fontSize:10.5,fontWeight:700,background:view===key?C.coral:C.dim,color:view===key?"#fff":C.muted,padding:"1px 7px",borderRadius:100}}>{badge}</span>}
-            </div>
-          ))}
+          {NAV_ITEMS.map(({key,label,icon,badgeKey})=>{
+            const badge = badgeKey ? counts[badgeKey] : null;
+            return (
+              <div key={key} className={`mob-nav-item${view===key?" active":""}`} onClick={()=>navTo(key)}>
+                <span style={{fontSize:14,flexShrink:0}}>{icon}</span>
+                {label}
+                {/* !!badge, not badge — a bare 0 would otherwise render as text. */}
+                {!!badge&&<span style={{marginLeft:"auto",fontSize:10.5,fontWeight:700,background:view===key?C.coral:C.dim,color:view===key?"#fff":C.muted,padding:"1px 7px",borderRadius:100}}>{badge}</span>}
+              </div>
+            );
+          })}
         </nav>
         <div style={{padding:"12px 8px 32px",borderTop:`1px solid ${C.border}`}}>
           <div onClick={()=>{goLanding();setDrawerOpen(false);}} className="mob-nav-item">
