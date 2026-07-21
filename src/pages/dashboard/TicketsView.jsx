@@ -479,7 +479,10 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
   const TOPICS = ["All", "Order Status", "Wrong Item", "Shipping", "Return Request", "Discount/Promo", "Product Question"];
 
-  const ticketSource = realTickets && realTickets.length > 0 ? realTickets : TICKETS;
+  // The seed TICKETS array is demo-only. A real store shows its own tickets, or
+  // nothing at all — never the demo data, whether it is still loading (null) or
+  // genuinely has zero tickets ([]).
+  const ticketSource = isDemoMode ? TICKETS : (realTickets || []);
 
   const filteredByStatus = ticketSource.filter(t => {
     const isArchived = t.isArchived || archivedOverrides[t.id];
