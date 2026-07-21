@@ -13,6 +13,10 @@ import { supabase } from "../../lib/supabase";
 import { authedFetch } from "../../lib/authedFetch";
 import { DemoContext } from "../../context/DemoContext";
 
+// Demo-only. The seed tickets carry timestamps relative to page load so the stat
+// cards read sensibly whenever the demo is opened, instead of drifting stale.
+const agoMins = (mins) => new Date(Date.now() - mins * 60000).toISOString();
+
 const TICKETS = [
   {
     id:"TK-1041", name:"Sarah Mitchell", email:"sarah.m@gmail.com",
@@ -20,6 +24,7 @@ const TICKETS = [
     subject:"Where is my order? It's been 6 days",
     preview:"Hi, I placed an order last Tuesday and haven't received any tracking...",
     status:"resolved", type:"Order Status", time:"2m ago", unread:false,
+    created_at: agoMins(2), first_response_at: agoMins(2 - 0.2), ai_resolved: true,
     messages:[
       { from:"customer", text:"Hi, I placed order #4872 last Tuesday and haven't received any tracking info yet. Can you help?", time:"10:42 AM" },
       { from:"ai",       text:"Hi Sarah! Order #4872 shipped yesterday via UPS — tracking number 1Z999AA10123456784. Estimated delivery is tomorrow between 2–6 PM. You'll get an email when it's out for delivery!", time:"10:42 AM" },
@@ -32,6 +37,7 @@ const TICKETS = [
     subject:"Wrong item received in my package",
     preview:"I ordered the black leather wallet but received the brown one...",
     status:"escalated", type:"Wrong Item", time:"18m ago", unread:true,
+    created_at: agoMins(18), first_response_at: agoMins(18 - 0.42), ai_resolved: false,
     messages:[
       { from:"customer",   text:"I ordered the black leather wallet (SKU: WLT-BLK-L) but I received the brown version. This was supposed to be a gift.", time:"10:24 AM" },
       { from:"ai",         text:"Hi James, I'm so sorry about this! I've flagged your order for priority correction. A prepaid return label has been sent and a replacement black wallet ships within 24 hours. I've also added a 15% discount for the inconvenience.", time:"10:24 AM" },
@@ -44,7 +50,8 @@ const TICKETS = [
     avatar:"PS", avatarColor:"#3ECFB2",
     subject:"Can I change my shipping address?",
     preview:"I just placed an order 10 mins ago, is it too late...",
-    status:"resolved", type:"Order Edit", time:"35m ago", unread:false,
+    status:"resolved", type:"Order Edit", time:"2d ago", unread:false,
+    created_at: agoMins(60 * 24 * 2), first_response_at: agoMins(60 * 24 * 2 - 0.15), ai_resolved: true,
     messages:[
       { from:"customer", text:"I placed order #4869 about 10 minutes ago. I put in the wrong shipping address — can this be changed?", time:"9:58 AM" },
       { from:"ai",       text:"Hi Priya! Great news — your order hasn't been processed for fulfilment yet. I can update the address now. Could you confirm the correct one?", time:"9:58 AM" },
@@ -57,7 +64,8 @@ const TICKETS = [
     avatar:"DC", avatarColor:"#F0A04B",
     subject:"Product quality issue — stitching coming apart",
     preview:"I've only had the bag for 3 weeks and the stitching...",
-    status:"pending", type:"Quality Issue", time:"1h ago", unread:true,
+    status:"pending", type:"Quality Issue", time:"4d ago", unread:true,
+    created_at: agoMins(60 * 24 * 4), first_response_at: agoMins(60 * 24 * 4 - 0.3), ai_resolved: false,
     messages:[
       { from:"customer", text:"I've only had the bag for 3 weeks and the stitching on the handle is already coming apart. Unacceptable for this price.", time:"9:14 AM" },
       { from:"ai",       text:"Hi David, I'm truly sorry — a quality issue after 3 weeks is completely unacceptable and falls within our guarantee. Could you share a quick photo so I can document this and arrange a replacement immediately?", time:"9:14 AM" },
@@ -78,6 +86,17 @@ const SCHEDULE_OPTS = [
   { label: "Tomorrow afternoon (1:00 PM)", getDate: () => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(13, 0, 0, 0); return d; } },
   { label: "Monday morning (8:00 AM)", getDate: () => { const d = new Date(); const day = d.getDay(); const daysUntilMonday = (8 - day) % 7 || 7; d.setDate(d.getDate() + daysUntilMonday); d.setHours(8, 0, 0, 0); return d; } },
 ];
+
+// Formats an average response time using the "<1m" shorthand the stat card has
+// displayed since it was hardcoded, so the live value reads identically.
+function fmtDuration(secs) {
+  if (secs < 60) return "<1m";
+  const mins = Math.round(secs / 60);
+  if (mins < 60) return `${mins}m`;
+  const hrs = mins / 60;
+  if (hrs < 24) return `${hrs.toFixed(hrs < 10 ? 1 : 0)}h`;
+  return `${Math.round(hrs / 24)}d`;
+}
 
 function parseMarkdown(text) {
   const regex = /(\*\*(.+?)\*\*|_(.+?)_)/g;
@@ -275,6 +294,9 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [csatRatings,    setCsatRatings]    = useState({});
   const [csatHover,      setCsatHover]      = useState(null);
   const [bookmarked,     setBookmarked]     = useState({});
+  // Pinned at mount rather than read during render: Date.now() in the render body
+  // is an impure call that would recompute on every re-render.
+  const [weekAgo]                           = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
 
   const toggleBookmark = async (e, id) => {
     e.stopPropagation();
@@ -399,6 +421,9 @@ export default function TicketsView({ isLandscape, isMobile }) {
           time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
           updatedAt: r.updated_at || r.created_at,
           status: r.status || 'pending',
+          created_at: r.created_at,
+          ai_resolved: r.ai_resolved,
+          first_response_at: r.first_response_at,
           unread: isTicketUnread(r.messages, r.merchant_last_viewed_at),
           merchantLastViewedAt: r.merchant_last_viewed_at,
           messages: Array.isArray(r.messages) ? r.messages : [
@@ -954,6 +979,39 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const csatVals = Object.values(csatRatings).filter(v => v > 0);
   const avgCsat  = csatVals.length > 0 ? (csatVals.reduce((a,b)=>a+b,0)/csatVals.length).toFixed(1) : "—";
 
+  // ── Live stat cards ────────────────────────────────────────────────────────
+  // "Concluded" = reached a terminal state. The two percentages are shares of
+  // that set, not of all tickets, so a pile of open tickets never dilutes them.
+  // Status reads go through getStatus, and the base is nonArchivedSource, so
+  // these agree with the filter tab counts sitting directly above them.
+  const statusOf = t => getStatus(t.id, t.status);
+
+  const resolvedThisWeek = nonArchivedSource.filter(t =>
+    statusOf(t) === "resolved" &&
+    t.created_at && new Date(t.created_at).getTime() >= weekAgo
+  ).length;
+
+  const concluded = nonArchivedSource.filter(t => {
+    const s = statusOf(t);
+    return s === "resolved" || s === "escalated";
+  });
+
+  const escalatedPct = concluded.length === 0 ? "—"
+    : `${Math.round(concluded.filter(t => statusOf(t) === "escalated").length / concluded.length * 100)}%`;
+
+  const autoResolvedPct = concluded.length === 0 ? "—"
+    : `${Math.round(concluded.filter(t => t.ai_resolved === true).length / concluded.length * 100)}%`;
+
+  // Only tickets that actually got a first response count toward the average;
+  // a null first_response_at means "still waiting", not "responded in 0s".
+  const responseSecs = nonArchivedSource
+    .filter(t => t.first_response_at && t.created_at)
+    .map(t => (new Date(t.first_response_at) - new Date(t.created_at)) / 1000)
+    .filter(s => s >= 0);
+
+  const avgResponse = responseSecs.length === 0 ? "—"
+    : fmtDuration(responseSecs.reduce((a, b) => a + b, 0) / responseSecs.length);
+
   const popupBase = {
     position:"absolute", zIndex:500, right:0, bottom:"calc(100% + 8px)",
     background:C.card, border:`1px solid ${C.borderHi}`,
@@ -974,7 +1032,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
       <div style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
         <div>
           <h1 style={{fontFamily:"'Outfit',sans-serif",fontSize:17,fontWeight:700,color:C.text}}>AI Tickets</h1>
-          <p style={{fontSize:11.5,color:C.muted}}>1,247 resolved this week · {counts.Pending + counts.Escalated} open</p>
+          <p style={{fontSize:11.5,color:C.muted}}>{resolvedThisWeek} resolved this week · {counts.Pending + counts.Escalated} open</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{display:"flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:8,background:"rgba(229,82,102,.09)",border:"1px solid rgba(229,82,102,.22)"}}>
@@ -1049,7 +1107,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
           )}
 
           <div style={{display:"flex",margin:"0 14px 12px",borderRadius:10,overflow:"hidden",border:`1px solid ${C.border}`}}>
-            {[{label:"Auto-resolved",value:"87%",color:C.teal},{label:"Avg response",value:"<1m",color:C.blue},{label:"Escalated",value:"3%",color:"#FF5272"},{label:"Satisfaction",value:avgCsat,color:C.amber}].map((s,i)=>(
+            {[{label:"Auto-resolved",value:autoResolvedPct,color:C.teal},{label:"Avg response",value:avgResponse,color:C.blue},{label:"Escalated",value:escalatedPct,color:"#FF5272"},{label:"Satisfaction",value:avgCsat,color:C.amber}].map((s,i)=>(
               <div key={i} style={{flex:1,padding:"9px 6px",textAlign:"center",background:C.card,borderRight:i<3?`1px solid ${C.border}`:"none"}}>
                 <div style={{fontSize:13.5,fontWeight:800,color:s.color}}>{s.value}</div>
                 <div style={{fontSize:9.5,color:C.muted,marginTop:2}}>{s.label}</div>
