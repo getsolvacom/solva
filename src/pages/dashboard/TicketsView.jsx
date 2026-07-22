@@ -884,9 +884,14 @@ export default function TicketsView({ isLandscape, isMobile }) {
         }));
         setStatusOverrides(prev => ({ ...prev, [selectedId]: "resolved" }));
         await generateAISuggestions(ticketText);
+      } else {
+        // Parsed JSON but no response field — surface the endpoint's error
+        // (e.g. {error: 'Unauthorized'}) instead of silently doing nothing.
+        fireToast(data.error || 'Failed to generate AI reply', "#FF5272", "rgba(255,82,114,.12)");
       }
     } catch (error) {
       console.error('AI reply error:', error);
+      fireToast(error.message || 'Failed to generate AI reply', "#FF5272", "rgba(255,82,114,.12)");
     } finally {
       setAiLoading(false);
     }
