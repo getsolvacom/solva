@@ -349,6 +349,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
   const [sendingManual, setSendingManual] = useState(false);
   const [escalating, setEscalating] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [reopening, setReopening] = useState(false);
   const [archivedOverrides, setArchivedOverrides] = useState({});
   const [sendError, setSendError] = useState(null);
   const [sendWarning, setSendWarning] = useState(null);
@@ -646,6 +647,49 @@ export default function TicketsView({ isLandscape, isMobile }) {
       fireToast(err?.message || 'Failed to close ticket', "#FF5272", "rgba(255,82,114,.12)");
     } finally {
       setClosing(false);
+    }
+  }
+
+  async function handleReopen() {
+    if (isDemoMode) return;
+    const isRealTicket = !!(selected && realTickets && realTickets.some(t => t.id === selected.id));
+    // Demo / seed tickets keep the original local-only behavior unchanged.
+    if (!isRealTicket) {
+      setStatusOverrides(prev => ({ ...prev, [selectedId]: "pending" }));
+      setTicketClosed(prev => ({ ...prev, [selectedId]: false }));
+      setTicketEscalated(prev => ({ ...prev, [selectedId]: false }));
+      fireToast("Ticket reopened", "#5BADFF", "rgba(91,173,255,.12)");
+      return;
+    }
+    setReopening(true);
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        // A human reopening the ticket is a human touch — it no longer counts
+        // as AI-resolved (consistent with the customer-reply reset in
+        // email-ticket-webhook).
+        .update({ status: 'pending', ai_resolved: false, updated_at: new Date().toISOString() })
+        .eq('id', selected.id)
+        .select()
+        .single();
+      if (error) {
+        // Do NOT change local state — surface the failure and let the merchant retry.
+        fireToast(error.message || 'Failed to reopen ticket', "#FF5272", "rgba(255,82,114,.12)");
+        return;
+      }
+      // Confirmed success — unwind everything handleClose/handleEscalate set.
+      setStatusOverrides(prev => ({ ...prev, [selectedId]: "pending" }));
+      setTicketClosed(prev => ({ ...prev, [selectedId]: false }));
+      setTicketEscalated(prev => ({ ...prev, [selectedId]: false }));
+      setRealTickets(prev => prev ? prev.map(t => t.id === selectedId
+        ? { ...t, status: "pending", ai_resolved: false }
+        : t) : prev);
+      fireToast("Ticket reopened", "#5BADFF", "rgba(91,173,255,.12)");
+    } catch (err) {
+      console.error('reopen ticket error:', err);
+      fireToast(err?.message || 'Failed to reopen ticket', "#FF5272", "rgba(255,82,114,.12)");
+    } finally {
+      setReopening(false);
     }
   }
 
@@ -966,7 +1010,11 @@ export default function TicketsView({ isLandscape, isMobile }) {
   }
 
   const escalateDisabled = !!(ticketEscalated[selectedId] || ticketClosed[selectedId]);
-  const closeDisabled    = !!ticketClosed[selectedId];
+  const aiReplyDisabled  = isDemoMode || aiLoading || effectiveStatus === 'resolved' || effectiveStatus === 'escalated';
+  // Concluded tickets (resolved or escalated) show "Reopen" instead of "Close".
+  // Keyed on effectiveStatus, not the session-only ticketClosed flag, so it
+  // survives refresh for tickets closed in a previous session.
+  const isConcluded      = effectiveStatus === 'resolved' || effectiveStatus === 'escalated';
   const csatVals = Object.values(csatRatings).filter(v => v > 0);
   const avgCsat  = csatVals.length > 0 ? (csatVals.reduce((a,b)=>a+b,0)/csatVals.length).toFixed(1) : "—";
 
@@ -1183,11 +1231,15 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   <Archive size={16} strokeWidth={2} style={{marginRight:6}}/>
                   {(selected.isArchived || archivedOverrides[selectedId]) ? "Unarchive" : "Archive"}
                 </button>
-                <button className="btn-primary" onClick={isDemoMode ? undefined : handleClose} disabled={closeDisabled || isDemoMode || closing}
+                <button className="btn-primary" onClick={isDemoMode ? undefined : (isConcluded ? handleReopen : handleClose)} disabled={isDemoMode || closing || reopening}
                   title={isDemoMode ? "Sign up to try this" : undefined}
-                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",cursor:(isDemoMode||closing)?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
+                  style={{padding:"7px 16px",borderRadius:8,color:"#fff",fontWeight:600,fontSize:13,display:"flex",alignItems:"center",cursor:(isDemoMode||closing||reopening)?"not-allowed":"pointer",opacity:isDemoMode?0.45:1}}>
                   {closing ? (
                     <><div style={{width:13,height:13,borderRadius:"50%",border:`2px solid rgba(255,255,255,.3)`,borderTopColor:"#fff",animation:"spin .7s linear infinite",flexShrink:0,marginRight:6}}/>Closing…</>
+                  ) : reopening ? (
+                    <><div style={{width:13,height:13,borderRadius:"50%",border:`2px solid rgba(255,255,255,.3)`,borderTopColor:"#fff",animation:"spin .7s linear infinite",flexShrink:0,marginRight:6}}/>Reopening…</>
+                  ) : isConcluded ? (
+                    <><RefreshCw size={16} strokeWidth={2} style={{marginRight:6}}/>Reopen Ticket</>
                   ) : (
                     <><XCircle size={16} strokeWidth={2} style={{marginRight:6}}/>Close Ticket</>
                   )}
@@ -1207,7 +1259,9 @@ export default function TicketsView({ isLandscape, isMobile }) {
               <div style={{width:28,height:28,borderRadius:8,flexShrink:0,background:"rgba(229,82,102,.14)",display:"flex",alignItems:"center",justifyContent:"center",color:C.coral}}><Zap size={14} strokeWidth={2}/></div>
               <span style={{fontSize:12,fontWeight:700,color:C.coral,flexShrink:0}}>SOLVA AI · </span>
               <span style={{fontSize:12.5,color:C.sub}}>
-                {effectiveStatus==="resolved"  ? "This ticket was fully resolved by Solva AI without human intervention."
+                {effectiveStatus==="resolved"  ? (selected.ai_resolved === true
+                    ? "This ticket was fully resolved by Solva AI without human intervention."
+                    : "This ticket was resolved by your team.")
                 :effectiveStatus==="escalated" ? "AI attempted resolution twice. Escalated — requires manual follow-up."
                 : "AI has responded and is awaiting customer reply."}
               </span>
@@ -1217,8 +1271,10 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   const lastCustomerMsg = [...effectiveMsgs].reverse().find(m => m.from === 'customer');
                   if (lastCustomerMsg) generateAIReply(lastCustomerMsg.text);
                 }}
-                disabled={isDemoMode || aiLoading || effectiveStatus === 'resolved' || effectiveStatus === 'escalated'}
-                title={isDemoMode ? "Sign up to try this" : undefined}
+                disabled={aiReplyDisabled}
+                title={isDemoMode ? "Sign up to try this"
+                  : (effectiveStatus === 'resolved' || effectiveStatus === 'escalated') ? "Reopen the ticket to generate a new AI reply"
+                  : undefined}
                 className="btn-primary"
                 style={{
                   marginLeft: 'auto',
@@ -1231,8 +1287,8 @@ export default function TicketsView({ isLandscape, isMobile }) {
                   alignItems: 'center',
                   gap: 5,
                   flexShrink: 0,
-                  cursor: isDemoMode ? "not-allowed" : "pointer",
-                  opacity: (isDemoMode || aiLoading || effectiveStatus === 'resolved' || effectiveStatus === 'escalated') ? 0.5 : 1,
+                  cursor: aiReplyDisabled ? "not-allowed" : "pointer",
+                  opacity: aiReplyDisabled ? 0.5 : 1,
                 }}
               >
                 {aiLoading ? (
