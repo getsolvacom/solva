@@ -1,15 +1,58 @@
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+function getRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
+function verifyShopifyHmac(rawBody, hmacHeader, secret) {
+  if (!hmacHeader) return false;
+  const computed = crypto.createHmac('sha256', secret).update(rawBody).digest('base64');
+  try {
+    const bufA = Buffer.from(computed, 'base64');
+    const bufB = Buffer.from(hmacHeader, 'base64');
+    if (bufA.length !== bufB.length) return false;
+    return crypto.timingSafeEqual(bufA, bufB);
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   try {
-    const order = req.body;
+    const rawBody = await getRawBody(req);
+    const hmacHeader = req.headers['x-shopify-hmac-sha256'];
+
+    if (!verifyShopifyHmac(rawBody, hmacHeader, process.env.SHOPIFY_CLIENT_SECRET)) {
+      console.error('Invalid Shopify HMAC signature — rejecting webhook');
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+
+    let order;
+    try {
+      order = JSON.parse(rawBody.toString('utf8'));
+    } catch (err) {
+      console.error('Failed to parse webhook body as JSON:', err);
+      return res.status(400).json({ error: 'Invalid JSON' });
+    }
     const shopDomain = req.headers['x-shopify-shop-domain'];
 
     console.log('New order received:', order.id, 'from', shopDomain);
