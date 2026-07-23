@@ -9,11 +9,16 @@ import { supabase } from "../../lib/supabase";
 import { authedFetch } from "../../lib/authedFetch";
 import { DemoContext } from "../../context/DemoContext";
 
+// Demo-only. The seed carts carry timestamps relative to page load so the stat
+// cards read sensibly whenever the demo is opened, instead of drifting stale.
+const agoMins = (mins) => new Date(Date.now() - mins * 60000).toISOString();
+
 const CARTS = [
   {
     id:"CR-0291", name:"Lena Fischer", email:"lena.f@gmail.com",
     avatar:"LF", avatarColor:"#E55266",
     value:214.50, timeAgo:"48m ago", status:"recovered", step:3,
+    created_at: agoMins(48), recovered_at: agoMins(36),
     products:[
       { name:"Minimalist Leather Wallet", variant:"Black / Large",    qty:1, price:89.00,  emoji:"👝" },
       { name:"Canvas Tote Bag",           variant:"Natural / One Size",qty:2, price:62.75,  emoji:"🛍" },
@@ -28,7 +33,8 @@ const CARTS = [
   {
     id:"CR-0290", name:"Marcus Webb", email:"marcus.w@outlook.com",
     avatar:"MW", avatarColor:"#5BADFF",
-    value:89.00, timeAgo:"1h ago", status:"in_sequence", step:1,
+    value:89.00, timeAgo:"1h ago", status:"abandoned", step:1,
+    created_at: agoMins(60), recovered_at: null,
     products:[
       { name:"Premium Watch Strap", variant:"Tan / 22mm",    qty:1, price:54.00, emoji:"⌚" },
       { name:"Travel Pouch",        variant:"Grey / Medium", qty:1, price:35.00, emoji:"👜" },
@@ -43,6 +49,7 @@ const CARTS = [
     id:"CR-0289", name:"Aisha Nwosu", email:"aisha.n@gmail.com",
     avatar:"AN", avatarColor:"#3ECFB2",
     value:347.00, timeAgo:"2h ago", status:"in_sequence", step:2,
+    created_at: agoMins(120), recovered_at: null,
     products:[
       { name:"Silk Scarf Set",      variant:"Navy / Multicolor", qty:1, price:128.00, emoji:"🧣" },
       { name:"Leather Card Holder", variant:"Cognac / Slim",     qty:2, price:44.50,  emoji:"💳" },
@@ -58,6 +65,7 @@ const CARTS = [
     id:"CR-0288", name:"Ryan Osei", email:"ryan.o@proton.me",
     avatar:"RO", avatarColor:"#F0A04B",
     value:62.00, timeAgo:"3h ago", status:"failed", step:3,
+    created_at: agoMins(180), recovered_at: null,
     products:[
       { name:"Minimalist Notebook", variant:"Black / A5", qty:2, price:31.00, emoji:"📓" },
     ],
@@ -187,6 +195,9 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   const [aiEmailLoading, setAiEmailLoading] = useState(false);
   const [realCarts, setRealCarts] = useState(null);
   const [cartsLoading, setCartsLoading] = useState(true);
+  // Pinned at mount rather than read during render: Date.now() in the render body
+  // is an impure call that would recompute on every re-render.
+  const [weekAgo] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
 
   useEffect(() => {
     const fetchCarts = async () => {
@@ -228,6 +239,8 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
             ],
             recoveredAt: c.recovered_at ? new Date(c.recovered_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
             recoveredValue: parseFloat(c.cart_value || 0),
+            created_at: c.created_at,
+            recovered_at: c.recovered_at,
           }));
           setRealCarts(mapped);
         } else {
@@ -247,7 +260,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   const filtered = cartSource.filter(c => {
     const mf =
       filter==="All"          ? true :
-      filter==="In Sequence"  ? c.status==="in_sequence" :
+      filter==="Abandoned"    ? c.status==="abandoned" :
       filter==="Recovered"    ? c.status==="recovered" :
       filter==="Not Recovered"? c.status==="failed" : true;
     return mf && (c.name.toLowerCase().includes(search.toLowerCase()) || c.id.toLowerCase().includes(search.toLowerCase()));
@@ -258,10 +271,20 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   const totalRecovered = cartSource.filter(c=>c.status==="recovered").reduce((s,c)=>s+c.value,0);
   const counts         = {
     "All":           cartSource.length,
-    "In Sequence":   cartSource.filter(c=>c.status==="in_sequence").length,
+    "Abandoned":     cartSource.filter(c=>c.status==="abandoned").length,
     "Recovered":     cartSource.filter(c=>c.status==="recovered").length,
     "Not Recovered": cartSource.filter(c=>c.status==="failed").length,
   };
+
+  // Weekly window uses the raw recovered_at column carried through the mapper;
+  // a cart with no recovered_at simply doesn't count toward the weekly figure.
+  const weeklyRecovered = cartSource
+    .filter(c => c.status === "recovered" && c.recovered_at && new Date(c.recovered_at).getTime() >= weekAgo)
+    .reduce((s, c) => s + c.value, 0);
+  const recoveryRate = cartSource.length === 0 ? "—"
+    : `${Math.round(counts["Recovered"] / cartSource.length * 100)}%`;
+  const avgCartValue = cartSource.length === 0 ? "—"
+    : `$${(cartSource.reduce((s, c) => s + c.value, 0) / cartSource.length).toFixed(2)}`;
 
   function handleCartSelect(id) {
     navigate(`${basePath}/cart/` + id);
@@ -307,7 +330,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
       <div className="cr-topbar" style={{padding:"0 24px",height:60,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
         <div>
           <h1 style={{fontFamily:"'Outfit',sans-serif",fontSize:17,fontWeight:700,color:C.text}}>Cart Recovery</h1>
-          <p style={{fontSize:11.5,color:C.muted}}>${totalRecovered.toFixed(2)} recovered this week · {counts["In Sequence"]} carts in sequence</p>
+          <p style={{fontSize:11.5,color:C.muted}}>${weeklyRecovered.toFixed(2)} recovered this week · {counts["Abandoned"]} abandoned</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{display:"flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:8,background:"rgba(229,82,102,.09)",border:"1px solid rgba(229,82,102,.22)"}}>
@@ -322,9 +345,9 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
       <div className="cr-kpi-strip" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
         {[
           {label:"Recovered Revenue", value:`$${totalRecovered.toFixed(2)}`, color:C.teal,  icon:<DollarSign size={18} strokeWidth={2}/>},
-          {label:"Recovery Rate",     value:"19.4%",                         color:C.coral, icon:<TrendingUp size={18} strokeWidth={2}/>},
-          {label:"Carts in Sequence", value:counts["In Sequence"].toString(),color:C.amber, icon:<ShoppingCart size={18} strokeWidth={2}/>},
-          {label:"Avg Cart Value",    value:"$178.20",                       color:C.blue,  icon:<DollarSign size={18} strokeWidth={2}/>},
+          {label:"Recovery Rate",     value:recoveryRate,                    color:C.coral, icon:<TrendingUp size={18} strokeWidth={2}/>},
+          {label:"Abandoned Carts",   value:counts["Abandoned"].toString(),  color:C.amber, icon:<ShoppingCart size={18} strokeWidth={2}/>},
+          {label:"Avg Cart Value",    value:avgCartValue,                    color:C.blue,  icon:<DollarSign size={18} strokeWidth={2}/>},
         ].map((k,i)=>(
           <div key={i} className="cr-kpi-card kpi-card" style={{padding:"14px 20px",background:C.surface,borderRight:i<3?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${k.color}33`,color:k.color,display:"flex",alignItems:"center",justifyContent:"center"}}>{k.icon}</div>
@@ -351,7 +374,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
             </div>
           </div>
           <div style={{display:"flex",flexWrap:"wrap",gap:4,padding:"0 12px 10px"}}>
-            {["All","In Sequence","Recovered","Not Recovered"].map(f=>(
+            {["All","Abandoned","Recovered","Not Recovered"].map(f=>(
               <button key={f} onClick={()=>setFilter(f)}
                 style={{padding:"4px 10px",borderRadius:100,cursor:"pointer",border:`1px solid ${filter===f?C.coral:C.border}`,background:filter===f?"rgba(229,82,102,.10)":"transparent",color:filter===f?C.coral:C.muted,fontSize:11.5,fontWeight:filter===f?700:400,fontFamily:"'Outfit',sans-serif"}}>
                 {f} ({counts[f]})
