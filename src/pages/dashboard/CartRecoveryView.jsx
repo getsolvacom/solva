@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { C } from "../../tokens";
-import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2, Search, XCircle, MousePointer, Lock } from "lucide-react";
+import { DollarSign, TrendingUp, ShoppingCart, Zap, Eye, CheckCircle2, Search, XCircle, MousePointer, Lock, RefreshCw } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
 import { useEntitlements } from "../../hooks/useEntitlements";
@@ -172,6 +172,49 @@ function GlobalStyles() {
   );
 }
 
+// Avatar color is a stable hash of the row id rather than the row's position
+// in the fetched array: positional color would shift every existing cart's
+// color whenever a realtime INSERT prepends a new one.
+const CART_AVATAR_COLORS = [C.coral, C.blue, C.teal, C.amber];
+function cartAvatarColor(id) {
+  let h = 0;
+  const s = String(id);
+  for (let i = 0; i < s.length; i++) h += s.charCodeAt(i);
+  return CART_AVATAR_COLORS[h % CART_AVATAR_COLORS.length];
+}
+
+// Maps a raw carts DB row to the UI cart shape. Used by the initial fetch and
+// by the realtime subscription so both produce identical objects.
+function mapCartRow(c) {
+  return {
+    id: c.id,
+    name: c.customer_name || c.customer_email || 'Unknown',
+    email: c.customer_email || '',
+    avatar: (c.customer_name || 'UN').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
+    avatarColor: cartAvatarColor(c.id),
+    value: parseFloat(c.cart_value || 0),
+    timeAgo: c.created_at ? new Date(c.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
+    status: c.status || 'in_sequence',
+    step: c.recovery_sequence_step || 1,
+    products: c.cart_items ? [{
+      name: c.cart_items,
+      variant: '',
+      qty: 1,
+      price: parseFloat(c.cart_value || 0),
+      emoji: '🛒',
+    }] : [],
+    sequence: [
+      { step:1, label:"First Reminder",  sentAt:"", status: c.recovery_sequence_step >= 1 ? "sent" : "scheduled", subject:"Cart reminder", preview: c.ai_recovery_email || "AI recovery email", opens:0, clicks:0 },
+      { step:2, label:"Value Reminder",  sentAt:"", status: c.recovery_sequence_step >= 2 ? "sent" : "scheduled", subject:"Value reminder", preview:"Follow-up with discount", opens:0, clicks:0 },
+      { step:3, label:"Final Follow-up", sentAt:"", status: c.recovery_sequence_step >= 3 ? "sent" : "scheduled", subject:"Final reminder", preview:"Last chance reminder", opens:0, clicks:0 },
+    ],
+    recoveredAt: c.recovered_at ? new Date(c.recovered_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
+    recoveredValue: parseFloat(c.cart_value || 0),
+    created_at: c.created_at,
+    recovered_at: c.recovered_at,
+  };
+}
+
 export default function CartRecoveryView({ isLandscape, isMobile }) {
   const navigate                              = useNavigate();
   const { cartId }                            = useParams();
@@ -195,66 +238,86 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
   const [aiEmailLoading, setAiEmailLoading] = useState(false);
   const [realCarts, setRealCarts] = useState(null);
   const [cartsLoading, setCartsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   // Pinned at mount rather than read during render: Date.now() in the render body
   // is an impure call that would recompute on every re-render.
   const [weekAgo] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  useEffect(() => {
-    const fetchCarts = async () => {
-      try {
-        if (isDemoMode) return;
+  const fetchCarts = async () => {
+    try {
+      if (isDemoMode) return;
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { setCartsLoading(false); return; }
-        const { data: storeData } = await supabase
-          .from('stores').select('id')
-          .eq('user_id', user.id).eq('is_active', true).maybeSingle();
-        if (!storeData) { setCartsLoading(false); return; }
-        const { data: carts } = await supabase
-          .from('carts').select('*')
-          .eq('store_id', storeData.id)
-          .order('created_at', { ascending: false });
-        if (carts && carts.length > 0) {
-          const mapped = carts.map((c, idx) => ({
-            id: c.id,
-            name: c.customer_name || c.customer_email || 'Unknown',
-            email: c.customer_email || '',
-            avatar: (c.customer_name || 'UN').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
-            avatarColor: [C.coral, C.blue, C.teal, C.amber][idx % 4],
-            value: parseFloat(c.cart_value || 0),
-            timeAgo: c.created_at ? new Date(c.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
-            status: c.status || 'in_sequence',
-            step: c.recovery_sequence_step || 1,
-            products: c.cart_items ? [{
-              name: c.cart_items,
-              variant: '',
-              qty: 1,
-              price: parseFloat(c.cart_value || 0),
-              emoji: '🛒',
-            }] : [],
-            sequence: [
-              { step:1, label:"First Reminder",  sentAt:"", status: c.recovery_sequence_step >= 1 ? "sent" : "scheduled", subject:"Cart reminder", preview: c.ai_recovery_email || "AI recovery email", opens:0, clicks:0 },
-              { step:2, label:"Value Reminder",  sentAt:"", status: c.recovery_sequence_step >= 2 ? "sent" : "scheduled", subject:"Value reminder", preview:"Follow-up with discount", opens:0, clicks:0 },
-              { step:3, label:"Final Follow-up", sentAt:"", status: c.recovery_sequence_step >= 3 ? "sent" : "scheduled", subject:"Final reminder", preview:"Last chance reminder", opens:0, clicks:0 },
-            ],
-            recoveredAt: c.recovered_at ? new Date(c.recovered_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
-            recoveredValue: parseFloat(c.cart_value || 0),
-            created_at: c.created_at,
-            recovered_at: c.recovered_at,
-          }));
-          setRealCarts(mapped);
-        } else {
-          setRealCarts([]);
-        }
-      } catch (err) {
-        console.error('Carts fetch error:', err);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setCartsLoading(false); return; }
+      const { data: storeData } = await supabase
+        .from('stores').select('id')
+        .eq('user_id', user.id).eq('is_active', true).maybeSingle();
+      if (!storeData) { setCartsLoading(false); return; }
+      const { data: carts } = await supabase
+        .from('carts').select('*')
+        .eq('store_id', storeData.id)
+        .order('created_at', { ascending: false });
+      if (carts && carts.length > 0) {
+        const mapped = carts.map(mapCartRow);
+        setRealCarts(mapped);
+      } else {
         setRealCarts([]);
-      } finally {
-        setCartsLoading(false);
       }
-    };
+    } catch (err) {
+      console.error('Carts fetch error:', err);
+      setRealCarts([]);
+    } finally {
+      setCartsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCarts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const refreshCarts = async () => {
+    if (isDemoMode || refreshing) return;
+    setRefreshing(true);
+    await fetchCarts();
+    setRefreshing(false);
+  };
+
+  // Realtime: new abandoned carts arrive as INSERTs (checkout-abandoned.js);
+  // a cart flipping to recovered arrives as an UPDATE (orders-create.js).
+  // Those are the only carts write paths, and this view itself never writes,
+  // so there are no echo events to reconcile. RLS already scopes events to
+  // this merchant's store; the store_id filter is defense-in-depth / noise
+  // reduction (same as TicketsView's subscription).
+  useEffect(() => {
+    if (isDemoMode || !store?.id) return;
+
+    const channel = supabase
+      .channel(`carts-realtime-${store.id}`)
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'carts', filter: `store_id=eq.${store.id}` },
+        (payload) => {
+          const row = payload.new;
+          setRealCarts(prev => {
+            // null = initial fetch still in flight; it will include this row.
+            if (prev === null) return prev;
+            if (prev.some(c => c.id === row.id)) return prev;
+            return [mapCartRow(row), ...prev];
+          });
+        })
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'carts', filter: `store_id=eq.${store.id}` },
+        (payload) => {
+          const row = payload.new;
+          setRealCarts(prev => prev
+            ? prev.map(c => c.id === row.id ? mapCartRow(row) : c)
+            : prev);
+        })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isDemoMode, store?.id]);
 
   const cartSource = isDemoMode ? CARTS : (realCarts || []);
   const filtered = cartSource.filter(c => {
@@ -367,11 +430,16 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
           className={`cr-list${mobilePanel==="detail"?" cr-list-hidden":""}`}
           style={{width:300,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}
         >
-          <div style={{padding:"12px 12px 8px"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
+          <div style={{padding:"12px 12px 8px",display:"flex",alignItems:"center",gap:8}}>
+            <div style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
               <Search size={16} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search carts…" style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:13.5}}/>
             </div>
+            <button onClick={isDemoMode ? undefined : refreshCarts} disabled={isDemoMode || refreshing}
+              title={isDemoMode ? "Sign up to try this" : "Refresh carts"}
+              style={{width:38,height:38,flexShrink:0,borderRadius:10,background:C.card,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:(isDemoMode||refreshing)?"not-allowed":"pointer",color:C.muted,opacity:isDemoMode?0.45:1}}>
+              <RefreshCw size={15} strokeWidth={2} style={{animation:refreshing?"spin .7s linear infinite":"none"}}/>
+            </button>
           </div>
           <div style={{display:"flex",flexWrap:"wrap",gap:4,padding:"0 12px 10px"}}>
             {["All","Abandoned","Recovered","Not Recovered"].map(f=>(
