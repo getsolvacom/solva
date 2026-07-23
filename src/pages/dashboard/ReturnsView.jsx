@@ -4,7 +4,7 @@ import { C } from "../../tokens";
 import {
   DollarSign, Shield, AlertTriangle, CheckCircle2, Zap, Send, Paperclip,
   User, Search, Clock as ClockIcon,
-  Smile, Bold, Italic, ChevronUp, Clock, Calendar, Archive, Lock,
+  Smile, Bold, Italic, ChevronUp, Clock, Calendar, Archive, Lock, RefreshCw,
 } from "lucide-react";
 import AvatarMenu from "./AvatarMenu";
 import { useStore } from "../../hooks/useStore";
@@ -224,6 +224,60 @@ function GlobalStyles() {
   );
 }
 
+// Avatar color is a stable hash of the row id rather than the row's position
+// in the fetched array: positional color would shift every existing return's
+// color whenever a realtime INSERT prepends a new one.
+const RETURN_AVATAR_COLORS = [C.teal, C.amber, C.blue, C.magenta];
+function returnAvatarColor(id) {
+  let h = 0;
+  const s = String(id);
+  for (let i = 0; i < s.length; i++) h += s.charCodeAt(i);
+  return RETURN_AVATAR_COLORS[h % RETURN_AVATAR_COLORS.length];
+}
+
+// Maps a raw returns DB row to the UI return shape. Used by the initial fetch
+// and by the realtime subscription so both produce identical objects.
+function mapReturnRow(r) {
+  return {
+    id: r.id,
+    name: r.customer_name || r.customer_email || 'Unknown',
+    email: r.customer_email || '',
+    avatar: (r.customer_name || 'UN').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
+    avatarColor: returnAvatarColor(r.id),
+    product: r.product_name || 'Product',
+    productEmoji: '📦',
+    variant: '',
+    manualOverride: !!r.manual_override,
+    isArchived: !!r.is_archived,
+    orderRef: r.order_id || '—',
+    orderValue: parseFloat(r.order_value || 0),
+    reason: r.reason || 'changed_mind',
+    reasonLabel: r.reason || 'Return Request',
+    status: r.deflected ? 'deflected' : r.status || 'pending',
+    timeAgo: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
+    updatedAt: r.updated_at || r.created_at,
+    marginSaved: r.deflected ? parseFloat(r.order_value || 0) : 0,
+    offer: {
+      type: r.deflection_offer || 'Exchange Offered',
+      detail: r.deflection_offer ? `Offered: ${r.deflection_offer}` : 'No deflection offer recorded yet',
+      icon: r.deflected ? '🔄' : '⏳',
+    },
+    conversation: Array.isArray(r.messages) && r.messages.length > 0
+      ? r.messages.map(m => ({
+          from: m.from,
+          text: m.text,
+          time: m.time ? new Date(m.time).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) : '',
+        }))
+      : [{ from: 'customer', text: r.reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' }],
+  };
+}
+
+// The statusOverrides entry a mapped return row should seed, or null. Shared
+// by the initial fetch and the realtime handlers so all paths seed identically.
+function overrideSeedFor(mapped) {
+  return mapped.manualOverride ? "manual_override" : null;
+}
+
 function Bubble({ msg, idx }) {
   const isCustomer = msg.from === "customer";
   const isAgent    = msg.from === "agent";
@@ -283,6 +337,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
   const [aiDeflectionLoading, setAiDeflectionLoading] = useState(false);
   const [realReturns, setRealReturns] = useState(null);
   const [returnsLoading, setReturnsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const textareaRef   = useRef(null);
   const emojiRef      = useRef(null);
@@ -306,70 +361,106 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     return () => document.removeEventListener("mousedown", h);
   }, [schedMenuOpen, schedPickOpen, customPickOpen]);
 
-  useEffect(() => {
-    const fetchReturns = async () => {
-      try {
-        if (isDemoMode) return;
+  const fetchReturns = async () => {
+    try {
+      if (isDemoMode) return;
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { setReturnsLoading(false); return; }
-        const { data: storeData } = await supabase
-          .from('stores').select('id')
-          .eq('user_id', user.id).eq('is_active', true).maybeSingle();
-        if (!storeData) { setReturnsLoading(false); return; }
-        const { data: returns } = await supabase
-          .from('returns').select('*')
-          .eq('store_id', storeData.id)
-          .order('created_at', { ascending: false });
-        if (returns && returns.length > 0) {
-          const mapped = returns.map((r, idx) => ({
-            id: r.id,
-            name: r.customer_name || r.customer_email || 'Unknown',
-            email: r.customer_email || '',
-            avatar: (r.customer_name || 'UN').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
-            avatarColor: [C.teal, C.amber, C.blue, C.magenta][idx % 4],
-            product: r.product_name || 'Product',
-            productEmoji: '📦',
-            variant: '',
-            manualOverride: !!r.manual_override,
-            isArchived: !!r.is_archived,
-            orderRef: r.order_id || '—',
-            orderValue: parseFloat(r.order_value || 0),
-            reason: r.reason || 'changed_mind',
-            reasonLabel: r.reason || 'Return Request',
-            status: r.deflected ? 'deflected' : r.status || 'pending',
-            timeAgo: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '',
-            updatedAt: r.updated_at || r.created_at,
-            marginSaved: r.deflected ? parseFloat(r.order_value || 0) : 0,
-            offer: {
-              type: r.deflection_offer || 'Exchange Offered',
-              detail: r.deflection_offer ? `Offered: ${r.deflection_offer}` : 'No deflection offer recorded yet',
-              icon: r.deflected ? '🔄' : '⏳',
-            },
-            conversation: Array.isArray(r.messages) && r.messages.length > 0
-              ? r.messages.map(m => ({
-                  from: m.from,
-                  text: m.text,
-                  time: m.time ? new Date(m.time).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) : '',
-                }))
-              : [{ from: 'customer', text: r.reason || 'Customer requested return', time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '' }],
-          }));
-          setRealReturns(mapped);
-          const overridesSeed = {};
-          mapped.forEach(r => { if (r.manualOverride) overridesSeed[r.id] = "manual_override"; });
-          setStatusOverrides(prev => ({ ...prev, ...overridesSeed }));
-        } else {
-          setRealReturns([]);
-        }
-      } catch (err) {
-        console.error('Returns fetch error:', err);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setReturnsLoading(false); return; }
+      const { data: storeData } = await supabase
+        .from('stores').select('id')
+        .eq('user_id', user.id).eq('is_active', true).maybeSingle();
+      if (!storeData) { setReturnsLoading(false); return; }
+      const { data: returns } = await supabase
+        .from('returns').select('*')
+        .eq('store_id', storeData.id)
+        .order('created_at', { ascending: false });
+      if (returns && returns.length > 0) {
+        const mapped = returns.map(mapReturnRow);
+        setRealReturns(mapped);
+        const overridesSeed = {};
+        mapped.forEach(r => { const seed = overrideSeedFor(r); if (seed) overridesSeed[r.id] = seed; });
+        setStatusOverrides(prev => ({ ...prev, ...overridesSeed }));
+      } else {
         setRealReturns([]);
-      } finally {
-        setReturnsLoading(false);
       }
-    };
+    } catch (err) {
+      console.error('Returns fetch error:', err);
+      setRealReturns([]);
+    } finally {
+      setReturnsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchReturns();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const refreshReturns = async () => {
+    if (isDemoMode || refreshing) return;
+    setRefreshing(true);
+    await fetchReturns();
+    setRefreshing(false);
+  };
+
+  // Realtime: new return requests arrive as INSERTs (returns-create.js);
+  // message appends (scheduler-tick, send-return-reply, inbound email replies)
+  // and status changes (refund processed, manual override, deflected, archive)
+  // arrive as UPDATEs. RLS already scopes events to this merchant's store; the
+  // store_id filter is defense-in-depth / noise reduction (same as
+  // TicketsView's subscription).
+  useEffect(() => {
+    if (isDemoMode || !store?.id) return;
+
+    const channel = supabase
+      .channel(`returns-realtime-${store.id}`)
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'returns', filter: `store_id=eq.${store.id}` },
+        (payload) => {
+          const mapped = mapReturnRow(payload.new);
+          setRealReturns(prev => {
+            // null = initial fetch still in flight; it will include this row.
+            if (prev === null) return prev;
+            if (prev.some(r => r.id === mapped.id)) return prev;
+            return [mapped, ...prev];
+          });
+          const seed = overrideSeedFor(mapped);
+          if (seed) setStatusOverrides(prev => ({ ...prev, [mapped.id]: seed }));
+        })
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'returns', filter: `store_id=eq.${store.id}` },
+        (payload) => {
+          const mapped = mapReturnRow(payload.new);
+          setRealReturns(prev => prev
+            ? prev.map(r => r.id === mapped.id ? mapped : r)
+            : prev);
+          // Keep the override map in sync with the authoritative row — set on
+          // manual_override, clear when it's lifted (e.g. Resume AI from
+          // another device).
+          setStatusOverrides(prev => {
+            const seed = overrideSeedFor(mapped);
+            if (seed) return prev[mapped.id] === seed ? prev : { ...prev, [mapped.id]: seed };
+            if (!(mapped.id in prev)) return prev;
+            const next = { ...prev };
+            delete next[mapped.id];
+            return next;
+          });
+          // The authoritative messages array now supersedes any optimistic
+          // overlay for this return — drop it so sent messages don't render
+          // twice.
+          setExtraMessages(prev => {
+            if (!(mapped.id in prev)) return prev;
+            const next = { ...prev };
+            delete next[mapped.id];
+            return next;
+          });
+        })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isDemoMode, store?.id]);
 
   const returnSource = isDemoMode ? RETURNS : (realReturns || []);
   const filtered = returnSource.filter(r => {
@@ -754,11 +845,16 @@ export default function ReturnsView({ isLandscape, isMobile }) {
           className={`rv-list${mobilePanel==="detail"?" rv-list-hidden":""}`}
           style={{width:290,flexShrink:0,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",background:C.surface}}
         >
-          <div style={{padding:"12px 12px 8px"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
+          <div style={{padding:"12px 12px 8px",display:"flex",alignItems:"center",gap:8}}>
+            <div style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:"9px 13px",borderRadius:10,background:C.card,border:`1px solid ${C.border}`}}>
               <Search size={16} strokeWidth={2} style={{color:C.muted,flexShrink:0}}/>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search returns…" style={{flex:1,background:"transparent",border:"none",color:C.text,fontSize:13.5}}/>
             </div>
+            <button onClick={isDemoMode ? undefined : refreshReturns} disabled={isDemoMode || refreshing}
+              title={isDemoMode ? "Sign up to try this" : "Refresh returns"}
+              style={{width:38,height:38,flexShrink:0,borderRadius:10,background:C.card,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:(isDemoMode||refreshing)?"not-allowed":"pointer",color:C.muted,opacity:isDemoMode?0.45:1}}>
+              <RefreshCw size={15} strokeWidth={2} style={{animation:refreshing?"spin .7s linear infinite":"none"}}/>
+            </button>
           </div>
           <div style={{padding:"0 12px 10px"}}>
             <select value={sortOrder} onChange={e=>setSortOrder(e.target.value)} style={{...selectSt, flex:"none", width:"100%"}}>
