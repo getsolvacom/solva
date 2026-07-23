@@ -243,7 +243,7 @@ export default function CartRecoveryView({ isLandscape, isMobile }) {
     fetchCarts();
   }, []);
 
-  const cartSource = realCarts && realCarts.length > 0 ? realCarts : CARTS;
+  const cartSource = isDemoMode ? CARTS : (realCarts || []);
   const filtered = cartSource.filter(c => {
     const mf =
       filter==="All"          ? true :

@@ -371,7 +371,7 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     fetchReturns();
   }, []);
 
-  const returnSource = realReturns && realReturns.length > 0 ? realReturns : RETURNS;
+  const returnSource = isDemoMode ? RETURNS : (realReturns || []);
   const filtered = returnSource.filter(r => {
     const ms = r.name.toLowerCase().includes(search.toLowerCase()) || r.product.toLowerCase().includes(search.toLowerCase());
     if (filter === "Archived") return r.isArchived && ms;
