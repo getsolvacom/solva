@@ -25,3 +25,5 @@ test-payload.json
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
