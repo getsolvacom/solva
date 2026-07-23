@@ -259,6 +259,39 @@ function getLastHandler(messages) {
   return [...messages].reverse().find(m => m.from === 'ai' || m.from === 'agent')?.from;
 }
 
+// Maps a raw tickets DB row to the UI ticket shape. Used by the initial fetch
+// and by the realtime subscription so both produce identical objects.
+function mapTicketRow(r) {
+  return {
+    id: r.id,
+    name: r.customer_name || 'Customer',
+    avatar: (r.customer_name || 'C').slice(0, 2).toUpperCase(),
+    avatarColor: '#5BADFF',
+    subject: r.subject || 'Support request',
+    preview: r.preview || (r.subject || '').slice(0, 60),
+    time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
+    updatedAt: r.updated_at || r.created_at,
+    status: r.status || 'pending',
+    created_at: r.created_at,
+    ai_resolved: r.ai_resolved,
+    first_response_at: r.first_response_at,
+    unread: isTicketUnread(r.messages, r.merchant_last_viewed_at),
+    merchantLastViewedAt: r.merchant_last_viewed_at,
+    messages: Array.isArray(r.messages) ? r.messages : [
+      { from: 'customer', text: r.subject || 'Support request', time: '' },
+    ],
+    tags: r.tags || [],
+    source: r.source,
+    ai_draft_reply: r.ai_draft_reply,
+    sent_at: r.sent_at,
+    customer_email: r.customer_email,
+    ticketNumber: r.ticket_number,
+    bookmarked: r.bookmarked,
+    csat_rating: r.csat_rating,
+    isArchived: r.is_archived,
+  };
+}
+
 export default function TicketsView({ isLandscape, isMobile }) {
   const navigate                              = useNavigate();
   const { ticketId }                          = useParams();
@@ -403,34 +436,7 @@ export default function TicketsView({ isLandscape, isMobile }) {
         .eq('store_id', storeData.id)
         .order('created_at', { ascending: false });
       if (rows && rows.length > 0) {
-        const mapped = rows.map(r => ({
-          id: r.id,
-          name: r.customer_name || 'Customer',
-          avatar: (r.customer_name || 'C').slice(0, 2).toUpperCase(),
-          avatarColor: '#5BADFF',
-          subject: r.subject || 'Support request',
-          preview: r.preview || (r.subject || '').slice(0, 60),
-          time: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
-          updatedAt: r.updated_at || r.created_at,
-          status: r.status || 'pending',
-          created_at: r.created_at,
-          ai_resolved: r.ai_resolved,
-          first_response_at: r.first_response_at,
-          unread: isTicketUnread(r.messages, r.merchant_last_viewed_at),
-          merchantLastViewedAt: r.merchant_last_viewed_at,
-          messages: Array.isArray(r.messages) ? r.messages : [
-            { from: 'customer', text: r.subject || 'Support request', time: '' },
-          ],
-          tags: r.tags || [],
-          source: r.source,
-          ai_draft_reply: r.ai_draft_reply,
-          sent_at: r.sent_at,
-          customer_email: r.customer_email,
-          ticketNumber: r.ticket_number,
-          bookmarked: r.bookmarked,
-          csat_rating: r.csat_rating,
-          isArchived: r.is_archived,
-        }));
+        const mapped = rows.map(mapTicketRow);
         setRealTickets(mapped);
         // Hydrate the bookmark/CSAT state objects from the persisted rows. A null
         // csat_rating is left absent from the object (not written as null) so that
@@ -459,6 +465,57 @@ export default function TicketsView({ isLandscape, isMobile }) {
     fetchTickets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The realtime handlers below need the CURRENT selection, but the effect is
+  // deliberately keyed on [isDemoMode, store?.id] only — re-keying on selectedId
+  // would tear down and rebuild the socket subscription on every ticket click.
+  // A plain closure would capture selectedId from the render the subscription
+  // was created on (stale); the ref is what keeps reads fresh.
+  const selectedIdRef = useRef(selectedId);
+  useEffect(() => { selectedIdRef.current = selectedId; }, [selectedId]);
+
+  // Realtime: new tickets arrive as INSERTs; customer replies arrive as UPDATEs
+  // to the row's messages column (appended by email-ticket-webhook). One
+  // subscription on tickets covers both. RLS already scopes events to this
+  // merchant's store; the store_id filter is defense-in-depth / noise reduction.
+  useEffect(() => {
+    if (isDemoMode || !store?.id) return;
+
+    const channel = supabase
+      .channel(`tickets-realtime-${store.id}`)
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'tickets', filter: `store_id=eq.${store.id}` },
+        (payload) => {
+          const row = payload.new;
+          setRealTickets(prev => {
+            // null = initial fetch still in flight; it will include this row.
+            if (prev === null) return prev;
+            if (prev.some(t => t.id === row.id)) return prev;
+            return [mapTicketRow(row), ...prev];
+          });
+        })
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'tickets', filter: `store_id=eq.${store.id}` },
+        (payload) => {
+          const row = payload.new;
+          const mapped = mapTicketRow(row);
+          // A reply to the ticket the merchant is actively viewing must not
+          // flag it unread — they are looking at it right now.
+          if (row.id === selectedIdRef.current) mapped.unread = false;
+          setRealTickets(prev => prev
+            ? prev.map(t => t.id === row.id ? mapped : t)
+            : prev);
+          // Keep the bookmark/CSAT state objects in sync, matching the initial
+          // fetch's hydration: null csat_rating stays absent (tri-state).
+          setBookmarked(prev => ({ ...prev, [row.id]: !!row.bookmarked }));
+          if (row.csat_rating !== null && row.csat_rating !== undefined) {
+            setCsatRatings(prev => ({ ...prev, [row.id]: row.csat_rating }));
+          }
+        })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isDemoMode, store?.id]);
 
   const refreshTickets = async () => {
     if (isDemoMode || refreshing) return;
