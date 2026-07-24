@@ -177,10 +177,11 @@ export default async function handler(req, res) {
     for (const touchNumber of [1, 2, 3]) {
       let aiData;
       try {
-        const aiResponse = await fetch(`${baseUrl}/api/ai/cart-recovery`, {
+        const aiResponse = await fetch(`${baseUrl}/api/ai`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.INTERNAL_AI_SECRET },
           body: JSON.stringify({
+            action: 'cart-recovery',
             cartItems,
             customerName,
             storeName: store.shop_name || shopDomain,

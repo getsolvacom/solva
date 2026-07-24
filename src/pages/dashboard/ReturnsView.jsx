@@ -601,10 +601,11 @@ export default function ReturnsView({ isLandscape, isMobile }) {
     if (isDemoMode || !selected) return;
     setAiDeflectionLoading(true);
     try {
-      const response = await authedFetch('/api/ai/return-deflect', {
+      const response = await authedFetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'return-deflect',
           returnReason: selected.reasonLabel + ': ' + selected.conversation[selected.conversation.length - 1].text,
           productName: selected.product,
           customerName: selected.name.split(' ')[0],

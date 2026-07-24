@@ -210,10 +210,11 @@ export default async function handler(req, res) {
 
     let aiData;
     try {
-      const aiResponse = await fetch(`${baseUrl}/api/ai/return-deflect`, {
+      const aiResponse = await fetch(`${baseUrl}/api/ai`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.INTERNAL_AI_SECRET },
         body: JSON.stringify({
+          action: 'return-deflect',
           returnReason,
           productName,
           customerName,

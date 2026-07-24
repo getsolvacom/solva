@@ -897,10 +897,11 @@ export default function TicketsView({ isLandscape, isMobile }) {
     if (isDemoMode) return;
     setAiLoading(true);
     try {
-      const response = await authedFetch('/api/ai/ticket-resolve', {
+      const response = await authedFetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'ticket-resolve',
           ticket: ticketText,
           storeName: store?.shop_name || 'our store',
           brandTone: 'friendly',
@@ -956,10 +957,11 @@ export default function TicketsView({ isLandscape, isMobile }) {
 
   const generateAISuggestions = async (ticketText) => {
     try {
-      const response = await authedFetch('/api/ai/ticket-resolve', {
+      const response = await authedFetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'ticket-resolve',
           ticket: `Generate 3 very short reply starters (under 8 words each) for this ticket. Return only the 3 starters separated by | with no numbering or explanation: ${ticketText}`,
           storeName: store?.shop_name || 'our store',
           brandTone: 'friendly',

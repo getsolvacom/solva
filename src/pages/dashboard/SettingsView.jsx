@@ -604,10 +604,11 @@ BEHAVIOR RULES:
 5. Never make up specific facts like prices, dates, or policies that aren't provided above.
 6. Never refuse to engage in a normal conversation. Always respond helpfully.`;
 
-      const response = await authedFetch("/api/ai/ticket-resolve", {
+      const response = await authedFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "ticket-resolve",
           ticket: userMsg,
           storeName: "your store",
           brandTone: tone || "friendly",
@@ -631,10 +632,11 @@ BEHAVIOR RULES:
     else setGeneratingBrand(false);
     if (!isB) setGeneratingCustomer(true);
     try {
-      const response = await authedFetch("/api/ai/ticket-resolve", {
+      const response = await authedFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "ticket-resolve",
           ticket: isB
             ? `Write a 2-3 sentence brand description for a Shopify store. Tone: ${tone || "friendly"}. Keep it professional and focused on customer service excellence. Return only the description text, no labels or prefixes.`
             : `Write a 2-3 sentence description of the typical customers for a Shopify store. Tone: ${tone || "friendly"}. Focus on what they care about when contacting support. Return only the description text, no labels or prefixes.`,

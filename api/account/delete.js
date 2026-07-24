@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // 1. Verify identity — exact pattern from api/ai/ticket-resolve.js:14-19.
+  // 1. Verify identity — exact pattern from api/ai/index.js (ticketResolve).
   const authHeader = req.headers.authorization || '';
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const { data: { user }, error: authError } = await authClient.auth.getUser(token);
