@@ -2182,23 +2182,16 @@ function DangerSection({ isLandscape = false, isMobile = false }) {
       setDangerLoading(true);
       setDangerError("");
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { setDangerLoading(false); return; }
+        const res = await authedFetch('/api/account/delete', { method: 'POST' });
+        const data = await res.json().catch(() => ({}));
 
-        const { data: storeData } = await supabase
-          .from('stores').select('id')
-          .eq('user_id', user.id).maybeSingle();
-
-        if (storeData) {
-          await supabase.from('tickets').delete().eq('store_id', storeData.id);
-          await supabase.from('carts').delete().eq('store_id', storeData.id);
-          await supabase.from('returns').delete().eq('store_id', storeData.id);
-          await supabase.from('store_settings').delete().eq('store_id', storeData.id);
-          await supabase.from('audit_log').delete().eq('store_id', storeData.id);
-          await supabase.from('stores').delete().eq('id', storeData.id);
+        if (!res.ok || !data.success) {
+          console.error('Delete account error:', data.error || res.status);
+          setDangerError('Something went wrong. Please try again or contact support@getsolva.app');
+          setDangerLoading(false);
+          return;
         }
 
-        await supabase.from('profiles').delete().eq('id', user.id);
         await supabase.auth.signOut();
         navigate('/');
       } catch (err) {
