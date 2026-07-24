@@ -84,6 +84,31 @@ export default async function handler(req, res) {
       return res.status(200).json({ received: true });
     }
 
+    // MARKETING CONSENT GATE
+    // Shopify's abandoned-checkout payload carries the buyer's email-marketing
+    // choice as the top-level boolean `buyer_accepts_marketing` (the checkbox
+    // shown at checkout). This is distinct from a Customer object's
+    // `accepts_marketing` / `email_marketing_consent` — it lives on the checkout
+    // payload we already parse here. Recovery touches are marketing email, so we
+    // only proceed with consent.
+    const buyerAcceptsMarketing = cart.buyer_accepts_marketing;
+
+    // Case A — consent explicitly declined: never queue. Return 200 so Shopify
+    // treats the webhook as handled and does not retry.
+    if (buyerAcceptsMarketing === false) {
+      console.log(`Buyer declined marketing (buyer_accepts_marketing=false) for cart ${cart.id} — skipping recovery, nothing queued.`);
+      return res.status(200).json({ received: true, skipped: 'no_marketing_consent' });
+    }
+
+    // Case B — field missing/undefined (payload omitted it). Treat absence as
+    // consent-WITHHELD (compliance-conservative) and skip.
+    if (buyerAcceptsMarketing === undefined || buyerAcceptsMarketing === null) {
+      console.warn(`buyer_accepts_marketing absent on cart ${cart.id} — treating as NO consent, skipping recovery. If this fires frequently, verify the Shopify API version still includes the field.`);
+      return res.status(200).json({ received: true, skipped: 'marketing_consent_unknown' });
+    }
+
+    // buyer_accepts_marketing === true → fall through to normal processing.
+
     // IDEMPOTENCY GUARD: Shopify can fire this webhook multiple times for the
     // same cart (address changes, etc). If we've already processed this cart,
     // do not regenerate AI content or re-queue anything.
